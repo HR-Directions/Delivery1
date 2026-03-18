@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقرير تسليم الخزينة - طباعة حرارية</title>
+<style>
+body{font-family:Tahoma;background:#eef2f7;margin:0;padding:15px;text-align:center;}
+.container{max-width:1400px;margin:auto;}
+.card{background:#fff;padding:15px;border-radius:12px;margin-bottom:15px;text-align:center;}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid #000;padding:6px;text-align:center;}
+
+.headerBox{text-align:center;margin-bottom:10px;}
+.logo{width:80px;display:block;margin:auto;}
+.branchName{font-weight:bold;margin-top:5px;}
+
+.printBtn{
+background:#e67e22;color:#fff;border:none;padding:10px;margin-top:10px;width:100%;
+cursor:pointer;
+}
+
+.diffPositive{color:green;font-weight:bold;}
+.diffNegative{color:red;font-weight:bold;}
+
+.footerBox{display:flex;justify-content:center;gap:50px;margin-top:10px;font-weight:bold;}
+
+.detailsTable{margin-top:10px;text-align:center;border:1px solid #000;}
+.detailsTable th, .detailsTable td{border:1px solid #000;padding:6px;text-align:center;}
+
+.infoTable{width:50%;margin:auto;border:1px solid #000;margin-bottom:15px;}
+.infoTable th, .infoTable td{border:1px solid #000;padding:5px;text-align:center;font-weight:bold;}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h3>📊 تقرير تسليم الخزينة</h3>
+
+<div class="card">
+<select id="branchSelect"></select>
+<input type="date" id="dateSelect">
+<input type="number" id="drawerSearch" placeholder="رقم الدرج">
+<button onclick="loadTreasury()">عرض</button>
+</div>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>الدرج</th><th>التاريخ</th><th>اليوم</th><th>الفرع</th><th>الإجمالي</th>
+</tr>
+</thead>
+<tbody id="treasuryTable"></tbody>
+</table>
+</div>
+
+<div id="detailsContainer" class="card" style="display:none;">
+<div id="details"></div>
+<button class="printBtn" onclick="printReceipt()">🖨 طباعة الرسيت</button>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+const firebaseConfig={
+databaseURL:"https://sample-firebase-ai-app-e4260-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+let current=null;
+const sum=(arr)=> (arr||[]).reduce((a,b)=>a+Number(b.amount||0),0);
+
+db.ref("branches").once("value").then(snap=>{
+snap.forEach(b=>{
+branchSelect.innerHTML+=`<option value="${b.key}" data-logo="https://lh3.googleusercontent.com/pw/AP1GczMmWcnkdN5X7Nj-T43iWXvYyNhrirKQUTagxX1MJmzD5N-aqmT4rYu5ESgMSpxbOZT5b_c61iTF2eU2pYkhlBFrz7lpqYWh0Nm7VEQlpHCXJ0MJVLFjUA0j5gWaaIgprthGb8NmlZL_hpWFzZTdUFAl=w2499-h2499-s-no-gm?authuser=0">${b.val().name}</option>`;
+});
+});
+
+function loadTreasury(){
+treasuryTable.innerHTML="";
+db.ref("treasury").once("value").then(snap=>{
+snap.forEach(s=>{
+let t=s.val();
+let tr=document.createElement("tr");
+tr.innerHTML=`<td>${t.drawer}</td><td>${t.date}</td><td>${t.day}</td><td>${t.branchName}</td><td>${t.total}</td>`;
+tr.onclick=()=>{current=t;showDetails(t);}
+treasuryTable.appendChild(tr);
+});
+});
+}
+
+function showDetails(t){
+detailsContainer.style.display="block";
+const branchOption=branchSelect.selectedOptions[0];
+const logo=branchOption.getAttribute("data-logo");
+
+function tableHtml(title, arr, type){
+if(!arr || arr.length==0) return "";
+let h=`<h4>${title}</h4><table class="detailsTable"><tr>`;
+if(type=="insta"||type=="wallet"){h+=`<th>المبلغ</th><th>الرقم</th><th>الاسم</th>`;}
+if(type=="visa"){h+=`<th>المبلغ</th><th>الترحيلة</th>`;}
+if(type=="exp"){h+=`<th>المبلغ</th><th>السبب</th><th>المسؤول</th>`;}
+h+=`</tr>`;
+arr.forEach(i=>{
+h+=`<tr>`;
+if(type=="insta"||type=="wallet"){h+=`<td>${i.amount}</td><td>${i.mobile||""}</td><td>${i.name||""}</td>`;}
+if(type=="visa"){h+=`<td>${i.amount}</td><td>${i.ref||""}</td>`;}
+if(type=="exp"){h+=`<td>${i.amount}</td><td>${i.note||""}</td><td>${i.user||i.employee||""}</td>`;}
+h+=`</tr>`;});
+h+=`</table><b>الإجمالي: ${sum(arr)}</b><br>`;
+return h;
+}
+
+let diffClass=t.diff<0?"diffNegative":"diffPositive";
+
+let html=`
+<div class="headerBox">
+<img src="${logo}" class="logo">
+<div class="branchName">فرع:${t.branchName}</div>
+</div>
+
+<table class="infoTable">
+<tr><th>اليوم</th><th>التاريخ</th><th>رقم الدرج</th></tr>
+<tr><td>${t.day}</td><td>${t.date}</td><td>${t.drawer}</td></tr>
+</table>
+
+<table class="detailsTable">
+<tr><th>الحركة</th><th>القيمة</th></tr>
+<tr><td>نقدي</td><td>${t.cash||0}</td></tr>
+<tr><td>انستا</td><td>${sum(t.insta)}</td></tr>
+<tr><td>محفظة</td><td>${sum(t.wallet)}</td></tr>
+<tr><td>فيزا</td><td>${sum(t.visa)}</td></tr>
+<tr><td>فعلي</td><td>${t.actual||0}</td></tr>
+<tr><td>الإجمالي</td><td>${t.total||0}</td></tr>
+<tr><td>الفرق</td><td class="${diffClass}">${t.diff||0}</td></tr>
+</table>
+`;
+
+html+=tableHtml("انستا",t.insta,"insta");
+html+=tableHtml("محفظة",t.wallet,"wallet");
+html+=tableHtml("فيزا",t.visa,"visa");
+html+=tableHtml("مشتريات",t.purchases,"exp");
+html+=tableHtml("مصروفات",t.expenses,"exp");
+
+html+=`<div class="footerBox"><div>المسؤول: ${t.drawerManager||""}</div><div>المراجع: ${t.reviewer||""}</div></div>`;
+
+document.getElementById("details").innerHTML=html;
+}
+
+function printReceipt(){
+if(!current) return alert("اختر شفت");
+
+const branchOption=branchSelect.selectedOptions[0];
+const logo=branchOption.getAttribute("data-logo");
+const sum=(arr)=> (arr||[]).reduce((a,b)=>a+Number(b.amount||0),0);
+
+function tablePrint(title, arr, type){
+if(!arr || arr.length==0) return "";
+let t=`<h4>${title}</h4><table border="1" style="width:100%;text-align:center;font-size:12px">`;
+if(type=="insta"||type=="wallet"){t+=`<tr><th>المبلغ</th><th>رقم</th><th>اسم</th></tr>`;}
+if(type=="visa"){t+=`<tr><th>المبلغ</th><th>ترحيلة</th></tr>`;}
+if(type=="exp"){t+=`<tr><th>المبلغ</th><th>سبب</th><th>مسؤول</th></tr>`;}
+arr.forEach(i=>{
+t+=`<tr>`;
+if(type=="insta"||type=="wallet"){t+=`<td>${i.amount}</td><td>${i.mobile||""}</td><td>${i.name||""}</td>`;}
+if(type=="visa"){t+=`<td>${i.amount}</td><td>${i.ref||""}</td>`;}
+if(type=="exp"){t+=`<td>${i.amount}</td><td>${i.note||""}</td><td>${i.user||i.employee||""}</td>`;}
+t+=`</tr>`;});
+t+=`</table><b>الإجمالي: ${sum(arr)}</b><br>`;
+return t;
+}
+
+let diffClass=current.diff<0?"diffNegative":"diffPositive";
+
+let htmlPrint=`
+<body style="font-family:monospace;width:320px;margin:auto;border:2px solid black;padding:10px;text-align:center">
+
+<img src="${logo}" width="70" style="display:block;margin:auto">
+<div> فرع : ${current.branchName}</div>
+
+<table border="1" style="width:100%;text-align:center;margin:auto">
+<tr><th>اليوم</th><th>التاريخ</th><th>رقم الدرج</th></tr>
+<tr><td>${current.day}</td><td>${current.date}</td><td>${current.drawer}</td></tr>
+</table>
+
+<hr>
+
+<table border="1" style="width:100%;text-align:center;font-size:12px">
+<tr><th>الحركة</th><th>القيمة</th></tr>
+<tr><td>نقدي</td><td>${current.cash||0}</td></tr>
+<tr><td>انستا</td><td>${sum(current.insta)}</td></tr>
+<tr><td>محفظة</td><td>${sum(current.wallet)}</td></tr>
+<tr><td>فيزا</td><td>${sum(current.visa)}</td></tr>
+<tr><td>فعلي</td><td>${current.actual||0}</td></tr>
+<tr><td>الإجمالي</td><td>${current.total||0}</td></tr>
+<tr><td>الفرق</td><td class="${diffClass}">${current.diff||0}</td></tr>
+</table>
+
+${tablePrint("انستا",current.insta,"insta")}
+${tablePrint("محفظة",current.wallet,"wallet")}
+${tablePrint("فيزا",current.visa,"visa")}
+${tablePrint("مشتريات",current.purchases,"exp")}
+${tablePrint("مصروفات",current.expenses,"exp")}
+
+<hr>
+<div class="footerBox"><div>المسؤول: ${current.drawerManager||""}</div><div>المراجع: ${current.reviewer||""}</div></div>
+
+</body>
+`;
+
+let w=window.open("");
+w.document.write(htmlPrint);
+w.document.close();
+w.print();
+}
+</script>
+
+</body>
+</html>
