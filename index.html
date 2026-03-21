@@ -232,12 +232,12 @@ return t;
 let html=`
 <body style="font-family:monospace;width:80mm;padding20px;text-align:center">
 
-<table style="width:100%;border:1px solid #000;border-collapse:collapse;text-align:center">
+<table style="width:100%;border:1px solid #000;border-collapse:collapse;text-align:center;margin-top:12px">
 <tr><th colspan="3">الفرع</th></tr>
 <tr><td colspan="3">${current.branchName}</td></tr>
 </table>
 
-<table style="width:100%;border:1px solid #000;border-collapse:collapse;text-align:center;margin-top:8px">
+<table style="width:100%;border:1px solid #000;border-collapse:collapse;text-align:center;margin-top:12px">
 <tr><th>اليوم</th><th>التاريخ</th><th>رقم الدرج</th></tr>
 <tr><td>${current.day}</td><td>${current.date}</td><td>${current.drawer}</td></tr>
 </table>
@@ -259,7 +259,7 @@ ${tablePrint("فيزا",current.visa,"visa")}
 ${tablePrint("مشتريات",current.purchases,"exp")}
 ${tablePrint("مصروفات",current.expenses,"exp")}
 
-<table style="width:100%;border:1px solid #000;border-collapse:collapse;text-align:center;margin-top:9px">
+<table style="width:100%;border:1px solid #000;border-collapse:collapse;text-align:center;margin-top:12px">
 <tr><th>مسؤول الدرج</th><th>المراجع</th></tr>
 <tr><td>${current.drawerManager||""}</td><td>${current.reviewer||""}</td></tr>
 </table>
