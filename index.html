@@ -180,7 +180,7 @@
                 </table>
             </div>
         </div>
-
+        
         <!-- تفاصيل السجل المختارة -->
         <div id="detailsPanel" class="hidden bg-white p-8 rounded-3xl shadow-xl border-2 border-blue-100 mb-10 transition-all">
             <div class="flex justify-between items-center mb-6">
@@ -222,25 +222,6 @@
     }
 
     function sum(arr) {
-        if(!arr || !Array.isArray(arr)) return 0;
-        return arr.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-    }
-
-    function fetchData() {
-        const body = document.getElementById("mainTableBody");
-        const bF = document.getElementById("fBranch").value;
-        const dF = document.getElementById("fDate").value;
-        const drF = document.getElementById("fDrawer").value;
-        body.innerHTML = `<tr><td colspan="8" class="p-10 text-center text-slate-300 font-bold">جاري المزامنة...</td></tr>`;
-
-        db.ref("treasury").once("value", s => {
-            body.innerHTML = ""; fetchedRecords = [];
-            s.forEach(c => {
-                const item = c.val(); item.key = c.key;
-                if (bF && item.branchKey !== bF) return;
-                if (dF && item.date !== dF) return;
-                if (drF && item.drawer != drF) return;
-function sum(arr) {
         if(!arr || !Array.isArray(arr)) return 0;
         return arr.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
     }
