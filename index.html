@@ -347,7 +347,7 @@
                 <img src="${logoUrl}" class="header-logo-img">
                 <div class="header-text-side">
                     <h2 class="header-branch-name">${branchTitle}</h2>
-                    <div style="font-size:10px; font-weight:bold;">تقرير ${isAgg ? 'يومي مجمع' : 'تسليم وردية'}</div>
+                    <div style="font-size:10px; font-weight:bold;">تقرير ${isAgg ? 'يومي مجمع' : 'تسليم درج'}</div>
                 </div>
             </div>
 
@@ -365,9 +365,9 @@
                 <tr><td>إجمالي الكاش</td><td>${d.cash}</td></tr>
                 <tr><td>انستا باي</td><td>${sum(d.insta)}</td></tr>
                 <tr><td>محافظ</td><td>${sum(d.wallet)}</td></tr>
-                <tr><td>فيزا مبيعات</td><td>${sum(d.visa)}</td></tr>
+                <tr><td>مبيعات فيزا</td><td>${sum(d.visa)}</td></tr>
                 <tr><td>إجمالي الحساب</td><td>${d.total}</td></tr>
-                <tr style="background:#f0f0f0; font-size:17px;"><td>مبلغ السيستم</td><td>${d.actual}</td></tr>
+                <tr style="background:#f0f0f0; font-size:17px;"><td>مبلغ pos</td><td>${d.actual}</td></tr>
                 <tr style="color:${+d.diff < 0 ? 'red' : 'green'}"><td>الفرق</td><td>${d.diff}</td></tr>
             </table>
 
