@@ -1,418 +1,757 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقرير تسليم الدرج - 1.6</title>
+    <title>نظام مقصات</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#1e40af', // Blue 800
+                        secondary: '#3b82f6', // Blue 500
+                        accent: '#f59e0b', // Amber 500
+                        background: '#f3f4f6', // Gray 100
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        #thermalArea {
-            display: none;
-            width: 80mm;
-            background: white;
-            padding: 0;
-            margin: 0;
-            color: black;
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-
-        .receipt-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 4px;
-            border: 1.5px solid #000;
-        }
-        .receipt-table th, .receipt-table td {
-            border: 1.5px solid #000;
-            padding: 3px;
-            text-align: center;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        
-        .print-header {
+        .toast {
+            min-width: 250px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 6px;
-            margin-bottom: 8px;
+            gap: 10px;
+            animation: slideUp 0.3s forwards, fadeOut 0.3s forwards 3s;
+            opacity: 0;
         }
-        .header-logo-img {
-            width: 55px;
-            height: 55px;
-            object-fit: contain;
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.warning { background-color: #f59e0b; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        .header-text-side {
-            text-align: right;
-            flex: 1;
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; display: none; }
         }
-        .header-branch-name {
-            font-size: 16px;
-            font-weight: 900;
-            margin: 0;
-            line-height: 1.2;
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col">
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Header & Navigation -->
+    <header class="bg-primary text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-scissors text-2xl text-accent"></i>
+                <h1 class="text-2xl font-bold tracking-wider">نظام مقصات</h1>
+            </div>
+            
+            <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg">
+                <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
+                <button onclick="switchTab('delegatesTab')" id="btn-delegatesTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-users ml-2"></i>المناديب</button>
+                <button onclick="switchTab('branchesTab')" id="btn-branchesTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-store ml-2"></i>الفروع</button>
+                <button onclick="switchTab('reportsTab')" id="btn-reportsTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-chart-pie ml-2"></i>التقارير</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-8 overflow-auto">
+        
+        <!-- ==================== MAIN TAB (الرئيسية) ==================== -->
+        <section id="mainTab" class="tab-content active">
+            
+            <!-- Top Controls & Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Selectors Card -->
+                <div class="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="w-full">
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">تاريخ اليوم</label>
+                        <input type="date" id="recordDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition" onchange="loadRecords()">
+                    </div>
+                    <div class="w-full">
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">اختر المندوب</label>
+                        <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition">
+                            <option value="">-- يرجى اختيار مندوب --</option>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Counter Card -->
+                <div class="col-span-1 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg p-6 text-white flex flex-col justify-center items-center relative overflow-hidden">
+                    <i class="fa-solid fa-chart-line absolute -left-4 -bottom-4 text-6xl opacity-20"></i>
+                    <h3 class="text-lg font-semibold mb-2 z-10">إجمالي الضغطات (لليوم)</h3>
+                    <div class="text-5xl font-bold z-10" id="totalClicksCounter">0</div>
+                </div>
+            </div>
+
+            <!-- Branch Buttons Area -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>الفروع المتاحة (انقر للتسجيل)</h3>
+                
+                <div id="loadingBranches" class="text-center text-gray-500 py-8 hidden">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><br>جاري تحميل الفروع...
+                </div>
+                
+                <div id="branchButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Populated via JS -->
+                </div>
+                <div id="emptyBranchesMsg" class="text-center text-gray-500 py-4 hidden">
+                    لا توجد فروع مضافة. يرجى إضافة فروع من تبويب "الفروع".
+                </div>
+            </div>
+
+            <!-- Records Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800"><i class="fa-solid fa-table-list ml-2 text-secondary"></i>سجل الحركات لليوم المحدد</h3>
+                    <button onclick="loadRecords()" class="text-sm text-secondary hover:text-primary transition"><i class="fa-solid fa-arrows-rotate ml-1"></i>تحديث</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-3 border-b">م</th>
+                                <th class="p-3 border-b">الوقت</th>
+                                <th class="p-3 border-b">المندوب</th>
+                                <th class="p-3 border-b">الفرع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== DELEGATES TAB (المناديب) ==================== -->
+        <section id="delegatesTab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-user-plus ml-2 text-secondary"></i>إضافة مندوب جديد</h2>
+                    <form id="delegateForm" onsubmit="handleAddDelegate(event)" class="flex flex-col sm:flex-row gap-4 items-end">
+                        <div class="flex-grow">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم المندوب <span class="text-red-500">*</span></label>
+                            <input type="text" id="delName" required placeholder="أدخل اسم المندوب" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                        </div>
+                        <div class="flex-grow">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب <span class="text-red-500">*</span></label>
+                            <input type="text" id="delCode" required placeholder="أدخل كود أو رقم المندوب" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                        </div>
+                        <button type="submit" class="bg-primary hover:bg-blue-900 text-white px-8 py-2 rounded-lg font-bold transition shadow-md whitespace-nowrap">
+                            <i class="fa-solid fa-save ml-2"></i>حفظ
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-200">
+                        <h3 class="font-bold text-gray-800">قائمة المناديب المسجلين</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3 border-b">الكود</th>
+                                    <th class="p-3 border-b">اسم المندوب</th>
+                                </tr>
+                            </thead>
+                            <tbody id="delegatesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== BRANCHES TAB (الفروع) ==================== -->
+        <section id="branchesTab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-plus ml-2 text-secondary"></i>إضافة فرع جديد</h2>
+                    <form id="branchForm" onsubmit="handleAddBranch(event)" class="flex flex-col sm:flex-row gap-4 items-end">
+                        <div class="flex-grow">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم الفرع <span class="text-red-500">*</span></label>
+                            <input type="text" id="branchName" required placeholder="أدخل اسم الفرع (مثال: فرع الرياض)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                        </div>
+                        <button type="submit" class="bg-primary hover:bg-blue-900 text-white px-8 py-2 rounded-lg font-bold transition shadow-md whitespace-nowrap">
+                            <i class="fa-solid fa-save ml-2"></i>حفظ
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-200">
+                        <h3 class="font-bold text-gray-800">قائمة الفروع المسجلة</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3 border-b">م</th>
+                                    <th class="p-3 border-b">اسم الفرع</th>
+                                </tr>
+                            </thead>
+                            <tbody id="branchesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== REPORTS TAB (التقارير) ==================== -->
+        <section id="reportsTab" class="tab-content">
+            <!-- Reports Filter -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-filter ml-2 text-secondary"></i>تصفية التقارير</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">من تاريخ</label>
+                        <input type="date" id="repFromDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">إلى تاريخ</label>
+                        <input type="date" id="repToDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب (اختياري)</label>
+                        <input type="text" id="repDelCode" placeholder="أدخل الكود للبحث" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                    </div>
+                    <button onclick="generateReport()" class="bg-secondary hover:bg-blue-600 text-white px-8 py-2 rounded-lg font-bold transition shadow-md w-full h-10 flex justify-center items-center">
+                        <i class="fa-solid fa-search ml-2"></i>عرض التقرير
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reports Dashboard -->
+            <div class="grid grid-cols-1 mb-8">
+                <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl shadow-lg p-8 text-white flex flex-col justify-center items-center relative overflow-hidden">
+                    <i class="fa-solid fa-chart-pie absolute -right-4 -bottom-4 text-8xl opacity-20"></i>
+                    <h3 class="text-xl font-semibold mb-2 z-10">إجمالي الحركات (للفترة المحددة)</h3>
+                    <div class="text-6xl font-bold z-10" id="reportTotalClicks">0</div>
+                    <p id="reportSubText" class="text-sm mt-2 text-emerald-100 z-10">يرجى الضغط على عرض التقرير</p>
+                </div>
+            </div>
+
+            <!-- Loading indicator for Reports -->
+            <div id="reportLoading" class="text-center text-gray-500 py-8 hidden">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-2 text-secondary"></i><br>جاري جلب البيانات من القاعدة...
+            </div>
+
+            <!-- Reports Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="reportTableContainer">
+                <div class="p-4 bg-gray-50 border-b border-gray-200">
+                    <h3 class="font-bold text-gray-800"><i class="fa-solid fa-list ml-2 text-secondary"></i>تفاصيل الحركات</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-3 border-b">م</th>
+                                <th class="p-3 border-b">التاريخ</th>
+                                <th class="p-3 border-b">الوقت</th>
+                                <th class="p-3 border-b">كود المندوب</th>
+                                <th class="p-3 border-b">اسم المندوب</th>
+                                <th class="p-3 border-b">الفرع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <tr><td colspan="6" class="p-4 text-center text-gray-500">حدد التاريخ واضغط عرض التقرير</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Configuration ---
+        const DB_URL = 'https://story-64520-default-rtdb.firebaseio.com/';
+        
+        // --- State ---
+        let delegates = {};
+        let branches = {};
+        let currentRecords = {};
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            // Set today's date in main tab
+            document.getElementById('recordDate').value = today;
+            // Set today's date in reports tab
+            document.getElementById('repFromDate').value = today;
+            document.getElementById('repToDate').value = today;
+            
+            // Load initial data
+            loadAllData();
+        });
+
+        // --- UI Functions ---
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Reset button styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
+                btn.classList.add('hover:bg-white/20', 'text-white');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Highlight selected button
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('hover:bg-white/20', 'text-white');
+            activeBtn.classList.add('bg-white', 'text-primary', 'shadow-sm');
         }
 
-        @media print {
-            @page { size: 80mm auto; margin: 0; }
-            body * { visibility: hidden; }
-            #thermalArea, #thermalArea * { visibility: visible; }
-            #thermalArea {
-                display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 80mm;
-                padding: 3mm;
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = '';
+            if(type === 'success') icon = '<i class="fa-solid fa-circle-check"></i>';
+            else if(type === 'error') icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+            else if(type === 'warning') icon = '<i class="fa-solid fa-triangle-exclamation"></i>';
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+
+            // Remove element after animation
+            setTimeout(() => {
+                if(toast.parentElement) toast.remove();
+            }, 3500);
+        }
+
+        // --- Database Operations (REST API) ---
+        async function loadAllData() {
+            try {
+                document.getElementById('loadingBranches').classList.remove('hidden');
+                document.getElementById('branchButtonsGrid').innerHTML = '';
+
+                const [delRes, braRes] = await Promise.all([
+                    fetch(`${DB_URL}delegates.json`),
+                    fetch(`${DB_URL}branches.json`)
+                ]);
+
+                delegates = await delRes.json() || {};
+                branches = await braRes.json() || {};
+
+                updateDelegatesUI();
+                updateBranchesUI();
+                loadRecords(); // Load records for today
+
+                document.getElementById('loadingBranches').classList.add('hidden');
+            } catch (error) {
+                console.error("Error loading data:", error);
+                showToast("حدث خطأ أثناء تحميل البيانات من قاعدة البيانات", "error");
+                document.getElementById('loadingBranches').classList.add('hidden');
             }
         }
 
-        .checkbox-custom { width: 20px; height: 20px; cursor: pointer; accent-color: #2563eb; }
-        .selected-row { background-color: #eff6ff !important; border-right: 4px solid #2563eb; }
-    </style>
-</head>
-<body class="p-4 md:p-6 pb-32">
+        // --- Delegates Logic ---
+        async function handleAddDelegate(e) {
+            e.preventDefault();
+            const name = document.getElementById('delName').value.trim();
+            const code = document.getElementById('delCode').value.trim();
 
-    <div class="max-w-7xl mx-auto no-print">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-black text-slate-800">إدارة الخزينة v1.6</h1>
-                <p class="text-slate-500 font-bold text-xs uppercase">نظام مراجعة البيانات والتقارير المجمعة</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="fetchData()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black shadow-lg transition-all active:scale-95">
-                    🔄 تحديث البيانات
-                </button>
-            </div>
-        </header>
+            if(!name || !code) return showToast("يرجى إدخال الاسم والكود", "warning");
 
-        <!-- كروت الإحصائيات -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border-r-8 border-blue-600">
-                <span class="text-slate-400 text-[10px] font-black uppercase">إجمالي الكاش</span>
-                <h2 id="stCash" class="text-2xl font-black text-slate-800 mt-1">0</h2>
-            </div>
-            <div class="bg-white p-5 rounded-3xl shadow-sm border-r-8 border-emerald-500">
-                <span class="text-slate-400 text-[10px] font-black uppercase">انستا باي</span>
-                <div class="flex justify-between items-center mt-1">
-                    <h2 id="stInsta" class="text-2xl font-black text-slate-800">0</h2>
-                    <span id="stInstaCount" class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-black">0</span>
-                </div>
-            </div>
-            <div class="bg-white p-5 rounded-3xl shadow-sm border-r-8 border-orange-500">
-                <span class="text-slate-400 text-[10px] font-black uppercase">فيزا مبيعات</span>
-                <div class="flex justify-between items-center mt-1">
-                    <h2 id="stVisa" class="text-2xl font-black text-slate-800">0</h2>
-                    <span id="stVisaCount" class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-black">0</span>
-                </div>
-            </div>
-            <div class="bg-white p-5 rounded-3xl shadow-sm border-r-8 border-purple-500">
-                <span class="text-slate-400 text-[10px] font-black uppercase">المحافظ</span>
-                <div class="flex justify-between items-center mt-1">
-                    <h2 id="stWallet" class="text-2xl font-black text-slate-800">0</h2>
-                    <span id="stWalletCount" class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-black">0</span>
-                </div>
-            </div>
-        </div>
+            const newDelegate = { name, code, timestamp: Date.now() };
 
-        <!-- فلاتر البحث -->
-        <div class="bg-white p-6 rounded-3xl shadow-sm mb-6 flex flex-wrap gap-4 items-end border border-slate-100">
-            <div class="flex-1 min-w-[150px]">
-                <label class="block text-[10px] font-black text-slate-500 mb-1">الفرع</label>
-                <select id="fBranch" class="w-full bg-slate-50 border-2 border-slate-100 p-2.5 rounded-2xl outline-none font-bold focus:border-blue-500 transition-all">
-                    <option value="">جميع الفروع</option>
-                </select>
-            </div>
-            <div class="flex-1 min-w-[150px]">
-                <label class="block text-[10px] font-black text-slate-500 mb-1">التاريخ</label>
-                <input type="date" id="fDate" class="w-full bg-slate-50 border-2 border-slate-100 p-2.5 rounded-2xl outline-none font-bold">
-            </div>
-            <div class="w-32">
-                <label class="block text-[10px] font-black text-slate-500 mb-1">رقم الدرج</label>
-                <input type="number" id="fDrawer" placeholder="الدرج" class="w-full bg-slate-50 border-2 border-slate-100 p-2.5 rounded-2xl outline-none font-bold">
-            </div>
-            <button onclick="fetchData()" class="bg-slate-900 text-white px-10 py-3.5 rounded-2xl font-black hover:bg-black transition-all shadow-xl">بحث</button>
-        </div>
+            try {
+                const res = await fetch(`${DB_URL}delegates.json`, {
+                    method: 'POST',
+                    body: JSON.stringify(newDelegate)
+                });
+                
+                if (res.ok) {
+                    const data = await res.json(); 
+                    delegates[data.name] = newDelegate;
+                    updateDelegatesUI();
+                    document.getElementById('delegateForm').reset();
+                    showToast("تمت إضافة المندوب بنجاح");
+                } else {
+                    throw new Error("Failed to save");
+                }
+            } catch (error) {
+                showToast("خطأ في حفظ المندوب", "error");
+            }
+        }
 
-        <!-- الجدول الرئيسي -->
-        <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 mb-6">
-            <div class="overflow-x-auto">
-                <table class="w-full text-right">
-                    <thead class="bg-slate-50 text-slate-400 text-[10px] font-black border-b border-slate-100">
-                        <tr>
-                            <th class="p-5 text-center"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="checkbox-custom"></th>
-                            <th class="p-5">رقم الدرج</th>
-                            <th class="p-5">الفرع</th>
-                            <th class="p-5">التاريخ</th>
-                            <th class="p-5">النقدي</th>
-                            <th class="p-5">الإجمالي</th>
-                            <th class="p-5">الفرق-/+ </th>
-                            <th class="p-5 text-center">إجراء</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mainTableBody" class="divide-y divide-slate-50 font-bold text-slate-700"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- تفاصيل السجل المختارة -->
-        <div id="detailsPanel" class="hidden bg-white p-8 rounded-3xl shadow-xl border-2 border-blue-100 mb-10 transition-all">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-blue-900">المعاينة التفصيلية</h3>
-                <button onclick="closeDetails()" class="text-slate-400 hover:text-red-500 font-bold">إغلاق ✖</button>
-            </div>
-            <div id="detailsContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </div>
-    </div>
-
-    <!-- الإجراءات المجمعة -->
-    <div id="bulkActions" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-4 rounded-3xl shadow-2xl flex items-center gap-6">
-        <span id="selectedCount" class="text-sm font-black text-blue-400 px-4">0 مختارة</span>
-        <button onclick="generateDailyReport()" class="bg-blue-600 px-6 py-2 rounded-xl text-xs font-black hover:bg-blue-500 transition-colors">🖨️ طباعة تقرير مجمع</button>
-    </div>
-
-    <!-- منطقة الطباعة (مخفية) -->
-    <div id="thermalArea"></div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script>
-    const firebaseConfig = { databaseURL: "https://sample-firebase-ai-app-e4260-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    
-    const logoUrl = "https://lh3.googleusercontent.com/pw/AP1GczOHV-3gVfsqN_Y3nGe3v3khgZh8jnMiyzrIg6KECReqrTpnHFK4Adt-_QMyqjcqzy4a2XuXO-sHdgygcqRXcBg0jRmhi4K82oIia841B8vVLescBEqAtn2sZrGf5UO8AqKouvByzQKvoXET4XtjA7-t=w2499-h2499-s-no-gm?authuser=0";
-    const logoPreload = new Image(); logoPreload.src = logoUrl;
-
-    let fetchedRecords = [];
-
-    window.onload = () => { loadBranches(); fetchData(); };
-
-    function loadBranches() {
-        db.ref("branches").once("value", s => {
-            const sel = document.getElementById("fBranch");
-            s.forEach(c => sel.innerHTML += `<option value="${c.key}">${c.val().name}</option>`);
-        });
-    }
-
-    function sum(arr) {
-        if(!arr || !Array.isArray(arr)) return 0;
-        return arr.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-    }
-
-    function fetchData() {
-        const body = document.getElementById("mainTableBody");
-        const bF = document.getElementById("fBranch").value;
-        const dF = document.getElementById("fDate").value;
-        const drF = document.getElementById("fDrawer").value;
-        body.innerHTML = `<tr><td colspan="8" class="p-10 text-center text-slate-300 font-bold">جاري المزامنة...</td></tr>`;
-
-        db.ref("treasury").once("value", s => {
-            body.innerHTML = ""; fetchedRecords = [];
-            s.forEach(c => {
-                const item = c.val(); item.key = c.key;
-                if (bF && item.branchKey !== bF) return;
-                if (dF && item.date !== dF) return;
-                if (drF && item.drawer != drF) return;
-                fetchedRecords.push(item);
-            });
-            fetchedRecords.sort((x, y) => y.timestamp - x.timestamp);
-
-            let tC=0, tI=0, cI=0, tW=0, cW=0, tV=0, cV=0;
-            fetchedRecords.forEach(item => {
-                const iS=sum(item.insta), iC=(item.insta||[]).length;
-                const wS=sum(item.wallet), wC=(item.wallet||[]).length;
-                const vS=sum(item.visa), vC=item.visa ? item.visa.reduce((a,b)=>a+(+b.count||0),0) : 0;
-                tC+=(+item.cash||0); tI+=iS; cI+=iC; tW+=wS; cW+=wC; tV+=vS; cV+=vC;
-
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-blue-50 transition-all cursor-pointer";
-                tr.onclick = (e) => { if(!e.target.classList.contains('row-check') && e.target.tagName !== 'BUTTON') showDetails(item, tr); };
-                tr.innerHTML = `
-                    <td class="p-5 text-center"><input type="checkbox" value="${item.key}" onchange="updateSelectedCount()" class="row-check checkbox-custom"></td>
-                    <td class="p-5">${item.drawer}</td>
-                    <td class="p-5 text-slate-400">${item.branchName}</td>
-                    <td class="p-5 text-[11px]">${item.date}</td>
-                    <td class="p-5 text-blue-600">${item.cash}</td>
-                    <td class="p-5">${item.total}</td>
-                    <td class="p-5 ${+item.diff < 0 ? 'text-red-500' : 'text-green-500'}">${item.diff}</td>
-                    <td class="p-5 text-center"><button onclick='printSingle(${JSON.stringify(item)})' class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-xl text-xs font-black">طبع</button></td>
-                `;
-                body.appendChild(tr);
-            });
-            document.getElementById("stCash").innerText = tC.toLocaleString();
-            document.getElementById("stInsta").innerText = tI.toLocaleString();
-            document.getElementById("stInstaCount").innerText = cI;
-            document.getElementById("stWallet").innerText = tW.toLocaleString();
-            document.getElementById("stWalletCount").innerText = cW;
-            document.getElementById("stVisa").innerText = tV.toLocaleString();
-            document.getElementById("stVisaCount").innerText = cV;
-        });
-    }
-
-    function showDetails(item, row) {
-        const panel = document.getElementById("detailsPanel");
-        const content = document.getElementById("detailsContent");
-        document.querySelectorAll("#mainTableBody tr").forEach(tr => tr.classList.remove('selected-row'));
-        row.classList.add('selected-row');
-        panel.classList.remove("hidden");
-        content.innerHTML = `
-            ${renderSubTableHTML("الفيزا", item.visa, 'visa')}
-            ${renderSubTableHTML("انستا باي", item.insta, 'trans')}
-            ${renderSubTableHTML("المحافظ", item.wallet, 'trans')}
-            ${renderSubTableHTML("المشتريات", item.purchases, 'exp')}
-            ${renderSubTableHTML("المصروفات", item.expenses, 'exp')}
-        `;
-        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function closeDetails() {
-        document.getElementById("detailsPanel").classList.add("hidden");
-        document.querySelectorAll("#mainTableBody tr").forEach(tr => tr.classList.remove('selected-row'));
-    }
-
-    function renderSubTableHTML(title, arr, type) {
-        if(!arr || arr.length === 0) return `<div class="bg-slate-50 p-4 rounded-2xl text-center text-slate-400 font-bold">${title}: لا يوجد</div>`;
-        let h = `<div class="bg-white border rounded-2xl overflow-hidden shadow-sm">
-            <div class="bg-slate-800 text-white p-2 text-[10px] font-black text-center">${title}</div>
-            <table class="w-full text-[11px] text-right"><thead><tr class="bg-slate-50 border-b">`;
-        
-        if(type==='visa') h += `<th>باتش</th><th>مبلغ</th><th>ع</th>`;
-        else if(type==='trans') h += `<th>مبلغ</th><th>الرقم</th><th>صاحب الرقم</th>`;
-        else h += `<th>مبلغ</th><th>البيان</th><th>المستلم</th>`;
-        
-        h += `</tr></thead><tbody>`;
-        arr.forEach(x => {
-            h += `<tr class="border-b">`;
-            if(type==='visa') h += `<td>${x.batch}</td><td>${x.amount}</td><td>${x.count}</td>`;
-            else if(type==='trans') h += `<td>${x.amount}</td><td>${x.mobile||''}</td><td>${x.name||''}</td>`;
-            else h += `<td>${x.amount}</td><td>${x.note||''}</td><td>${x.user||''}</td>`;
-            h += `</tr>`;
-        });
-        
-        let totalVal = sum(arr);
-        h += `<tr class="bg-blue-50 font-black"><td>الإجمالي</td><td colspan="2" class="text-left">${totalVal}</td></tr>`;
-        
-        h += `</tbody></table></div>`;
-        return h;
-    }
-
-    function toggleSelectAll(master) {
-        document.querySelectorAll(".row-check").forEach(c => c.checked = master.checked);
-        updateSelectedCount();
-    }
-
-    function updateSelectedCount() {
-        const count = document.querySelectorAll(".row-check:checked").length;
-        const bulk = document.getElementById("bulkActions");
-        if(count > 0) { bulk.classList.remove("hidden"); document.getElementById("selectedCount").innerText = `${count} ورديات مختارة`; }
-        else { bulk.classList.add("hidden"); }
-    }
-
-    function generateDailyReport() {
-        const selectedKeys = Array.from(document.querySelectorAll(".row-check:checked")).map(c => c.value);
-        const selectedData = fetchedRecords.filter(r => selectedKeys.includes(r.key));
-        if(selectedData.length === 0) return;
-
-        let agg = {
-            cash: 0, actual: 0, total: 0, diff: 0,
-            insta: [], wallet: [], visa: [], purchases: [], expenses: [],
-            branchNames: new Set(), date: selectedData[0].date, day: selectedData[0].day
-        };
-        selectedData.forEach(d => {
-            agg.cash += (+d.cash||0); agg.actual += (+d.actual||0);
-            agg.total += (+d.total||0); agg.diff += (+d.diff||0);
-            if(d.insta) agg.insta.push(...d.insta);
-            if(d.wallet) agg.wallet.push(...d.wallet);
-            if(d.visa) agg.visa.push(...d.visa);
-            if(d.purchases) agg.purchases.push(...d.purchases);
-            if(d.expenses) agg.expenses.push(...d.expenses);
-            agg.branchNames.add(d.branchName);
-        });
-        printThermal(agg, true);
-    }
-
-    function printSingle(d) { printThermal(d, false); }
-
-    function printThermal(d, isAgg) {
-        const area = document.getElementById("thermalArea");
-        const branchTitle = isAgg ? Array.from(d.branchNames).join(" + ") : d.branchName;
-        
-        area.innerHTML = `
-            <div class="print-header">
-                <img src="${logoUrl}" class="header-logo-img">
-                <div class="header-text-side">
-                    <h2 class="header-branch-name">${branchTitle}</h2>
-                    <div style="font-size:10px; font-weight:bold;">تقرير ${isAgg ? 'يومي مجمع' : 'تسليم درج'}</div>
-                </div>
-            </div>
-
-            <!-- تم تعديل هذا السطر ليشمل اليوم بجانب التاريخ والدرج -->
-            <table class="receipt-table" style="margin-bottom:8px; border:none;">
-                <tr style="border:none;">
-                    <td style="border:1.5px solid #000;">اليوم: ${d.day || '---'}</td>
-                    <td style="border:1.5px solid #000;">التاريخ: ${d.date}</td>
-                    <td style="border:1.5px solid #000;">الدرج: ${isAgg ? 'مجمع' : `${d.drawer}`}</td>
-                </tr>
-            </table>
-
-            <table class="receipt-table" style="font-size:14px;">
-                <tr style="background:#eee"><th>البيان</th><th>القيمة</th></tr>
-                <tr><td>إجمالي الكاش</td><td>${d.cash}</td></tr>
-                <tr><td>انستا باي</td><td>${sum(d.insta)}</td></tr>
-                <tr><td>محافظ</td><td>${sum(d.wallet)}</td></tr>
-                <tr><td>مبيعات فيزا</td><td>${sum(d.visa)}</td></tr>
-                <tr><td>إجمالي الحساب</td><td>${d.total}</td></tr>
-                <tr style="background:#f0f0f0; font-size:17px;"><td>مبلغ pos</td><td>${d.actual}</td></tr>
-                <tr style="color:${+d.diff < 0 ? 'red' : 'green'}"><td>الفرق-/+ </td><td>${d.diff}</td></tr>
-            </table>
-
-            ${renderSubTablePrint("تفاصيل انستا باي", d.insta, 'trans')}
-            ${renderSubTablePrint("تفاصيل المحافظ", d.wallet, 'trans')}
-            ${renderSubTablePrint("تفاصيل المشتريات", d.purchases, 'exp')}
-            ${renderSubTablePrint("تفاصيل المصروفات", d.expenses, 'exp')}
-            ${renderSubTablePrint("تفاصيل الفيزا", d.visa, 'visa')}
-
-            <div style="display:flex; justify-content:space-between; margin-top:15px; border-top:1.5px solid #000; padding-top:8px; font-size:10px; font-weight:bold;">
-                <div>المسؤول: ${d.drawerManager || '_______'}</div>
-                <div>المراجع: ${d.reviewer || '_______'}</div>
-            </div>
+        function updateDelegatesUI() {
+            const tableBody = document.getElementById('delegatesTableBody');
+            const selectDropdown = document.getElementById('recordDelegate');
             
-            <div style="text-align:center; font-size:9px; margin-top:10px; border-top:1px dashed #ccc; padding-top:4px;">
-                النظام الموحد - ${new Date().toLocaleString('ar-EG')}
-            </div>
-        `;
-        setTimeout(() => { window.print(); }, 300);
-    }
+            tableBody.innerHTML = '';
+            
+            // Keep the first option in select
+            selectDropdown.innerHTML = '<option value="">-- يرجى اختيار مندوب --</option>';
 
-    function renderSubTablePrint(title, arr, type) {
-        if(!arr || arr.length === 0) return "";
-        let h = `<div style="text-align:center; font-weight:900; margin-top:8px; border-top:1px dashed #000; padding-top:2px; font-size:10px;">-- ${title} --</div>`;
-        h += `<table class="receipt-table"><thead><tr>`;
-        
-        if(type==='visa') h += `<th>باتش</th><th>قيمة</th><th>ع</th>`;
-        else if(type==='trans') h += `<th>مبلغ</th><th>الرقم</th><th>الاسم</th>`;
-        else h += `<th>مبلغ</th><th>البيان</th><th>المستلم</th>`;
-        
-        h += `</tr></thead><tbody>`;
-        arr.forEach(x => {
-            h += `<tr>`;
-            if(type==='visa') h += `<td>${x.batch}</td><td>${x.amount}</td><td>${x.count}</td>`;
-            else if(type==='trans') h += `<td>${x.amount}</td><td>${x.mobile||''}</td><td>${x.name||''}</td>`;
-            else h += `<td>${x.amount}</td><td>${x.note||''}</td><td>${x.user||''}</td>`;
-            h += `</tr>`;
-        });
-        
-        let totalVal = sum(arr);
-        h += `<tr style="background:#eee"><td>إجمالي</td><td colspan="2">${totalVal}</td></tr>`;
-        
-        h += `</tbody></table>`;
-        return h;
-    }
-</script>
+            const sortedKeys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
+
+            if(sortedKeys.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-gray-500">لا يوجد مناديب مسجلين</td></tr>';
+                return;
+            }
+
+            sortedKeys.forEach(key => {
+                const del = delegates[key];
+                
+                // Add to table
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 border-b";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-secondary">${del.code}</td>
+                    <td class="p-3">${del.name}</td>
+                `;
+                tableBody.appendChild(tr);
+
+                // Add to dropdown
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = `${del.name} (${del.code})`;
+                selectDropdown.appendChild(option);
+            });
+        }
+
+        // --- Branches Logic ---
+        async function handleAddBranch(e) {
+            e.preventDefault();
+            const name = document.getElementById('branchName').value.trim();
+
+            if(!name) return showToast("يرجى إدخال اسم الفرع", "warning");
+
+            const newBranch = { name, timestamp: Date.now() };
+
+            try {
+                const res = await fetch(`${DB_URL}branches.json`, {
+                    method: 'POST',
+                    body: JSON.stringify(newBranch)
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    branches[data.name] = newBranch;
+                    updateBranchesUI();
+                    document.getElementById('branchForm').reset();
+                    showToast("تمت إضافة الفرع بنجاح");
+                } else {
+                    throw new Error("Failed to save");
+                }
+            } catch (error) {
+                showToast("خطأ في حفظ الفرع", "error");
+            }
+        }
+
+        function updateBranchesUI() {
+            const tableBody = document.getElementById('branchesTableBody');
+            const grid = document.getElementById('branchButtonsGrid');
+            const emptyMsg = document.getElementById('emptyBranchesMsg');
+            
+            tableBody.innerHTML = '';
+            grid.innerHTML = '';
+
+            const sortedKeys = Object.keys(branches).sort((a,b) => branches[b].timestamp - branches[a].timestamp);
+
+            if(sortedKeys.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-gray-500">لا توجد فروع مسجلة</td></tr>';
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+
+            emptyMsg.classList.add('hidden');
+
+            sortedKeys.forEach((key, index) => {
+                const branch = branches[key];
+                
+                // Add to table
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 border-b";
+                tr.innerHTML = `
+                    <td class="p-3">${index + 1}</td>
+                    <td class="p-3 font-bold text-gray-700">${branch.name}</td>
+                `;
+                tableBody.appendChild(tr);
+
+                // Add Button to Grid
+                const btn = document.createElement('button');
+                btn.className = "bg-white border-2 border-secondary text-secondary hover:bg-secondary hover:text-white font-bold py-4 px-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 transform active:scale-95";
+                btn.innerHTML = `<i class="fa-solid fa-shop text-xl"></i><span>${branch.name}</span>`;
+                btn.onclick = () => recordBranchClick(key, branch.name);
+                grid.appendChild(btn);
+            });
+        }
+
+        // --- Main Operations Logic ---
+        async function recordBranchClick(branchId, branchName) {
+            const dateStr = document.getElementById('recordDate').value;
+            const delegateId = document.getElementById('recordDelegate').value;
+
+            if(!dateStr) return showToast("يرجى تحديد التاريخ أولاً", "warning");
+            if(!delegateId) return showToast("يرجى اختيار المندوب أولاً", "warning");
+
+            const delegate = delegates[delegateId];
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
+            
+            const formattedDate = dateStr; // YYYY-MM-DD format
+
+            const recordData = {
+                branchId,
+                branchName,
+                delegateId,
+                delegateName: delegate.name,
+                delegateCode: delegate.code,
+                time: timeString,
+                timestamp: Date.now()
+            };
+
+            // Optimistic UI update
+            const tempId = 'temp_' + Date.now();
+            if(!currentRecords[formattedDate]) currentRecords[formattedDate] = {};
+            currentRecords[formattedDate][tempId] = recordData;
+            renderRecordsTable(formattedDate);
+            
+            try {
+                const res = await fetch(`${DB_URL}records/${formattedDate}.json`, {
+                    method: 'POST',
+                    body: JSON.stringify(recordData)
+                });
+
+                if(!res.ok) throw new Error("Network response was not ok");
+                
+                const dbRes = await res.json();
+                delete currentRecords[formattedDate][tempId];
+                currentRecords[formattedDate][dbRes.name] = recordData;
+                
+                showToast(`تم تسجيل زيارة فرع ${branchName}`);
+                
+            } catch (error) {
+                console.error("Save error", error);
+                delete currentRecords[formattedDate][tempId];
+                renderRecordsTable(formattedDate);
+                showToast("حدث خطأ أثناء حفظ السجل. يرجى التحقق من الاتصال", "error");
+            }
+        }
+
+        async function loadRecords() {
+            const dateStr = document.getElementById('recordDate').value;
+            if(!dateStr) return;
+            
+            const formattedDate = dateStr;
+            
+            try {
+                const res = await fetch(`${DB_URL}records/${formattedDate}.json`);
+                currentRecords[formattedDate] = await res.json() || {};
+                renderRecordsTable(formattedDate);
+            } catch (error) {
+                console.error("Error loading records:", error);
+                showToast("تعذر تحميل السجلات لهذا اليوم", "error");
+            }
+        }
+
+        function renderRecordsTable(dateKey) {
+            const tableBody = document.getElementById('recordsTableBody');
+            const counterEl = document.getElementById('totalClicksCounter');
+            tableBody.innerHTML = '';
+
+            const dayRecords = currentRecords[dateKey] || {};
+            const recordKeys = Object.keys(dayRecords).sort((a,b) => dayRecords[b].timestamp - dayRecords[a].timestamp);
+
+            counterEl.textContent = recordKeys.length;
+            
+            counterEl.classList.remove('animate-pulse');
+            void counterEl.offsetWidth; 
+            counterEl.classList.add('animate-pulse');
+
+            if(recordKeys.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">لا توجد حركات مسجلة لهذا اليوم</td></tr>';
+                return;
+            }
+
+            recordKeys.forEach((key, index) => {
+                const rec = dayRecords[key];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50 border-b transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3">${index + 1}</td>
+                    <td class="p-3 font-semibold text-gray-600" dir="ltr">${rec.time}</td>
+                    <td class="p-3"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2">${rec.delegateCode}</span> ${rec.delegateName}</td>
+                    <td class="p-3 font-bold text-primary">${rec.branchName}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // --- Reports Logic ---
+        function getDatesBetween(startDateStr, endDateStr) {
+            const dates = [];
+            // Parse parts to avoid timezone shifting
+            const startParts = startDateStr.split('-');
+            const endParts = endDateStr.split('-');
+            
+            let currentDate = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+            const endDate = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+            
+            while (currentDate <= endDate) {
+                // format back to YYYY-MM-DD safely
+                const y = currentDate.getFullYear();
+                const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const d = String(currentDate.getDate()).padStart(2, '0');
+                dates.push(`${y}-${m}-${d}`);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return dates;
+        }
+
+        async function generateReport() {
+            const fromDateStr = document.getElementById('repFromDate').value;
+            const toDateStr = document.getElementById('repToDate').value;
+            const delCode = document.getElementById('repDelCode').value.trim();
+
+            if (!fromDateStr || !toDateStr) return showToast('يرجى تحديد فترة التقرير', 'warning');
+
+            const datesToFetch = getDatesBetween(fromDateStr, toDateStr);
+            
+            if (datesToFetch.length === 0) {
+                return showToast('تاريخ البداية يجب أن يكون قبل أو يساوي تاريخ النهاية', 'error');
+            }
+
+            document.getElementById('reportLoading').classList.remove('hidden');
+            document.getElementById('reportTableBody').innerHTML = '';
+            
+            let allReportRecords = [];
+
+            try {
+                // Fetch all dates in the range concurrently
+                const fetchPromises = datesToFetch.map(date => 
+                    fetch(`${DB_URL}records/${date}.json`).then(r => r.json()).then(data => ({date, data}))
+                );
+                
+                const results = await Promise.all(fetchPromises);
+
+                results.forEach(res => {
+                    if (res.data) {
+                        Object.keys(res.data).forEach(key => {
+                            const record = res.data[key];
+                            // Apply Delegate Code Filter if provided
+                            if (!delCode || record.delegateCode === delCode) {
+                                allReportRecords.push({
+                                    ...record,
+                                    recordDate: res.date
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // Sort newest first
+                allReportRecords.sort((a, b) => b.timestamp - a.timestamp);
+                
+                renderReportTable(allReportRecords, fromDateStr, toDateStr, delCode);
+
+            } catch (error) {
+                console.error("Error generating report:", error);
+                showToast("حدث خطأ أثناء جلب التقارير", "error");
+            } finally {
+                document.getElementById('reportLoading').classList.add('hidden');
+            }
+        }
+
+        function renderReportTable(records, fromD, toD, code) {
+            const tableBody = document.getElementById('reportTableBody');
+            const totalCounter = document.getElementById('reportTotalClicks');
+            const subText = document.getElementById('reportSubText');
+
+            totalCounter.textContent = records.length;
+            
+            // Animation
+            totalCounter.classList.remove('animate-bounce');
+            void totalCounter.offsetWidth;
+            totalCounter.classList.add('animate-bounce');
+            setTimeout(() => totalCounter.classList.remove('animate-bounce'), 1000);
+
+            let filterText = `الفترة من ${fromD} إلى ${toD}`;
+            if(code) filterText += ` | خاص بالمندوب (كود: ${code})`;
+            subText.textContent = filterText;
+
+            if(records.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500 text-lg">لا توجد حركات مطابقة للبحث في هذه الفترة</td></tr>';
+                return;
+            }
+
+            records.forEach((rec, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-emerald-50 border-b transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3">${index + 1}</td>
+                    <td class="p-3 font-semibold text-gray-700">${rec.recordDate}</td>
+                    <td class="p-3 text-gray-600" dir="ltr">${rec.time}</td>
+                    <td class="p-3 font-bold text-secondary">${rec.delegateCode}</td>
+                    <td class="p-3">${rec.delegateName}</td>
+                    <td class="p-3 font-bold text-teal-700">${rec.branchName}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    </script>
 </body>
 </html>
+
