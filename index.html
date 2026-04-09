@@ -16,14 +16,12 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Cairo', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Cairo', 'sans-serif'] },
                     colors: {
-                        primary: '#1e40af', // Blue 800
-                        secondary: '#3b82f6', // Blue 500
-                        accent: '#f59e0b', // Amber 500
-                        background: '#f3f4f6', // Gray 100
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#f59e0b',
+                        background: '#f8fafc'
                     }
                 }
             }
@@ -37,63 +35,23 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Toast Notification */
-        #toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .toast {
-            min-width: 250px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideUp 0.3s forwards, fadeOut 0.3s forwards 3s;
-            opacity: 0;
-        }
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 250px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; animation: slideUp 0.3s forwards; }
         .toast.success { background-color: #10b981; }
         .toast.error { background-color: #ef4444; }
-        .toast.warning { background-color: #f59e0b; }
-        
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; display: none; }
-        }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body class="text-gray-800 h-screen flex flex-col">
 
-    <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <!-- Header & Navigation -->
-    <header class="bg-primary text-white shadow-md">
+    <header class="bg-primary text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-scissors text-2xl text-accent"></i>
                 <h1 class="text-2xl font-bold tracking-wider">نظام مقصات</h1>
             </div>
-            
             <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg">
                 <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
                 <button onclick="switchTab('delegatesTab')" id="btn-delegatesTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-users ml-2"></i>المناديب</button>
@@ -103,58 +61,44 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow container mx-auto px-4 py-8 overflow-auto">
         
-        <!-- ==================== MAIN TAB (الرئيسية) ==================== -->
+        <!-- MAIN TAB -->
         <section id="mainTab" class="tab-content active">
-            
-            <!-- Top Controls & Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Selectors Card -->
                 <div class="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col sm:flex-row gap-4 items-end">
                     <div class="w-full">
                         <label class="block text-sm font-semibold text-gray-600 mb-2">تاريخ اليوم</label>
-                        <input type="date" id="recordDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition" onchange="loadRecords()">
+                        <input type="date" id="recordDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition" onchange="loadRecords()">
                     </div>
                     <div class="w-full">
                         <label class="block text-sm font-semibold text-gray-600 mb-2">اختر المندوب</label>
-                        <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition">
+                        <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
                             <option value="">-- يرجى اختيار مندوب --</option>
-                            <!-- Populated via JS -->
                         </select>
                     </div>
                 </div>
-                
-                <!-- Counter Card -->
                 <div class="col-span-1 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg p-6 text-white flex flex-col justify-center items-center relative overflow-hidden">
-                    <i class="fa-solid fa-chart-line absolute -left-4 -bottom-4 text-6xl opacity-20"></i>
-                    <h3 class="text-lg font-semibold mb-2 z-10">إجمالي الضغطات (لليوم)</h3>
+                    <i class="fa-solid fa-scissors absolute -left-4 -bottom-4 text-6xl opacity-20"></i>
+                    <h3 class="text-lg font-semibold mb-2 z-10">إجمالي مقصات اليوم</h3>
                     <div class="text-5xl font-bold z-10" id="totalClicksCounter">0</div>
                 </div>
             </div>
 
-            <!-- Branch Buttons Area -->
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>الفروع المتاحة (انقر للتسجيل)</h3>
-                
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>الفروع (مرتبة حسب الأكثر نشاطاً)</h3>
+                </div>
                 <div id="loadingBranches" class="text-center text-gray-500 py-8 hidden">
-                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><br>جاري تحميل الفروع...
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><br>جاري تحميل البيانات...
                 </div>
-                
-                <div id="branchButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <!-- Populated via JS -->
-                </div>
-                <div id="emptyBranchesMsg" class="text-center text-gray-500 py-4 hidden">
-                    لا توجد فروع مضافة. يرجى إضافة فروع من تبويب "الفروع".
-                </div>
+                <div id="branchButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                <div id="emptyBranchesMsg" class="text-center text-gray-500 py-4 hidden">لا توجد فروع مضافة.</div>
             </div>
 
-            <!-- Records Table -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-800"><i class="fa-solid fa-table-list ml-2 text-secondary"></i>سجل الحركات لليوم المحدد</h3>
-                    <button onclick="loadRecords()" class="text-sm text-secondary hover:text-primary transition"><i class="fa-solid fa-arrows-rotate ml-1"></i>تحديث</button>
+                    <h3 class="font-bold text-gray-800"><i class="fa-solid fa-table-list ml-2 text-secondary"></i>سجل مقصات اليوم</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right border-collapse">
@@ -166,592 +110,283 @@
                                 <th class="p-3 border-b">الفرع</th>
                             </tr>
                         </thead>
-                        <tbody id="recordsTableBody">
-                            <!-- Populated via JS -->
-                        </tbody>
+                        <tbody id="recordsTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== DELEGATES TAB (المناديب) ==================== -->
+        <!-- DELEGATES TAB -->
         <section id="delegatesTab" class="tab-content">
             <div class="max-w-4xl mx-auto">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
                     <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-user-plus ml-2 text-secondary"></i>إضافة مندوب جديد</h2>
                     <form id="delegateForm" onsubmit="handleAddDelegate(event)" class="flex flex-col sm:flex-row gap-4 items-end">
                         <div class="flex-grow">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم المندوب <span class="text-red-500">*</span></label>
-                            <input type="text" id="delName" required placeholder="أدخل اسم المندوب" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم المندوب</label>
+                            <input type="text" id="delName" required placeholder="الاسم الكامل" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
                         </div>
                         <div class="flex-grow">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب <span class="text-red-500">*</span></label>
-                            <input type="text" id="delCode" required placeholder="أدخل كود أو رقم المندوب" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب</label>
+                            <input type="text" id="delCode" required placeholder="الكود" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
                         </div>
-                        <button type="submit" class="bg-primary hover:bg-blue-900 text-white px-8 py-2 rounded-lg font-bold transition shadow-md whitespace-nowrap">
-                            <i class="fa-solid fa-save ml-2"></i>حفظ
-                        </button>
+                        <button type="submit" class="bg-primary text-white px-8 py-2 rounded-lg font-bold shadow-md">حفظ</button>
                     </form>
                 </div>
-
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 bg-gray-50 border-b border-gray-200">
-                        <h3 class="font-bold text-gray-800">قائمة المناديب المسجلين</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-600 text-sm">
-                                    <th class="p-3 border-b">الكود</th>
-                                    <th class="p-3 border-b">اسم المندوب</th>
-                                </tr>
-                            </thead>
-                            <tbody id="delegatesTableBody">
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="p-4 bg-gray-50 border-b border-gray-200"><h3 class="font-bold">قائمة المناديب</h3></div>
+                    <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">الكود</th><th class="p-3">الاسم</th></tr></thead><tbody id="delegatesTableBody"></tbody></table>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== BRANCHES TAB (الفروع) ==================== -->
+        <!-- BRANCHES TAB -->
         <section id="branchesTab" class="tab-content">
             <div class="max-w-4xl mx-auto">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
                     <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-plus ml-2 text-secondary"></i>إضافة فرع جديد</h2>
                     <form id="branchForm" onsubmit="handleAddBranch(event)" class="flex flex-col sm:flex-row gap-4 items-end">
                         <div class="flex-grow">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم الفرع <span class="text-red-500">*</span></label>
-                            <input type="text" id="branchName" required placeholder="أدخل اسم الفرع (مثال: فرع الرياض)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم الفرع</label>
+                            <input type="text" id="branchName" required placeholder="اسم الفرع" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
                         </div>
-                        <button type="submit" class="bg-primary hover:bg-blue-900 text-white px-8 py-2 rounded-lg font-bold transition shadow-md whitespace-nowrap">
-                            <i class="fa-solid fa-save ml-2"></i>حفظ
-                        </button>
+                        <button type="submit" class="bg-primary text-white px-8 py-2 rounded-lg font-bold shadow-md">حفظ</button>
                     </form>
                 </div>
-
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 bg-gray-50 border-b border-gray-200">
-                        <h3 class="font-bold text-gray-800">قائمة الفروع المسجلة</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-600 text-sm">
-                                    <th class="p-3 border-b">م</th>
-                                    <th class="p-3 border-b">اسم الفرع</th>
-                                </tr>
-                            </thead>
-                            <tbody id="branchesTableBody">
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="p-4 bg-gray-50 border-b border-gray-200"><h3 class="font-bold">قائمة الفروع (المضاف أولاً يظهر أولاً)</h3></div>
+                    <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">م</th><th class="p-3">اسم الفرع</th></tr></thead><tbody id="branchesTableBody"></tbody></table>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== REPORTS TAB (التقارير) ==================== -->
+        <!-- REPORTS TAB -->
         <section id="reportsTab" class="tab-content">
-            <!-- Reports Filter -->
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
                 <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-filter ml-2 text-secondary"></i>تصفية التقارير</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">من تاريخ</label>
-                        <input type="date" id="repFromDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">إلى تاريخ</label>
-                        <input type="date" id="repToDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب (اختياري)</label>
-                        <input type="text" id="repDelCode" placeholder="أدخل الكود للبحث" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
-                    </div>
-                    <button onclick="generateReport()" class="bg-secondary hover:bg-blue-600 text-white px-8 py-2 rounded-lg font-bold transition shadow-md w-full h-10 flex justify-center items-center">
-                        <i class="fa-solid fa-search ml-2"></i>عرض التقرير
-                    </button>
+                    <div><label class="block text-sm font-semibold text-gray-600 mb-2">من تاريخ</label><input type="date" id="repFromDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"></div>
+                    <div><label class="block text-sm font-semibold text-gray-600 mb-2">إلى تاريخ</label><input type="date" id="repToDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"></div>
+                    <div><label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب</label><input type="text" id="repDelCode" placeholder="اختياري" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"></div>
+                    <button onclick="generateReport()" class="bg-secondary text-white px-8 py-2 rounded-lg font-bold shadow-md">عرض التقرير</button>
                 </div>
             </div>
-
-            <!-- Reports Dashboard -->
-            <div class="grid grid-cols-1 mb-8">
-                <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl shadow-lg p-8 text-white flex flex-col justify-center items-center relative overflow-hidden">
-                    <i class="fa-solid fa-chart-pie absolute -right-4 -bottom-4 text-8xl opacity-20"></i>
-                    <h3 class="text-xl font-semibold mb-2 z-10">إجمالي الحركات (للفترة المحددة)</h3>
-                    <div class="text-6xl font-bold z-10" id="reportTotalClicks">0</div>
-                    <p id="reportSubText" class="text-sm mt-2 text-emerald-100 z-10">يرجى الضغط على عرض التقرير</p>
+            <div class="grid grid-cols-1 mb-8 text-center">
+                <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl shadow-lg p-8 text-white">
+                    <h3 class="text-xl font-semibold mb-2">إجمالي المقصات للفترة</h3>
+                    <div class="text-6xl font-bold" id="reportTotalClicks">0</div>
+                    <p id="reportSubText" class="text-sm mt-2 opacity-80">بانتظار البحث...</p>
                 </div>
             </div>
-
-            <!-- Loading indicator for Reports -->
-            <div id="reportLoading" class="text-center text-gray-500 py-8 hidden">
-                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-2 text-secondary"></i><br>جاري جلب البيانات من القاعدة...
-            </div>
-
-            <!-- Reports Table -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="reportTableContainer">
-                <div class="p-4 bg-gray-50 border-b border-gray-200">
-                    <h3 class="font-bold text-gray-800"><i class="fa-solid fa-list ml-2 text-secondary"></i>تفاصيل الحركات</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-600 text-sm">
-                                <th class="p-3 border-b">م</th>
-                                <th class="p-3 border-b">التاريخ</th>
-                                <th class="p-3 border-b">الوقت</th>
-                                <th class="p-3 border-b">كود المندوب</th>
-                                <th class="p-3 border-b">اسم المندوب</th>
-                                <th class="p-3 border-b">الفرع</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportTableBody">
-                            <tr><td colspan="6" class="p-4 text-center text-gray-500">حدد التاريخ واضغط عرض التقرير</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div id="reportLoading" class="text-center py-8 hidden"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-secondary"></i></div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b"><h3 class="font-bold">تفاصيل المقصات</h3></div>
+                <table class="w-full text-right border-collapse">
+                    <thead><tr class="bg-gray-100 text-sm"><th class="p-3">التاريخ</th><th class="p-3">الوقت</th><th class="p-3">الكود</th><th class="p-3">المندوب</th><th class="p-3">الفرع</th></tr></thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
             </div>
         </section>
-
     </main>
 
-    <!-- JavaScript Logic -->
     <script>
-        // --- Configuration ---
         const DB_URL = 'https://story-64520-default-rtdb.firebaseio.com/';
-        
-        // --- State ---
-        let delegates = {};
-        let branches = {};
-        let currentRecords = {};
+        let delegates = {}, branches = {}, currentRecords = {};
 
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
-            // Set today's date in main tab
             document.getElementById('recordDate').value = today;
-            // Set today's date in reports tab
             document.getElementById('repFromDate').value = today;
             document.getElementById('repToDate').value = today;
-            
-            // Load initial data
             loadAllData();
         });
 
-        // --- UI Functions ---
         function switchTab(tabId) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Reset button styles
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-                btn.classList.add('hover:bg-white/20', 'text-white');
-            });
-            
-            // Show selected tab
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.className = "nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white");
             document.getElementById(tabId).classList.add('active');
-            
-            // Highlight selected button
-            const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.remove('hover:bg-white/20', 'text-white');
-            activeBtn.classList.add('bg-white', 'text-primary', 'shadow-sm');
+            const btn = document.getElementById('btn-' + tabId);
+            btn.className = "nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm";
         }
 
-        function showToast(message, type = 'success') {
+        function showToast(msg, type = 'success') {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            let icon = '';
-            if(type === 'success') icon = '<i class="fa-solid fa-circle-check"></i>';
-            else if(type === 'error') icon = '<i class="fa-solid fa-circle-exclamation"></i>';
-            else if(type === 'warning') icon = '<i class="fa-solid fa-triangle-exclamation"></i>';
-
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            container.appendChild(toast);
-
-            // Remove element after animation
-            setTimeout(() => {
-                if(toast.parentElement) toast.remove();
-            }, 3500);
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${msg}</span>`;
+            container.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
 
-        // --- Database Operations (REST API) ---
         async function loadAllData() {
             try {
                 document.getElementById('loadingBranches').classList.remove('hidden');
-                document.getElementById('branchButtonsGrid').innerHTML = '';
-
                 const [delRes, braRes] = await Promise.all([
                     fetch(`${DB_URL}delegates.json`),
                     fetch(`${DB_URL}branches.json`)
                 ]);
-
                 delegates = await delRes.json() || {};
                 branches = await braRes.json() || {};
-
                 updateDelegatesUI();
                 updateBranchesUI();
-                loadRecords(); // Load records for today
-
+                await loadRecords();
                 document.getElementById('loadingBranches').classList.add('hidden');
-            } catch (error) {
-                console.error("Error loading data:", error);
-                showToast("حدث خطأ أثناء تحميل البيانات من قاعدة البيانات", "error");
-                document.getElementById('loadingBranches').classList.add('hidden');
-            }
-        }
-
-        // --- Delegates Logic ---
-        async function handleAddDelegate(e) {
-            e.preventDefault();
-            const name = document.getElementById('delName').value.trim();
-            const code = document.getElementById('delCode').value.trim();
-
-            if(!name || !code) return showToast("يرجى إدخال الاسم والكود", "warning");
-
-            const newDelegate = { name, code, timestamp: Date.now() };
-
-            try {
-                const res = await fetch(`${DB_URL}delegates.json`, {
-                    method: 'POST',
-                    body: JSON.stringify(newDelegate)
-                });
-                
-                if (res.ok) {
-                    const data = await res.json(); 
-                    delegates[data.name] = newDelegate;
-                    updateDelegatesUI();
-                    document.getElementById('delegateForm').reset();
-                    showToast("تمت إضافة المندوب بنجاح");
-                } else {
-                    throw new Error("Failed to save");
-                }
-            } catch (error) {
-                showToast("خطأ في حفظ المندوب", "error");
-            }
+            } catch (e) { showToast("خطأ في الاتصال", "error"); }
         }
 
         function updateDelegatesUI() {
-            const tableBody = document.getElementById('delegatesTableBody');
-            const selectDropdown = document.getElementById('recordDelegate');
-            
-            tableBody.innerHTML = '';
-            
-            // Keep the first option in select
-            selectDropdown.innerHTML = '<option value="">-- يرجى اختيار مندوب --</option>';
-
-            const sortedKeys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
-
-            if(sortedKeys.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-gray-500">لا يوجد مناديب مسجلين</td></tr>';
-                return;
-            }
-
-            sortedKeys.forEach(key => {
-                const del = delegates[key];
-                
-                // Add to table
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 border-b";
-                tr.innerHTML = `
-                    <td class="p-3 font-semibold text-secondary">${del.code}</td>
-                    <td class="p-3">${del.name}</td>
-                `;
-                tableBody.appendChild(tr);
-
-                // Add to dropdown
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = `${del.name} (${del.code})`;
-                selectDropdown.appendChild(option);
+            const tbody = document.getElementById('delegatesTableBody');
+            const select = document.getElementById('recordDelegate');
+            tbody.innerHTML = '';
+            select.innerHTML = '<option value="">-- يرجى اختيار مندوب --</option>';
+            const keys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
+            keys.forEach(k => {
+                const d = delegates[k];
+                tbody.innerHTML += `<tr class="border-b"><td class="p-3 text-secondary font-bold">${d.code}</td><td class="p-3">${d.name}</td></tr>`;
+                select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
             });
-        }
-
-        // --- Branches Logic ---
-        async function handleAddBranch(e) {
-            e.preventDefault();
-            const name = document.getElementById('branchName').value.trim();
-
-            if(!name) return showToast("يرجى إدخال اسم الفرع", "warning");
-
-            const newBranch = { name, timestamp: Date.now() };
-
-            try {
-                const res = await fetch(`${DB_URL}branches.json`, {
-                    method: 'POST',
-                    body: JSON.stringify(newBranch)
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    branches[data.name] = newBranch;
-                    updateBranchesUI();
-                    document.getElementById('branchForm').reset();
-                    showToast("تمت إضافة الفرع بنجاح");
-                } else {
-                    throw new Error("Failed to save");
-                }
-            } catch (error) {
-                showToast("خطأ في حفظ الفرع", "error");
-            }
         }
 
         function updateBranchesUI() {
-            const tableBody = document.getElementById('branchesTableBody');
-            const grid = document.getElementById('branchButtonsGrid');
-            const emptyMsg = document.getElementById('emptyBranchesMsg');
-            
-            tableBody.innerHTML = '';
-            grid.innerHTML = '';
-
-            const sortedKeys = Object.keys(branches).sort((a,b) => branches[b].timestamp - branches[a].timestamp);
-
-            if(sortedKeys.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-gray-500">لا توجد فروع مسجلة</td></tr>';
-                emptyMsg.classList.remove('hidden');
-                return;
-            }
-
-            emptyMsg.classList.add('hidden');
-
-            sortedKeys.forEach((key, index) => {
-                const branch = branches[key];
-                
-                // Add to table
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 border-b";
-                tr.innerHTML = `
-                    <td class="p-3">${index + 1}</td>
-                    <td class="p-3 font-bold text-gray-700">${branch.name}</td>
-                `;
-                tableBody.appendChild(tr);
-
-                // Add Button to Grid
-                const btn = document.createElement('button');
-                btn.className = "bg-white border-2 border-secondary text-secondary hover:bg-secondary hover:text-white font-bold py-4 px-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md flex flex-col items-center justify-center gap-2 transform active:scale-95";
-                btn.innerHTML = `<i class="fa-solid fa-shop text-xl"></i><span>${branch.name}</span>`;
-                btn.onclick = () => recordBranchClick(key, branch.name);
-                grid.appendChild(btn);
+            const tbody = document.getElementById('branchesTableBody');
+            tbody.innerHTML = '';
+            // عرض الفروع المضافة أولاً تظهر أولاً (ترتيب زمني تصاعدي)
+            const keys = Object.keys(branches).sort((a,b) => branches[a].timestamp - branches[b].timestamp);
+            keys.forEach((k, i) => {
+                tbody.innerHTML += `<tr class="border-b"><td class="p-3">${i+1}</td><td class="p-3 font-bold">${branches[k].name}</td></tr>`;
             });
+            renderBranchButtons();
         }
 
-        // --- Main Operations Logic ---
-        async function recordBranchClick(branchId, branchName) {
+        function renderBranchButtons() {
+            const grid = document.getElementById('branchButtonsGrid');
+            grid.innerHTML = '';
             const dateStr = document.getElementById('recordDate').value;
-            const delegateId = document.getElementById('recordDelegate').value;
-
-            if(!dateStr) return showToast("يرجى تحديد التاريخ أولاً", "warning");
-            if(!delegateId) return showToast("يرجى اختيار المندوب أولاً", "warning");
-
-            const delegate = delegates[delegateId];
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
+            const records = currentRecords[dateStr] || {};
             
-            const formattedDate = dateStr; // YYYY-MM-DD format
+            // حساب عدد المقصات لكل فرع لليوم الحالي للترتيب
+            const branchStats = {};
+            Object.values(records).forEach(r => {
+                branchStats[r.branchId] = (branchStats[r.branchId] || 0) + 1;
+            });
 
-            const recordData = {
-                branchId,
-                branchName,
-                delegateId,
-                delegateName: delegate.name,
-                delegateCode: delegate.code,
-                time: timeString,
+            // ترتيب الفروع حسب عدد المقصات (الأكثر أولاً) ثم حسب الأحدث
+            const sortedKeys = Object.keys(branches).sort((a, b) => {
+                const countA = branchStats[a] || 0;
+                const countB = branchStats[b] || 0;
+                if (countB !== countA) return countB - countA;
+                return branches[b].timestamp - branches[a].timestamp; 
+            });
+
+            sortedKeys.forEach(k => {
+                const b = branches[k];
+                const count = branchStats[k] || 0;
+                grid.innerHTML += `
+                    <button onclick="recordClick('${k}', '${b.name}')" class="bg-white border-2 border-secondary text-secondary hover:bg-secondary hover:text-white font-bold py-4 px-2 rounded-xl transition shadow-sm relative overflow-hidden flex flex-col items-center">
+                        ${count > 0 ? `<span class="absolute top-0 right-0 bg-accent text-white text-[10px] px-2 py-0.5 rounded-bl-lg">${count} مقص</span>` : ''}
+                        <i class="fa-solid fa-shop mb-1"></i>
+                        <span>${b.name}</span>
+                    </button>`;
+            });
+            document.getElementById('emptyBranchesMsg').classList.toggle('hidden', sortedKeys.length > 0);
+        }
+
+        async function recordClick(id, name) {
+            const date = document.getElementById('recordDate').value;
+            const delId = document.getElementById('recordDelegate').value;
+            if(!delId) return showToast("اختر المندوب أولاً", "error");
+
+            const rec = {
+                branchId: id, branchName: name,
+                delegateId: delId, delegateName: delegates[delId].name,
+                delegateCode: delegates[delId].code,
+                time: new Date().toLocaleTimeString('ar-EG'),
                 timestamp: Date.now()
             };
 
-            // Optimistic UI update
-            const tempId = 'temp_' + Date.now();
-            if(!currentRecords[formattedDate]) currentRecords[formattedDate] = {};
-            currentRecords[formattedDate][tempId] = recordData;
-            renderRecordsTable(formattedDate);
-            
             try {
-                const res = await fetch(`${DB_URL}records/${formattedDate}.json`, {
-                    method: 'POST',
-                    body: JSON.stringify(recordData)
-                });
-
-                if(!res.ok) throw new Error("Network response was not ok");
-                
-                const dbRes = await res.json();
-                delete currentRecords[formattedDate][tempId];
-                currentRecords[formattedDate][dbRes.name] = recordData;
-                
-                showToast(`تم تسجيل زيارة فرع ${branchName}`);
-                
-            } catch (error) {
-                console.error("Save error", error);
-                delete currentRecords[formattedDate][tempId];
-                renderRecordsTable(formattedDate);
-                showToast("حدث خطأ أثناء حفظ السجل. يرجى التحقق من الاتصال", "error");
-            }
+                const res = await fetch(`${DB_URL}records/${date}.json`, { method: 'POST', body: JSON.stringify(rec) });
+                if(res.ok) {
+                    showToast(`تم تسجيل مقص في ${name}`);
+                    await loadRecords();
+                }
+            } catch (e) { showToast("خطأ في الحفظ", "error"); }
         }
 
         async function loadRecords() {
-            const dateStr = document.getElementById('recordDate').value;
-            if(!dateStr) return;
-            
-            const formattedDate = dateStr;
-            
+            const date = document.getElementById('recordDate').value;
             try {
-                const res = await fetch(`${DB_URL}records/${formattedDate}.json`);
-                currentRecords[formattedDate] = await res.json() || {};
-                renderRecordsTable(formattedDate);
-            } catch (error) {
-                console.error("Error loading records:", error);
-                showToast("تعذر تحميل السجلات لهذا اليوم", "error");
-            }
+                const res = await fetch(`${DB_URL}records/${date}.json`);
+                currentRecords[date] = await res.json() || {};
+                renderRecordsTable(date);
+                renderBranchButtons(); // إعادة ترتيب الأزرار بناءً على البيانات الجديدة
+            } catch (e) {}
         }
 
-        function renderRecordsTable(dateKey) {
-            const tableBody = document.getElementById('recordsTableBody');
-            const counterEl = document.getElementById('totalClicksCounter');
-            tableBody.innerHTML = '';
-
-            const dayRecords = currentRecords[dateKey] || {};
-            const recordKeys = Object.keys(dayRecords).sort((a,b) => dayRecords[b].timestamp - dayRecords[a].timestamp);
-
-            counterEl.textContent = recordKeys.length;
-            
-            counterEl.classList.remove('animate-pulse');
-            void counterEl.offsetWidth; 
-            counterEl.classList.add('animate-pulse');
-
-            if(recordKeys.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">لا توجد حركات مسجلة لهذا اليوم</td></tr>';
-                return;
-            }
-
-            recordKeys.forEach((key, index) => {
-                const rec = dayRecords[key];
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50 border-b transition-colors";
-                tr.innerHTML = `
-                    <td class="p-3">${index + 1}</td>
-                    <td class="p-3 font-semibold text-gray-600" dir="ltr">${rec.time}</td>
-                    <td class="p-3"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2">${rec.delegateCode}</span> ${rec.delegateName}</td>
-                    <td class="p-3 font-bold text-primary">${rec.branchName}</td>
-                `;
-                tableBody.appendChild(tr);
+        function renderRecordsTable(date) {
+            const tbody = document.getElementById('recordsTableBody');
+            const data = currentRecords[date] || {};
+            const keys = Object.keys(data).sort((a,b) => data[b].timestamp - data[a].timestamp);
+            document.getElementById('totalClicksCounter').textContent = keys.length;
+            tbody.innerHTML = keys.length ? '' : '<tr><td colspan="4" class="p-4 text-center">لا توجد سجلات</td></tr>';
+            keys.forEach((k, i) => {
+                const r = data[k];
+                tbody.innerHTML += `<tr class="border-b hover:bg-blue-50">
+                    <td class="p-3">${i+1}</td><td class="p-3" dir="ltr">${r.time}</td>
+                    <td class="p-3 text-sm"><span class="bg-gray-100 px-2 rounded">${r.delegateCode}</span> ${r.delegateName}</td>
+                    <td class="p-3 font-bold text-primary">${r.branchName}</td>
+                </tr>`;
             });
         }
 
-        // --- Reports Logic ---
-        function getDatesBetween(startDateStr, endDateStr) {
-            const dates = [];
-            // Parse parts to avoid timezone shifting
-            const startParts = startDateStr.split('-');
-            const endParts = endDateStr.split('-');
-            
-            let currentDate = new Date(startParts[0], startParts[1] - 1, startParts[2]);
-            const endDate = new Date(endParts[0], endParts[1] - 1, endParts[2]);
-            
-            while (currentDate <= endDate) {
-                // format back to YYYY-MM-DD safely
-                const y = currentDate.getFullYear();
-                const m = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const d = String(currentDate.getDate()).padStart(2, '0');
-                dates.push(`${y}-${m}-${d}`);
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-            return dates;
+        async function handleAddDelegate(e) {
+            e.preventDefault();
+            const d = { name: document.getElementById('delName').value, code: document.getElementById('delCode').value, timestamp: Date.now() };
+            await fetch(`${DB_URL}delegates.json`, { method: 'POST', body: JSON.stringify(d) });
+            e.target.reset();
+            loadAllData();
+            showToast("تم الحفظ");
+        }
+
+        async function handleAddBranch(e) {
+            e.preventDefault();
+            const b = { name: document.getElementById('branchName').value, timestamp: Date.now() };
+            await fetch(`${DB_URL}branches.json`, { method: 'POST', body: JSON.stringify(b) });
+            e.target.reset();
+            loadAllData();
+            showToast("تم الحفظ");
         }
 
         async function generateReport() {
-            const fromDateStr = document.getElementById('repFromDate').value;
-            const toDateStr = document.getElementById('repToDate').value;
-            const delCode = document.getElementById('repDelCode').value.trim();
-
-            if (!fromDateStr || !toDateStr) return showToast('يرجى تحديد فترة التقرير', 'warning');
-
-            const datesToFetch = getDatesBetween(fromDateStr, toDateStr);
-            
-            if (datesToFetch.length === 0) {
-                return showToast('تاريخ البداية يجب أن يكون قبل أو يساوي تاريخ النهاية', 'error');
-            }
-
+            const start = document.getElementById('repFromDate').value, end = document.getElementById('repToDate').value, code = document.getElementById('repDelCode').value.trim();
             document.getElementById('reportLoading').classList.remove('hidden');
-            document.getElementById('reportTableBody').innerHTML = '';
-            
-            let allReportRecords = [];
-
-            try {
-                // Fetch all dates in the range concurrently
-                const fetchPromises = datesToFetch.map(date => 
-                    fetch(`${DB_URL}records/${date}.json`).then(r => r.json()).then(data => ({date, data}))
-                );
-                
-                const results = await Promise.all(fetchPromises);
-
-                results.forEach(res => {
-                    if (res.data) {
-                        Object.keys(res.data).forEach(key => {
-                            const record = res.data[key];
-                            // Apply Delegate Code Filter if provided
-                            if (!delCode || record.delegateCode === delCode) {
-                                allReportRecords.push({
-                                    ...record,
-                                    recordDate: res.date
-                                });
-                            }
-                        });
-                    }
+            let all = [];
+            const dates = [];
+            let curr = new Date(start);
+            while(curr <= new Date(end)) {
+                dates.push(curr.toISOString().split('T')[0]);
+                curr.setDate(curr.getDate() + 1);
+            }
+            const res = await Promise.all(dates.map(d => fetch(`${DB_URL}records/${d}.json`).then(r => r.json())));
+            res.forEach((day, i) => {
+                if(day) Object.values(day).forEach(r => {
+                    if(!code || r.delegateCode === code) all.push({...r, date: dates[i]});
                 });
-
-                // Sort newest first
-                allReportRecords.sort((a, b) => b.timestamp - a.timestamp);
-                
-                renderReportTable(allReportRecords, fromDateStr, toDateStr, delCode);
-
-            } catch (error) {
-                console.error("Error generating report:", error);
-                showToast("حدث خطأ أثناء جلب التقارير", "error");
-            } finally {
-                document.getElementById('reportLoading').classList.add('hidden');
-            }
-        }
-
-        function renderReportTable(records, fromD, toD, code) {
-            const tableBody = document.getElementById('reportTableBody');
-            const totalCounter = document.getElementById('reportTotalClicks');
-            const subText = document.getElementById('reportSubText');
-
-            totalCounter.textContent = records.length;
-            
-            // Animation
-            totalCounter.classList.remove('animate-bounce');
-            void totalCounter.offsetWidth;
-            totalCounter.classList.add('animate-bounce');
-            setTimeout(() => totalCounter.classList.remove('animate-bounce'), 1000);
-
-            let filterText = `الفترة من ${fromD} إلى ${toD}`;
-            if(code) filterText += ` | خاص بالمندوب (كود: ${code})`;
-            subText.textContent = filterText;
-
-            if(records.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500 text-lg">لا توجد حركات مطابقة للبحث في هذه الفترة</td></tr>';
-                return;
-            }
-
-            records.forEach((rec, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-emerald-50 border-b transition-colors";
-                tr.innerHTML = `
-                    <td class="p-3">${index + 1}</td>
-                    <td class="p-3 font-semibold text-gray-700">${rec.recordDate}</td>
-                    <td class="p-3 text-gray-600" dir="ltr">${rec.time}</td>
-                    <td class="p-3 font-bold text-secondary">${rec.delegateCode}</td>
-                    <td class="p-3">${rec.delegateName}</td>
-                    <td class="p-3 font-bold text-teal-700">${rec.branchName}</td>
-                `;
-                tableBody.appendChild(tr);
             });
+            all.sort((a,b) => b.timestamp - a.timestamp);
+            document.getElementById('reportTotalClicks').textContent = all.length;
+            document.getElementById('reportSubText').textContent = `تقرير مقصات الفترة: ${start} إلى ${end}`;
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = all.length ? '' : '<tr><td colspan="5" class="p-6 text-center">لا توجد بيانات</td></tr>';
+            all.forEach(r => {
+                tbody.innerHTML += `<tr class="border-b">
+                    <td class="p-3 text-sm">${r.date}</td><td class="p-3 text-xs" dir="ltr">${r.time}</td>
+                    <td class="p-3 font-bold">${r.delegateCode}</td><td class="p-3">${r.delegateName}</td>
+                    <td class="p-3 font-bold text-teal-600">${r.branchName}</td>
+                </tr>`;
+            });
+            document.getElementById('reportLoading').classList.add('hidden');
         }
     </script>
 </body>
 </html>
-
