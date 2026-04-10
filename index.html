@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام مقصات</title>
+    <title>نظام مقصات - المطور</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Cairo -->
@@ -29,184 +29,286 @@
     </script>
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .tab-content.active { display: block; }
+        .tab-content, .sub-tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active, .sub-tab-content.active { display: block; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { min-width: 250px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; animation: slideUp 0.3s forwards; }
         .toast.success { background-color: #10b981; }
         .toast.error { background-color: #ef4444; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Modal Styles */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);}
+        .modal.active { display: flex; animation: fadeIn 0.2s; }
     </style>
 </head>
 <body class="text-gray-800 h-screen flex flex-col">
 
     <div id="toast-container"></div>
 
-    <header class="bg-primary text-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-scissors text-2xl text-accent"></i>
-                <h1 class="text-2xl font-bold tracking-wider">نظام مقصات</h1>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen" class="fixed inset-0 bg-gray-100 z-[999] flex flex-col items-center justify-center">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+            <i class="fa-solid fa-scissors text-5xl text-primary mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-8">نظام المقصات</h1>
+            
+            <div class="flex border-b mb-6">
+                <button onclick="switchLoginTab('branch')" id="btn-login-branch" class="flex-1 py-2 font-bold text-primary border-b-2 border-primary">دخول فرع</button>
+                <button onclick="switchLoginTab('admin')" id="btn-login-admin" class="flex-1 py-2 font-bold text-gray-500 border-b-2 border-transparent">دخول إدارة</button>
             </div>
-            <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg">
-                <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
-                <button onclick="switchTab('delegatesTab')" id="btn-delegatesTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-users ml-2"></i>المناديب</button>
-                <button onclick="switchTab('branchesTab')" id="btn-branchesTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-store ml-2"></i>الفروع</button>
-                <button onclick="switchTab('reportsTab')" id="btn-reportsTab" class="nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-chart-pie ml-2"></i>التقارير</button>
-            </nav>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <input type="text" id="loginCode" required placeholder="كود الفرع / كود المسؤول" class="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary text-center">
+                <input type="password" id="loginPass" required placeholder="كلمة المرور" class="w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary text-center">
+                <button type="submit" id="loginBtn" class="w-full bg-primary text-white py-3 rounded-lg font-bold shadow-md hover:bg-blue-800 transition">تسجيل الدخول</button>
+            </form>
+            <div id="loginLoading" class="hidden mt-4 text-primary"><i class="fa-solid fa-circle-notch fa-spin text-2xl"></i></div>
         </div>
-    </header>
+    </div>
 
-    <main class="flex-grow container mx-auto px-4 py-8 overflow-auto">
-        
-        <!-- MAIN TAB -->
-        <section id="mainTab" class="tab-content active">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col sm:flex-row gap-4 items-end">
-                    <div class="w-full">
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">تاريخ اليوم</label>
-                        <input type="date" id="recordDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition" onchange="loadRecords()">
+    <!-- التطبيق (مخفي حتى تسجيل الدخول) -->
+    <div id="appContainer" class="hidden flex-col h-full w-full">
+        <header class="bg-primary text-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-scissors text-2xl text-accent"></i>
+                    <h1 class="text-2xl font-bold tracking-wider">نظام مقصات</h1>
+                    <span id="userInfoDisplay" class="bg-white text-primary text-xs px-2 py-1 rounded-full font-bold ml-4"></span>
+                </div>
+                <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg" id="mainNav">
+                    <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
+                    <!-- تبويب الإدارة يظهر فقط للمسؤولين -->
+                    <button onclick="switchTab('adminTab')" id="btn-adminTab" class="nav-btn hidden px-4 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-gears ml-2"></i>الإدارة</button>
+                    <button onclick="logout()" class="px-4 py-2 rounded-md font-semibold text-red-300 hover:bg-red-500 hover:text-white transition-all"><i class="fa-solid fa-sign-out-alt ml-2"></i>خروج</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-8 overflow-auto">
+            
+            <!-- MAIN TAB (الرئيسية) -->
+            <section id="mainTab" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col sm:flex-row gap-4 items-end">
+                        <div class="w-full">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">تاريخ اليوم</label>
+                            <input type="date" id="recordDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition" onchange="loadRecords()">
+                        </div>
+                        <div class="w-full">
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">اختر المندوب</label>
+                            <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                                <option value="">-- يرجى اختيار مندوب --</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="w-full">
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">اختر المندوب</label>
-                        <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
-                            <option value="">-- يرجى اختيار مندوب --</option>
-                        </select>
+                    <div class="col-span-1 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg p-6 text-white flex flex-col justify-center items-center relative overflow-hidden">
+                        <i class="fa-solid fa-scissors absolute -left-4 -bottom-4 text-6xl opacity-20"></i>
+                        <h3 class="text-lg font-semibold mb-2 z-10">إجمالي مقصات اليوم</h3>
+                        <div class="text-5xl font-bold z-10" id="totalClicksCounter">0</div>
                     </div>
                 </div>
-                <div class="col-span-1 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg p-6 text-white flex flex-col justify-center items-center relative overflow-hidden">
-                    <i class="fa-solid fa-scissors absolute -left-4 -bottom-4 text-6xl opacity-20"></i>
-                    <h3 class="text-lg font-semibold mb-2 z-10">إجمالي مقصات اليوم</h3>
-                    <div class="text-5xl font-bold z-10" id="totalClicksCounter">0</div>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>الفروع (مرتبة حسب الأكثر نشاطاً)</h3>
-                </div>
-                <div id="loadingBranches" class="text-center text-gray-500 py-8 hidden">
-                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><br>جاري تحميل البيانات...
-                </div>
-                <div id="branchButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-                <div id="emptyBranchesMsg" class="text-center text-gray-500 py-4 hidden">لا توجد فروع مضافة.</div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-800"><i class="fa-solid fa-table-list ml-2 text-secondary"></i>سجل مقصات اليوم</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-600 text-sm">
-                                <th class="p-3 border-b">م</th>
-                                <th class="p-3 border-b">الوقت</th>
-                                <th class="p-3 border-b">المندوب</th>
-                                <th class="p-3 border-b">الفرع</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- DELEGATES TAB -->
-        <section id="delegatesTab" class="tab-content">
-            <div class="max-w-4xl mx-auto">
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-                    <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-user-plus ml-2 text-secondary"></i>إضافة مندوب جديد</h2>
-                    <form id="delegateForm" onsubmit="handleAddDelegate(event)" class="flex flex-col sm:flex-row gap-4 items-end">
-                        <div class="flex-grow">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم المندوب</label>
-                            <input type="text" id="delName" required placeholder="الاسم الكامل" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                        </div>
-                        <div class="flex-grow">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب</label>
-                            <input type="text" id="delCode" required placeholder="الكود" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                        </div>
-                        <button type="submit" class="bg-primary text-white px-8 py-2 rounded-lg font-bold shadow-md">حفظ</button>
-                    </form>
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>الفروع (لتحويل المقصات إليها)</h3>
+                    </div>
+                    <div id="loadingBranches" class="text-center text-gray-500 py-8 hidden">
+                        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><br>جاري تحميل البيانات...
+                    </div>
+                    <div id="branchButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                    <div id="emptyBranchesMsg" class="text-center text-gray-500 py-4 hidden">لا توجد فروع متاحة.</div>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 bg-gray-50 border-b border-gray-200"><h3 class="font-bold">قائمة المناديب</h3></div>
-                    <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">الكود</th><th class="p-3">الاسم</th></tr></thead><tbody id="delegatesTableBody"></tbody></table>
-                </div>
-            </div>
-        </section>
 
-        <!-- BRANCHES TAB -->
-        <section id="branchesTab" class="tab-content">
-            <div class="max-w-4xl mx-auto">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-                    <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-plus ml-2 text-secondary"></i>إضافة فرع جديد</h2>
-                    <form id="branchForm" onsubmit="handleAddBranch(event)" class="flex flex-col sm:flex-row gap-4 items-end">
-                        <div class="flex-grow">
-                            <label class="block text-sm font-semibold text-gray-600 mb-2">اسم الفرع</label>
-                            <input type="text" id="branchName" required placeholder="اسم الفرع" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
-                        </div>
-                        <button type="submit" class="bg-primary text-white px-8 py-2 rounded-lg font-bold shadow-md">حفظ</button>
-                    </form>
-                </div>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 bg-gray-50 border-b border-gray-200"><h3 class="font-bold">قائمة الفروع (المضاف أولاً يظهر أولاً)</h3></div>
-                    <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">م</th><th class="p-3">اسم الفرع</th></tr></thead><tbody id="branchesTableBody"></tbody></table>
+                    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800"><i class="fa-solid fa-table-list ml-2 text-secondary"></i>سجل مقصات اليوم</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3 border-b">م</th>
+                                    <th class="p-3 border-b">الوقت</th>
+                                    <th class="p-3 border-b">المندوب</th>
+                                    <th class="p-3 border-b">الفرع المُحول له</th>
+                                    <th class="p-3 border-b text-center admin-only hidden">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- REPORTS TAB -->
-        <section id="reportsTab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-filter ml-2 text-secondary"></i>تصفية التقارير</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div><label class="block text-sm font-semibold text-gray-600 mb-2">من تاريخ</label><input type="date" id="repFromDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"></div>
-                    <div><label class="block text-sm font-semibold text-gray-600 mb-2">إلى تاريخ</label><input type="date" id="repToDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"></div>
-                    <div><label class="block text-sm font-semibold text-gray-600 mb-2">كود المندوب</label><input type="text" id="repDelCode" placeholder="اختياري" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"></div>
-                    <button onclick="generateReport()" class="bg-secondary text-white px-8 py-2 rounded-lg font-bold shadow-md">عرض التقرير</button>
+            <!-- ADMIN TAB (لوحة الإدارة) -->
+            <section id="adminTab" class="tab-content">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- القائمة الجانبية للإدارة -->
+                    <div class="w-full md:w-1/4">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+                            <button onclick="switchAdminTab('adminsSubTab')" id="btn-adminsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 bg-gray-50 text-primary border-r-4 border-r-primary"><i class="fa-solid fa-user-shield ml-2"></i>المسؤولين</button>
+                            <button onclick="switchAdminTab('branchesSubTab')" id="btn-branchesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-store ml-2"></i>الفروع</button>
+                            <button onclick="switchAdminTab('delegatesSubTab')" id="btn-delegatesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-users ml-2"></i>المناديب</button>
+                            <button onclick="switchAdminTab('reportsSubTab')" id="btn-reportsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold text-gray-600 hover:bg-gray-50"><i class="fa-solid fa-chart-pie ml-2"></i>التقارير</button>
+                        </div>
+                    </div>
+
+                    <!-- محتوى الإدارة -->
+                    <div class="w-full md:w-3/4">
+                        
+                        <!-- المسؤولين -->
+                        <div id="adminsSubTab" class="sub-tab-content active">
+                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+                                <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-secondary ml-2"></i>إضافة مسؤول جديد</h2>
+                                <form onsubmit="handleAddAdmin(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <input type="text" id="adminName" required placeholder="الاسم" class="px-4 py-2 border rounded-lg outline-none">
+                                    <input type="text" id="adminCode" required placeholder="كود الدخول" class="px-4 py-2 border rounded-lg outline-none">
+                                    <input type="password" id="adminPass" required placeholder="كلمة المرور" class="px-4 py-2 border rounded-lg outline-none">
+                                    <button type="submit" class="sm:col-span-3 bg-primary text-white py-2 rounded-lg font-bold">حفظ المسؤول</button>
+                                </form>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">الاسم</th><th class="p-3">الكود</th><th class="p-3 text-center">تعديل</th></tr></thead><tbody id="adminsTableBody"></tbody></table>
+                            </div>
+                        </div>
+
+                        <!-- الفروع -->
+                        <div id="branchesSubTab" class="sub-tab-content">
+                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+                                <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-secondary ml-2"></i>إضافة فرع جديد</h2>
+                                <form onsubmit="handleAddBranch(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <input type="text" id="branchName" required placeholder="اسم الفرع" class="px-4 py-2 border rounded-lg outline-none">
+                                    <input type="text" id="branchCode" required placeholder="كود الفرع (للدخول)" class="px-4 py-2 border rounded-lg outline-none">
+                                    <input type="password" id="branchPass" required placeholder="كلمة المرور" class="px-4 py-2 border rounded-lg outline-none">
+                                    <button type="submit" class="sm:col-span-3 bg-primary text-white py-2 rounded-lg font-bold">حفظ الفرع</button>
+                                </form>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">الفرع</th><th class="p-3">الكود</th><th class="p-3 text-center">تعديل</th></tr></thead><tbody id="branchesTableBody"></tbody></table>
+                            </div>
+                        </div>
+
+                        <!-- المناديب -->
+                        <div id="delegatesSubTab" class="sub-tab-content">
+                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+                                <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-secondary ml-2"></i>إضافة مندوب جديد</h2>
+                                <form onsubmit="handleAddDelegate(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <input type="text" id="delName" required placeholder="اسم المندوب" class="px-4 py-2 border rounded-lg outline-none">
+                                    <input type="text" id="delCode" required placeholder="كود المندوب" class="px-4 py-2 border rounded-lg outline-none">
+                                    <select id="delBranch" required class="px-4 py-2 border rounded-lg outline-none">
+                                        <option value="">-- اختر الفرع التابع له --</option>
+                                    </select>
+                                    <button type="submit" class="sm:col-span-3 bg-primary text-white py-2 rounded-lg font-bold">حفظ المندوب</button>
+                                </form>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table class="w-full text-right"><thead class="bg-gray-50"><tr><th class="p-3">الكود</th><th class="p-3">الاسم</th><th class="p-3">الفرع التابع</th><th class="p-3 text-center">تعديل</th></tr></thead><tbody id="delegatesTableBody"></tbody></table>
+                            </div>
+                        </div>
+
+                        <!-- التقارير -->
+                        <div id="reportsSubTab" class="sub-tab-content">
+                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                    <div><label class="block text-sm font-semibold mb-2">من تاريخ</label><input type="date" id="repFromDate" class="w-full px-4 py-2 border rounded-lg"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">إلى تاريخ</label><input type="date" id="repToDate" class="w-full px-4 py-2 border rounded-lg"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">كود المندوب</label><input type="text" id="repDelCode" placeholder="الكل إذا ترك فارغاً" class="w-full px-4 py-2 border rounded-lg"></div>
+                                    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold">عرض التقرير</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 mb-6 text-center">
+                                <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl shadow-lg p-6 text-white">
+                                    <h3 class="text-xl font-semibold mb-2">إجمالي المقصات</h3>
+                                    <div class="text-4xl font-bold" id="reportTotalClicks">0</div>
+                                </div>
+                            </div>
+                            <div id="reportLoading" class="text-center py-4 hidden"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-secondary"></i></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+                                <table class="w-full text-right">
+                                    <thead class="bg-gray-50 text-sm"><tr><th class="p-3">التاريخ</th><th class="p-3">الوقت</th><th class="p-3">كود</th><th class="p-3">المندوب</th><th class="p-3">مُحول إلى فرع</th></tr></thead>
+                                    <tbody id="reportTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals for Editing -->
+    <div id="editModal" class="modal">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">تعديل</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <div class="grid grid-cols-1 mb-8 text-center">
-                <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl shadow-lg p-8 text-white">
-                    <h3 class="text-xl font-semibold mb-2">إجمالي المقصات للفترة</h3>
-                    <div class="text-6xl font-bold" id="reportTotalClicks">0</div>
-                    <p id="reportSubText" class="text-sm mt-2 opacity-80">بانتظار البحث...</p>
-                </div>
-            </div>
-            <div id="reportLoading" class="text-center py-8 hidden"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-secondary"></i></div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-4 bg-gray-50 border-b"><h3 class="font-bold">تفاصيل المقصات</h3></div>
-                <table class="w-full text-right border-collapse">
-                    <thead><tr class="bg-gray-100 text-sm"><th class="p-3">التاريخ</th><th class="p-3">الوقت</th><th class="p-3">الكود</th><th class="p-3">المندوب</th><th class="p-3">الفرع</th></tr></thead>
-                    <tbody id="reportTableBody"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+            <form id="editForm" onsubmit="handleEditSave(event)" class="space-y-4">
+                <div id="modalFields"></div>
+                <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg font-bold shadow-md">حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         const DB_URL = 'https://story-64520-default-rtdb.firebaseio.com/';
-        let delegates = {}, branches = {}, currentRecords = {};
+        let delegates = {}, branches = {}, admins = {}, currentRecords = {};
+        
+        let currentUser = null; // { role: 'admin'|'branch', id: string, name: string }
+        let currentLoginTab = 'branch';
 
+        // --- تهيئة الصفحة والتنقل ---
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('recordDate').value = today;
             document.getElementById('repFromDate').value = today;
             document.getElementById('repToDate').value = today;
-            loadAllData();
+            
+            // تحقق لو في مستخدم مسجل مسبقاً في الجلسة
+            const savedUser = sessionStorage.getItem('scissorsUser');
+            if(savedUser) {
+                currentUser = JSON.parse(savedUser);
+                startApp();
+            }
         });
+
+        function switchLoginTab(tab) {
+            currentLoginTab = tab;
+            const btnBranch = document.getElementById('btn-login-branch');
+            const btnAdmin = document.getElementById('btn-login-admin');
+            
+            if(tab === 'branch') {
+                btnBranch.className = "flex-1 py-2 font-bold text-primary border-b-2 border-primary";
+                btnAdmin.className = "flex-1 py-2 font-bold text-gray-500 border-b-2 border-transparent";
+            } else {
+                btnAdmin.className = "flex-1 py-2 font-bold text-primary border-b-2 border-primary";
+                btnBranch.className = "flex-1 py-2 font-bold text-gray-500 border-b-2 border-transparent";
+            }
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.className = "nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white");
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                if(!b.classList.contains('hidden')) {
+                    b.className = "nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white";
+                }
+            });
             document.getElementById(tabId).classList.add('active');
-            const btn = document.getElementById('btn-' + tabId);
-            btn.className = "nav-btn px-4 sm:px-6 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm";
+            document.getElementById('btn-' + tabId).className = "nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm";
+        }
+
+        function switchAdminTab(tabId) {
+            document.querySelectorAll('.sub-tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-nav-btn').forEach(b => {
+                b.className = "admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50";
+            });
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).className = "admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 bg-gray-50 text-primary border-r-4 border-r-primary";
         }
 
         function showToast(msg, type = 'success') {
@@ -218,59 +320,181 @@
             setTimeout(() => t.remove(), 3000);
         }
 
+        // --- نظام تسجيل الدخول ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const code = document.getElementById('loginCode').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('loginLoading').classList.remove('hidden');
+
+            try {
+                if (currentLoginTab === 'admin') {
+                    // تحقق من الإدارة
+                    const res = await fetch(`${DB_URL}admins.json`);
+                    const data = await res.json() || {};
+                    const adminId = Object.keys(data).find(k => data[k].code === code && data[k].password === pass);
+                    
+                    // مستخدم افتراضي للإدارة في حال قاعدة البيانات فارغة (للتجربة أول مرة)
+                    if(adminId || (code === 'admin' && pass === 'admin')) {
+                        currentUser = { role: 'admin', id: adminId || 'admin_master', name: adminId ? data[adminId].name : 'المدير العام' };
+                        sessionStorage.setItem('scissorsUser', JSON.stringify(currentUser));
+                        startApp();
+                    } else {
+                        showToast("بيانات الإدارة غير صحيحة", "error");
+                    }
+                } else {
+                    // تحقق من الفرع
+                    const res = await fetch(`${DB_URL}branches.json`);
+                    const data = await res.json() || {};
+                    const branchId = Object.keys(data).find(k => data[k].code === code && data[k].password === pass);
+                    
+                    if(branchId) {
+                        currentUser = { role: 'branch', id: branchId, name: data[branchId].name };
+                        sessionStorage.setItem('scissorsUser', JSON.stringify(currentUser));
+                        startApp();
+                    } else {
+                        showToast("بيانات الفرع غير صحيحة", "error");
+                    }
+                }
+            } catch(e) {
+                showToast("خطأ في الاتصال بالشبكة", "error");
+            }
+
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('loginLoading').classList.add('hidden');
+        }
+
+        function startApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('flex');
+            
+            document.getElementById('userInfoDisplay').innerText = `${currentUser.role === 'admin' ? 'الإدارة' : 'فرع'}: ${currentUser.name}`;
+
+            if(currentUser.role === 'admin') {
+                document.getElementById('btn-adminTab').classList.remove('hidden');
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+            } else {
+                document.getElementById('btn-adminTab').classList.add('hidden');
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+                switchTab('mainTab'); // إجبار الفرع على الرئيسية
+            }
+            
+            loadAllData();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('scissorsUser');
+            window.location.reload();
+        }
+
+        // --- جلب البيانات وعرضها ---
         async function loadAllData() {
             try {
                 document.getElementById('loadingBranches').classList.remove('hidden');
-                const [delRes, braRes] = await Promise.all([
+                const [delRes, braRes, adminRes] = await Promise.all([
                     fetch(`${DB_URL}delegates.json`),
-                    fetch(`${DB_URL}branches.json`)
+                    fetch(`${DB_URL}branches.json`),
+                    fetch(`${DB_URL}admins.json`)
                 ]);
                 delegates = await delRes.json() || {};
                 branches = await braRes.json() || {};
-                updateDelegatesUI();
-                updateBranchesUI();
+                admins = await adminRes.json() || {};
+                
+                updateUIComponents();
                 await loadRecords();
                 document.getElementById('loadingBranches').classList.add('hidden');
             } catch (e) { showToast("خطأ في الاتصال", "error"); }
         }
 
-        function updateDelegatesUI() {
-            const tbody = document.getElementById('delegatesTableBody');
-            const select = document.getElementById('recordDelegate');
+        function updateUIComponents() {
+            updateBranchesUI();
+            updateDelegatesUI();
+            updateAdminsUI();
+        }
+
+        function updateAdminsUI() {
+            const tbody = document.getElementById('adminsTableBody');
+            if(!tbody) return;
             tbody.innerHTML = '';
-            select.innerHTML = '<option value="">-- يرجى اختيار مندوب --</option>';
-            const keys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
-            keys.forEach(k => {
-                const d = delegates[k];
-                tbody.innerHTML += `<tr class="border-b"><td class="p-3 text-secondary font-bold">${d.code}</td><td class="p-3">${d.name}</td></tr>`;
-                select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
+            Object.keys(admins).forEach(k => {
+                const a = admins[k];
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 font-bold">${a.name}</td><td class="p-3">${a.code}</td>
+                        <td class="p-3 text-center"><button onclick="openEditModal('admin', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                    </tr>`;
             });
         }
 
         function updateBranchesUI() {
             const tbody = document.getElementById('branchesTableBody');
-            tbody.innerHTML = '';
-            // عرض الفروع المضافة أولاً تظهر أولاً (ترتيب زمني تصاعدي)
+            const selectDel = document.getElementById('delBranch');
+            
+            if(tbody) tbody.innerHTML = '';
+            if(selectDel) selectDel.innerHTML = '<option value="">-- اختر الفرع التابع له --</option>';
+
             const keys = Object.keys(branches).sort((a,b) => branches[a].timestamp - branches[b].timestamp);
-            keys.forEach((k, i) => {
-                tbody.innerHTML += `<tr class="border-b"><td class="p-3">${i+1}</td><td class="p-3 font-bold">${branches[k].name}</td></tr>`;
+            keys.forEach(k => {
+                const b = branches[k];
+                if(tbody) {
+                    tbody.innerHTML += `
+                        <tr class="border-b">
+                            <td class="p-3 font-bold text-primary">${b.name}</td><td class="p-3">${b.code || '-'}</td>
+                            <td class="p-3 text-center"><button onclick="openEditModal('branch', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                        </tr>`;
+                }
+                if(selectDel) selectDel.innerHTML += `<option value="${k}">${b.name}</option>`;
             });
-            renderBranchButtons();
+            renderBranchButtons(); // أزرار التحويل في الرئيسية
+        }
+
+        function updateDelegatesUI() {
+            const tbody = document.getElementById('delegatesTableBody');
+            const selectRecord = document.getElementById('recordDelegate');
+            
+            if(tbody) tbody.innerHTML = '';
+            if(selectRecord) selectRecord.innerHTML = '<option value="">-- يرجى اختيار مندوب --</option>';
+
+            const keys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
+            keys.forEach(k => {
+                const d = delegates[k];
+                const branchName = d.branchId && branches[d.branchId] ? branches[d.branchId].name : 'غير محدد';
+                
+                if(tbody) {
+                    tbody.innerHTML += `
+                        <tr class="border-b">
+                            <td class="p-3 text-secondary font-bold">${d.code}</td><td class="p-3">${d.name}</td><td class="p-3 text-gray-500">${branchName}</td>
+                            <td class="p-3 text-center"><button onclick="openEditModal('delegate', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                        </tr>`;
+                }
+
+                // المنطق: إذا كان المسجل فرع، أظهر فقط مناديب فرعه في الرئيسية
+                if(selectRecord) {
+                    if (currentUser.role === 'admin' || (currentUser.role === 'branch' && d.branchId === currentUser.id)) {
+                        selectRecord.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
+                    }
+                }
+            });
         }
 
         function renderBranchButtons() {
             const grid = document.getElementById('branchButtonsGrid');
             grid.innerHTML = '';
+            
             const dateStr = document.getElementById('recordDate').value;
             const records = currentRecords[dateStr] || {};
             
-            // حساب عدد المقصات لكل فرع لليوم الحالي للترتيب
+            // حساب عدد المقصات لكل فرع لليوم الحالي للترتيب والعرض
             const branchStats = {};
             Object.values(records).forEach(r => {
                 branchStats[r.branchId] = (branchStats[r.branchId] || 0) + 1;
             });
-
-            // ترتيب الفروع حسب عدد المقصات (الأكثر أولاً) ثم حسب الأحدث
+            
+            let visibleCount = 0;
+            // ترتيب الفروع حسب الأكثر نشاطاً ثم الأحدث
             const sortedKeys = Object.keys(branches).sort((a, b) => {
                 const countA = branchStats[a] || 0;
                 const countB = branchStats[b] || 0;
@@ -279,8 +503,12 @@
             });
 
             sortedKeys.forEach(k => {
+                // المنطق: لا تظهر الفرع الخاص بالمستخدم الحالي في قائمة التحويل
+                if (currentUser.role === 'branch' && k === currentUser.id) return;
+                
                 const b = branches[k];
                 const count = branchStats[k] || 0;
+                visibleCount++;
                 grid.innerHTML += `
                     <button onclick="recordClick('${k}', '${b.name}')" class="bg-white border-2 border-secondary text-secondary hover:bg-secondary hover:text-white font-bold py-4 px-2 rounded-xl transition shadow-sm relative overflow-hidden flex flex-col items-center">
                         ${count > 0 ? `<span class="absolute top-0 right-0 bg-accent text-white text-[10px] px-2 py-0.5 rounded-bl-lg">${count} مقص</span>` : ''}
@@ -288,18 +516,22 @@
                         <span>${b.name}</span>
                     </button>`;
             });
-            document.getElementById('emptyBranchesMsg').classList.toggle('hidden', sortedKeys.length > 0);
+            document.getElementById('emptyBranchesMsg').classList.toggle('hidden', visibleCount === 0);
         }
 
-        async function recordClick(id, name) {
+        // --- تسجيل المقصات وحذفها ---
+        async function recordClick(toBranchId, toBranchName) {
             const date = document.getElementById('recordDate').value;
             const delId = document.getElementById('recordDelegate').value;
             if(!delId) return showToast("اختر المندوب أولاً", "error");
 
             const rec = {
-                branchId: id, branchName: name,
-                delegateId: delId, delegateName: delegates[delId].name,
+                branchId: toBranchId, 
+                branchName: toBranchName,
+                delegateId: delId, 
+                delegateName: delegates[delId].name,
                 delegateCode: delegates[delId].code,
+                sourceBranchId: delegates[delId].branchId || 'admin', // الفرع مصدر المقص
                 time: new Date().toLocaleTimeString('ar-EG'),
                 timestamp: Date.now()
             };
@@ -307,7 +539,7 @@
             try {
                 const res = await fetch(`${DB_URL}records/${date}.json`, { method: 'POST', body: JSON.stringify(rec) });
                 if(res.ok) {
-                    showToast(`تم تسجيل مقص في ${name}`);
+                    showToast(`تم تحويل مقصة لـ ${toBranchName}`);
                     await loadRecords();
                 }
             } catch (e) { showToast("خطأ في الحفظ", "error"); }
@@ -319,44 +551,146 @@
                 const res = await fetch(`${DB_URL}records/${date}.json`);
                 currentRecords[date] = await res.json() || {};
                 renderRecordsTable(date);
-                renderBranchButtons(); // إعادة ترتيب الأزرار بناءً على البيانات الجديدة
+                renderBranchButtons(); // تحديث عداد الأزرار وترتيبها بعد جلب السجلات
             } catch (e) {}
         }
 
         function renderRecordsTable(date) {
             const tbody = document.getElementById('recordsTableBody');
             const data = currentRecords[date] || {};
-            const keys = Object.keys(data).sort((a,b) => data[b].timestamp - data[a].timestamp);
-            document.getElementById('totalClicksCounter').textContent = keys.length;
-            tbody.innerHTML = keys.length ? '' : '<tr><td colspan="4" class="p-4 text-center">لا توجد سجلات</td></tr>';
-            keys.forEach((k, i) => {
+            
+            // تصفية السجلات بناء على الصلاحية (الإدارة ترى الكل، الفرع يرى مقصات مناديبه فقط)
+            const filteredKeys = Object.keys(data).filter(k => {
+                if(currentUser.role === 'admin') return true;
+                
+                const record = data[k];
+                // التوافق مع السجلات القديمة التي لم يكن يُسجل فيها (sourceBranchId)
+                if (!record.sourceBranchId) {
+                    const delegate = delegates[record.delegateId];
+                    // إذا كان المندوب القديم تم ربطه بالفرع الحالي، إعرض السجل
+                    return delegate && delegate.branchId === currentUser.id;
+                }
+                
+                return record.sourceBranchId === currentUser.id;
+            });
+            
+            filteredKeys.sort((a,b) => data[b].timestamp - data[a].timestamp);
+            
+            document.getElementById('totalClicksCounter').textContent = filteredKeys.length;
+            tbody.innerHTML = filteredKeys.length ? '' : `<tr><td colspan="${currentUser.role==='admin'?5:4}" class="p-4 text-center">لا توجد سجلات</td></tr>`;
+            
+            filteredKeys.forEach((k, i) => {
                 const r = data[k];
-                tbody.innerHTML += `<tr class="border-b hover:bg-blue-50">
+                tbody.innerHTML += `
+                <tr class="border-b hover:bg-blue-50">
                     <td class="p-3">${i+1}</td><td class="p-3" dir="ltr">${r.time}</td>
-                    <td class="p-3 text-sm"><span class="bg-gray-100 px-2 rounded">${r.delegateCode}</span> ${r.delegateName}</td>
+                    <td class="p-3 text-sm"><span class="bg-gray-100 px-2 rounded border">${r.delegateCode}</span> ${r.delegateName}</td>
                     <td class="p-3 font-bold text-primary">${r.branchName}</td>
+                    ${currentUser.role === 'admin' ? `<td class="p-3 text-center"><button onclick="deleteRecord('${date}', '${k}')" class="text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded"><i class="fa-solid fa-trash"></i></button></td>` : ''}
                 </tr>`;
             });
         }
 
-        async function handleAddDelegate(e) {
+        async function deleteRecord(date, recordId) {
+            if(!confirm("هل أنت متأكد من حذف هذه المَقصّة؟")) return;
+            try {
+                await fetch(`${DB_URL}records/${date}/${recordId}.json`, { method: 'DELETE' });
+                showToast("تم الحذف بنجاح");
+                loadRecords();
+            } catch(e) { showToast("خطأ أثناء الحذف", "error"); }
+        }
+
+        // --- عمليات الإضافة (Admin) ---
+        async function handleAddAdmin(e) {
             e.preventDefault();
-            const d = { name: document.getElementById('delName').value, code: document.getElementById('delCode').value, timestamp: Date.now() };
-            await fetch(`${DB_URL}delegates.json`, { method: 'POST', body: JSON.stringify(d) });
+            const d = { name: document.getElementById('adminName').value, code: document.getElementById('adminCode').value, password: document.getElementById('adminPass').value, timestamp: Date.now() };
+            await fetch(`${DB_URL}admins.json`, { method: 'POST', body: JSON.stringify(d) });
             e.target.reset();
             loadAllData();
-            showToast("تم الحفظ");
+            showToast("تم حفظ المسؤول");
         }
 
         async function handleAddBranch(e) {
             e.preventDefault();
-            const b = { name: document.getElementById('branchName').value, timestamp: Date.now() };
+            const b = { name: document.getElementById('branchName').value, code: document.getElementById('branchCode').value, password: document.getElementById('branchPass').value, timestamp: Date.now() };
             await fetch(`${DB_URL}branches.json`, { method: 'POST', body: JSON.stringify(b) });
             e.target.reset();
             loadAllData();
-            showToast("تم الحفظ");
+            showToast("تم حفظ الفرع");
         }
 
+        async function handleAddDelegate(e) {
+            e.preventDefault();
+            const d = { name: document.getElementById('delName').value, code: document.getElementById('delCode').value, branchId: document.getElementById('delBranch').value, timestamp: Date.now() };
+            await fetch(`${DB_URL}delegates.json`, { method: 'POST', body: JSON.stringify(d) });
+            e.target.reset();
+            loadAllData();
+            showToast("تم حفظ المندوب");
+        }
+
+        // --- عمليات التعديل (Modals) ---
+        let currentEditType = '', currentEditId = '';
+        
+        function openEditModal(type, id) {
+            currentEditType = type; currentEditId = id;
+            const modal = document.getElementById('editModal');
+            const fields = document.getElementById('modalFields');
+            const title = document.getElementById('modalTitle');
+            
+            if(type === 'admin') {
+                title.innerText = "تعديل بيانات المسؤول";
+                const d = admins[id];
+                fields.innerHTML = `
+                    <input type="text" id="editAdminName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3">
+                    <input type="text" id="editAdminCode" value="${d.code}" class="w-full px-4 py-2 border rounded-lg mb-3">
+                    <input type="text" id="editAdminPass" value="${d.password}" placeholder="كلمة المرور" class="w-full px-4 py-2 border rounded-lg">`;
+            } else if (type === 'branch') {
+                title.innerText = "تعديل بيانات الفرع";
+                const d = branches[id];
+                fields.innerHTML = `
+                    <input type="text" id="editBranchName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3">
+                    <input type="text" id="editBranchCode" value="${d.code||''}" placeholder="كود الفرع" class="w-full px-4 py-2 border rounded-lg mb-3">
+                    <input type="text" id="editBranchPass" value="${d.password||''}" placeholder="كلمة المرور" class="w-full px-4 py-2 border rounded-lg">`;
+            } else if (type === 'delegate') {
+                title.innerText = "تعديل بيانات المندوب";
+                const d = delegates[id];
+                let branchOptions = '<option value="">-- بدون فرع --</option>';
+                Object.keys(branches).forEach(k => {
+                    branchOptions += `<option value="${k}" ${d.branchId===k?'selected':''}>${branches[k].name}</option>`;
+                });
+                fields.innerHTML = `
+                    <input type="text" id="editDelName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3">
+                    <input type="text" id="editDelCode" value="${d.code}" class="w-full px-4 py-2 border rounded-lg mb-3">
+                    <select id="editDelBranch" class="w-full px-4 py-2 border rounded-lg">${branchOptions}</select>`;
+            }
+            modal.classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+
+        async function handleEditSave(e) {
+            e.preventDefault();
+            let url = '', data = {};
+            if(currentEditType === 'admin') {
+                url = `${DB_URL}admins/${currentEditId}.json`;
+                data = { ...admins[currentEditId], name: document.getElementById('editAdminName').value, code: document.getElementById('editAdminCode').value, password: document.getElementById('editAdminPass').value };
+            } else if (currentEditType === 'branch') {
+                url = `${DB_URL}branches/${currentEditId}.json`;
+                data = { ...branches[currentEditId], name: document.getElementById('editBranchName').value, code: document.getElementById('editBranchCode').value, password: document.getElementById('editBranchPass').value };
+            } else if (currentEditType === 'delegate') {
+                url = `${DB_URL}delegates/${currentEditId}.json`;
+                data = { ...delegates[currentEditId], name: document.getElementById('editDelName').value, code: document.getElementById('editDelCode').value, branchId: document.getElementById('editDelBranch').value };
+            }
+
+            try {
+                await fetch(url, { method: 'PATCH', body: JSON.stringify(data) });
+                showToast("تم التعديل بنجاح");
+                closeModal();
+                loadAllData();
+            } catch(err) { showToast("خطأ في التعديل", "error"); }
+        }
+
+        // --- التقارير ---
         async function generateReport() {
             const start = document.getElementById('repFromDate').value, end = document.getElementById('repToDate').value, code = document.getElementById('repDelCode').value.trim();
             document.getElementById('reportLoading').classList.remove('hidden');
@@ -375,13 +709,12 @@
             });
             all.sort((a,b) => b.timestamp - a.timestamp);
             document.getElementById('reportTotalClicks').textContent = all.length;
-            document.getElementById('reportSubText').textContent = `تقرير مقصات الفترة: ${start} إلى ${end}`;
             const tbody = document.getElementById('reportTableBody');
             tbody.innerHTML = all.length ? '' : '<tr><td colspan="5" class="p-6 text-center">لا توجد بيانات</td></tr>';
             all.forEach(r => {
                 tbody.innerHTML += `<tr class="border-b">
                     <td class="p-3 text-sm">${r.date}</td><td class="p-3 text-xs" dir="ltr">${r.time}</td>
-                    <td class="p-3 font-bold">${r.delegateCode}</td><td class="p-3">${r.delegateName}</td>
+                    <td class="p-3 font-bold bg-gray-50">${r.delegateCode}</td><td class="p-3">${r.delegateName}</td>
                     <td class="p-3 font-bold text-teal-600">${r.branchName}</td>
                 </tr>`;
             });
@@ -390,3 +723,4 @@
     </script>
 </body>
 </html>
+
