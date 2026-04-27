@@ -1,15 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام مقصات - المطور</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
@@ -50,7 +46,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- شاشة تسجيل الدخول -->
     <div id="loginScreen" class="fixed inset-0 bg-gray-100 z-[999] flex flex-col items-center justify-center">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
             <i class="fa-solid fa-scissors text-5xl text-primary mb-4"></i>
@@ -70,7 +65,6 @@
         </div>
     </div>
 
-    <!-- التطبيق (مخفي حتى تسجيل الدخول) -->
     <div id="appContainer" class="hidden flex-col h-full w-full">
         <header class="bg-primary text-white shadow-md sticky top-0 z-50">
             <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -81,7 +75,6 @@
                 </div>
                 <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg" id="mainNav">
                     <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
-                    <!-- تبويب الإدارة يظهر فقط للمسؤولين -->
                     <button onclick="switchTab('adminTab')" id="btn-adminTab" class="nav-btn hidden px-4 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-gears ml-2"></i>الإدارة</button>
                     <button onclick="logout()" class="px-4 py-2 rounded-md font-semibold text-red-300 hover:bg-red-500 hover:text-white transition-all"><i class="fa-solid fa-sign-out-alt ml-2"></i>خروج</button>
                 </nav>
@@ -90,19 +83,21 @@
 
         <main class="flex-grow container mx-auto px-4 py-8 overflow-auto">
             
-            <!-- MAIN TAB (الرئيسية) -->
             <section id="mainTab" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col sm:flex-row gap-4 items-start sm:items-end">
                         <div class="w-full">
                             <label class="block text-sm font-semibold text-gray-600 mb-2">تاريخ اليوم</label>
                             <input type="date" id="recordDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition" onchange="loadRecords()">
                         </div>
-                        <div class="w-full">
+                        <div class="w-full relative">
                             <label class="block text-sm font-semibold text-gray-600 mb-2">اختر المندوب</label>
-                            <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition">
+                            <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition" onchange="updateDelegateTotal()">
                                 <option value="">-- يرجى اختيار مندوب --</option>
                             </select>
+                            <div id="delegateTotalBox" class="mt-2 text-sm font-bold text-teal-600 hidden bg-teal-50 p-2 rounded-lg border border-teal-100">
+                                إجمالي مقصات المندوب لليوم: <span id="delegateTotalValue" class="text-lg">0</span>
+                            </div>
                         </div>
                     </div>
                     <div class="col-span-1 bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg p-6 text-white flex flex-col justify-center items-center relative overflow-hidden">
@@ -115,6 +110,7 @@
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
                         <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>الفروع (لتحويل المقصات إليها)</h3>
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">كليك يمين لتحديد الكمية يدوياً</span>
                     </div>
                     <div id="loadingBranches" class="text-center text-gray-500 py-8 hidden">
                         <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i><br>جاري تحميل البيانات...
@@ -134,7 +130,9 @@
                                     <th class="p-3 border-b">م</th>
                                     <th class="p-3 border-b">الوقت</th>
                                     <th class="p-3 border-b">المندوب</th>
-                                    <th class="p-3 border-b">الفرع المُحول له</th>
+                                    <th class="p-3 border-b">الفرع</th>
+                                    <th class="p-3 border-b text-center">الكمية</th>
+                                    <th class="p-3 border-b">تفاصيل الأوردر</th>
                                     <th class="p-3 border-b text-center admin-only hidden">إجراء</th>
                                 </tr>
                             </thead>
@@ -144,10 +142,8 @@
                 </div>
             </section>
 
-            <!-- ADMIN TAB (لوحة الإدارة) -->
             <section id="adminTab" class="tab-content">
                 <div class="flex flex-col md:flex-row gap-6">
-                    <!-- القائمة الجانبية للإدارة -->
                     <div class="w-full md:w-1/4">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
                             <button onclick="switchAdminTab('adminsSubTab')" id="btn-adminsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 bg-gray-50 text-primary border-r-4 border-r-primary"><i class="fa-solid fa-user-shield ml-2"></i>المسؤولين</button>
@@ -157,10 +153,8 @@
                         </div>
                     </div>
 
-                    <!-- محتوى الإدارة -->
                     <div class="w-full md:w-3/4">
                         
-                        <!-- المسؤولين -->
                         <div id="adminsSubTab" class="sub-tab-content active">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
                                 <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-secondary ml-2"></i>إضافة مسؤول جديد</h2>
@@ -176,12 +170,11 @@
                             </div>
                         </div>
 
-                        <!-- الفروع -->
                         <div id="branchesSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
                                 <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-secondary ml-2"></i>إضافة فرع جديد</h2>
                                 <form onsubmit="handleAddBranch(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <input type="text" id="branchName" required placeholder="اسم الفرع" class="px-4 py-2 border rounded-lg outline-none">
+                                    <input type="text" id="branchName" required placeholder="اسم الفرع (استخدم كلمة 'اوردار' لفرع الأوردرات)" class="px-4 py-2 border rounded-lg outline-none">
                                     <input type="text" id="branchCode" required placeholder="كود الفرع (للدخول)" class="px-4 py-2 border rounded-lg outline-none">
                                     <input type="password" id="branchPass" required placeholder="كلمة المرور" class="px-4 py-2 border rounded-lg outline-none">
                                     <button type="submit" class="sm:col-span-3 bg-primary text-white py-2 rounded-lg font-bold">حفظ الفرع</button>
@@ -192,7 +185,6 @@
                             </div>
                         </div>
 
-                        <!-- المناديب -->
                         <div id="delegatesSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
                                 <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-secondary ml-2"></i>إضافة مندوب جديد</h2>
@@ -210,26 +202,32 @@
                             </div>
                         </div>
 
-                        <!-- التقارير -->
                         <div id="reportsSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                                     <div><label class="block text-sm font-semibold mb-2">من تاريخ</label><input type="date" id="repFromDate" class="w-full px-4 py-2 border rounded-lg"></div>
                                     <div><label class="block text-sm font-semibold mb-2">إلى تاريخ</label><input type="date" id="repToDate" class="w-full px-4 py-2 border rounded-lg"></div>
                                     <div><label class="block text-sm font-semibold mb-2">كود المندوب</label><input type="text" id="repDelCode" placeholder="الكل إذا ترك فارغاً" class="w-full px-4 py-2 border rounded-lg"></div>
-                                    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold">عرض التقرير</button>
+                                    <div><label class="block text-sm font-semibold mb-2">رقم الأوردر</label><input type="text" id="repOrderNum" placeholder="بحث برقم أوردر" class="w-full px-4 py-2 border rounded-lg"></div>
+                                    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold h-[42px]">عرض التقرير</button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 mb-6 text-center">
                                 <div class="bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl shadow-lg p-6 text-white">
-                                    <h3 class="text-xl font-semibold mb-2">إجمالي المقصات</h3>
+                                    <h3 class="text-xl font-semibold mb-2">إجمالي المقصات / الحركات</h3>
                                     <div class="text-4xl font-bold" id="reportTotalClicks">0</div>
                                 </div>
                             </div>
                             <div id="reportLoading" class="text-center py-4 hidden"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-secondary"></i></div>
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                                 <table class="w-full text-right">
-                                    <thead class="bg-gray-50 text-sm"><tr><th class="p-3">التاريخ</th><th class="p-3">الوقت</th><th class="p-3">كود</th><th class="p-3">المندوب</th><th class="p-3">مُحول إلى فرع</th></tr></thead>
+                                    <thead class="bg-gray-50 text-sm"><tr>
+                                        <th class="p-3">التاريخ والوقت</th>
+                                        <th class="p-3">المندوب</th>
+                                        <th class="p-3">مُحول إلى</th>
+                                        <th class="p-3 text-center">الكمية</th>
+                                        <th class="p-3">تفاصيل الأوردر</th>
+                                    </tr></thead>
                                     <tbody id="reportTableBody"></tbody>
                                 </table>
                             </div>
@@ -241,7 +239,6 @@
         </main>
     </div>
 
-    <!-- Modals for Editing -->
     <div id="editModal" class="modal">
         <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
             <div class="flex justify-between items-center mb-4">
@@ -255,21 +252,64 @@
         </div>
     </div>
 
+    <div id="orderModal" class="modal">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2"><i class="fa-solid fa-box-open ml-2"></i>تسجيل بيانات الأوردر</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">رقم الأوردر</label>
+                    <input type="text" id="orderNumberInput" placeholder="أدخل رقم الأوردر" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">قيمة الأوردر</label>
+                    <input type="number" id="orderValueInput" placeholder="أدخل قيمة الأوردر" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">الكمية / يحسب بمقدار</label>
+                    <select id="orderCountInput" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-secondary outline-none font-bold">
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                        <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="saveOrderData()" class="flex-1 bg-primary text-white py-2 rounded-lg font-bold hover:bg-blue-800">حفظ وحساب</button>
+                    <button onclick="closeOrderModal()" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-bold hover:bg-gray-300">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="weightModal" class="modal">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-xs text-center">
+            <h2 class="text-lg font-bold text-gray-800 mb-2">تحديد الكمية</h2>
+            <p class="text-sm text-gray-500 mb-4" id="weightBranchTitle"></p>
+            <input type="number" id="manualWeightInput" min="1" max="100" value="1" class="w-full px-4 py-3 border-2 border-secondary rounded-lg focus:ring-2 focus:ring-primary outline-none text-center text-xl font-bold mb-4">
+            <div class="flex gap-2">
+                <button onclick="saveManualWeight()" class="flex-1 bg-secondary text-white py-2 rounded-lg font-bold hover:bg-blue-600">تأكيد</button>
+                <button onclick="closeWeightModal()" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-bold hover:bg-gray-300">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const DB_URL = 'https://story-64520-default-rtdb.firebaseio.com/';
         let delegates = {}, branches = {}, admins = {}, currentRecords = {};
         
-        let currentUser = null; // { role: 'admin'|'branch', id: string, name: string }
+        let currentUser = null; 
         let currentLoginTab = 'branch';
 
-        // --- تهيئة الصفحة والتنقل ---
+        // متغيرات حفظ الفرع المؤقت للعمليات
+        let pendingBranchId = '';
+        let pendingBranchName = '';
+
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('recordDate').value = today;
             document.getElementById('repFromDate').value = today;
             document.getElementById('repToDate').value = today;
             
-            // تحقق لو في مستخدم مسجل مسبقاً في الجلسة
             const savedUser = sessionStorage.getItem('scissorsUser');
             if(savedUser) {
                 currentUser = JSON.parse(savedUser);
@@ -320,7 +360,6 @@
             setTimeout(() => t.remove(), 3000);
         }
 
-        // --- نظام تسجيل الدخول ---
         async function handleLogin(e) {
             e.preventDefault();
             const code = document.getElementById('loginCode').value.trim();
@@ -331,12 +370,10 @@
 
             try {
                 if (currentLoginTab === 'admin') {
-                    // تحقق من الإدارة
                     const res = await fetch(`${DB_URL}admins.json`);
                     const data = await res.json() || {};
                     const adminId = Object.keys(data).find(k => data[k].code === code && data[k].password === pass);
                     
-                    // مستخدم افتراضي للإدارة في حال قاعدة البيانات فارغة (للتجربة أول مرة)
                     if(adminId || (code === 'admin' && pass === 'admin')) {
                         currentUser = { role: 'admin', id: adminId || 'admin_master', name: adminId ? data[adminId].name : 'المدير العام' };
                         sessionStorage.setItem('scissorsUser', JSON.stringify(currentUser));
@@ -345,7 +382,6 @@
                         showToast("بيانات الإدارة غير صحيحة", "error");
                     }
                 } else {
-                    // تحقق من الفرع
                     const res = await fetch(`${DB_URL}branches.json`);
                     const data = await res.json() || {};
                     const branchId = Object.keys(data).find(k => data[k].code === code && data[k].password === pass);
@@ -358,9 +394,7 @@
                         showToast("بيانات الفرع غير صحيحة", "error");
                     }
                 }
-            } catch(e) {
-                showToast("خطأ في الاتصال بالشبكة", "error");
-            }
+            } catch(e) { showToast("خطأ في الاتصال بالشبكة", "error"); }
 
             document.getElementById('loginBtn').classList.remove('hidden');
             document.getElementById('loginLoading').classList.add('hidden');
@@ -379,7 +413,7 @@
             } else {
                 document.getElementById('btn-adminTab').classList.add('hidden');
                 document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-                switchTab('mainTab'); // إجبار الفرع على الرئيسية
+                switchTab('mainTab');
             }
             
             loadAllData();
@@ -390,7 +424,6 @@
             window.location.reload();
         }
 
-        // --- جلب البيانات وعرضها ---
         async function loadAllData() {
             try {
                 document.getElementById('loadingBranches').classList.remove('hidden');
@@ -421,11 +454,7 @@
             tbody.innerHTML = '';
             Object.keys(admins).forEach(k => {
                 const a = admins[k];
-                tbody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-3 font-bold">${a.name}</td><td class="p-3">${a.code}</td>
-                        <td class="p-3 text-center"><button onclick="openEditModal('admin', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
-                    </tr>`;
+                tbody.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${a.name}</td><td class="p-3">${a.code}</td><td class="p-3 text-center"><button onclick="openEditModal('admin', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`;
             });
         }
 
@@ -439,16 +468,10 @@
             const keys = Object.keys(branches).sort((a,b) => branches[a].timestamp - branches[b].timestamp);
             keys.forEach(k => {
                 const b = branches[k];
-                if(tbody) {
-                    tbody.innerHTML += `
-                        <tr class="border-b">
-                            <td class="p-3 font-bold text-primary">${b.name}</td><td class="p-3">${b.code || '-'}</td>
-                            <td class="p-3 text-center"><button onclick="openEditModal('branch', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
-                        </tr>`;
-                }
+                if(tbody) tbody.innerHTML += `<tr class="border-b"><td class="p-3 font-bold text-primary">${b.name}</td><td class="p-3">${b.code || '-'}</td><td class="p-3 text-center"><button onclick="openEditModal('branch', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`;
                 if(selectDel) selectDel.innerHTML += `<option value="${k}">${b.name}</option>`;
             });
-            renderBranchButtons(); // أزرار التحويل في الرئيسية
+            renderBranchButtons();
         }
 
         function updateDelegatesUI() {
@@ -463,15 +486,8 @@
                 const d = delegates[k];
                 const branchName = d.branchId && branches[d.branchId] ? branches[d.branchId].name : 'غير محدد';
                 
-                if(tbody) {
-                    tbody.innerHTML += `
-                        <tr class="border-b">
-                            <td class="p-3 text-secondary font-bold">${d.code}</td><td class="p-3">${d.name}</td><td class="p-3 text-gray-500">${branchName}</td>
-                            <td class="p-3 text-center"><button onclick="openEditModal('delegate', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td>
-                        </tr>`;
-                }
+                if(tbody) tbody.innerHTML += `<tr class="border-b"><td class="p-3 text-secondary font-bold">${d.code}</td><td class="p-3">${d.name}</td><td class="p-3 text-gray-500">${branchName}</td><td class="p-3 text-center"><button onclick="openEditModal('delegate', '${k}')" class="text-secondary hover:text-primary"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`;
 
-                // المنطق: إذا كان المسجل فرع، أظهر فقط مناديب فرعه في الرئيسية
                 if(selectRecord) {
                     if (currentUser.role === 'admin' || (currentUser.role === 'branch' && d.branchId === currentUser.id)) {
                         selectRecord.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
@@ -487,14 +503,12 @@
             const dateStr = document.getElementById('recordDate').value;
             const records = currentRecords[dateStr] || {};
             
-            // حساب عدد المقصات لكل فرع لليوم الحالي للترتيب والعرض
             const branchStats = {};
             Object.values(records).forEach(r => {
-                branchStats[r.branchId] = (branchStats[r.branchId] || 0) + 1;
+                branchStats[r.branchId] = (branchStats[r.branchId] || 0) + (Number(r.count) || 1);
             });
             
             let visibleCount = 0;
-            // ترتيب الفروع حسب الأكثر نشاطاً ثم الأحدث
             const sortedKeys = Object.keys(branches).sort((a, b) => {
                 const countA = branchStats[a] || 0;
                 const countB = branchStats[b] || 0;
@@ -503,43 +517,117 @@
             });
 
             sortedKeys.forEach(k => {
-                // المنطق: لا تظهر الفرع الخاص بالمستخدم الحالي في قائمة التحويل
                 if (currentUser.role === 'branch' && k === currentUser.id) return;
                 
                 const b = branches[k];
                 const count = branchStats[k] || 0;
                 visibleCount++;
+                
+                // استخدام ألوان مميزة لفرع الأوردر
+                const isOrder = b.name.includes('اوردار') || b.name.includes('أوردر') || b.name.includes('اوردر');
+                const btnClasses = isOrder ? "bg-amber-50 border-2 border-amber-500 text-amber-700 hover:bg-amber-500 hover:text-white" : "bg-white border-2 border-secondary text-secondary hover:bg-secondary hover:text-white";
+                const icon = isOrder ? "fa-box-open" : "fa-shop";
+
                 grid.innerHTML += `
-                    <button onclick="recordClick('${k}', '${b.name}')" class="bg-white border-2 border-secondary text-secondary hover:bg-secondary hover:text-white font-bold py-4 px-2 rounded-xl transition shadow-sm relative overflow-hidden flex flex-col items-center">
-                        ${count > 0 ? `<span class="absolute top-0 right-0 bg-accent text-white text-[10px] px-2 py-0.5 rounded-bl-lg">${count} مقص</span>` : ''}
-                        <i class="fa-solid fa-shop mb-1"></i>
+                    <button onclick="handleBranchLeftClick('${k}', '${b.name}')" oncontextmenu="handleBranchRightClick(event, '${k}', '${b.name}')" class="${btnClasses} font-bold py-4 px-2 rounded-xl transition shadow-sm relative overflow-hidden flex flex-col items-center">
+                        ${count > 0 ? `<span class="absolute top-0 right-0 bg-accent text-white text-[10px] px-2 py-0.5 rounded-bl-lg">${count}</span>` : ''}
+                        <i class="fa-solid ${icon} mb-1"></i>
                         <span>${b.name}</span>
                     </button>`;
             });
             document.getElementById('emptyBranchesMsg').classList.toggle('hidden', visibleCount === 0);
         }
 
-        // --- تسجيل المقصات وحذفها ---
-        async function recordClick(toBranchId, toBranchName) {
+        // --- تفاعلات الفروع (كليك شمال / يمين) ---
+        function handleBranchLeftClick(id, name) {
+            if(!document.getElementById('recordDelegate').value) {
+                return showToast("اختر المندوب أولاً", "error");
+            }
+            if (name.includes('اوردار') || name.includes('أوردر') || name.includes('اوردر')) {
+                openOrderModal(id, name);
+            } else {
+                recordClick(id, name, 1);
+            }
+        }
+
+        function handleBranchRightClick(e, id, name) {
+            e.preventDefault(); // منع ظهور قائمة المتصفح
+            if(!document.getElementById('recordDelegate').value) {
+                return showToast("اختر المندوب أولاً", "error");
+            }
+            // إذا كان فرع أوردر، من الأفضل فتح نافذة الأوردر لتسجيل الرقم والقيمة
+            if (name.includes('اوردار') || name.includes('أوردر') || name.includes('اوردر')) {
+                openOrderModal(id, name);
+            } else {
+                openWeightModal(id, name);
+            }
+        }
+
+        // --- نوافذ الأوردر والكميات (Modals) ---
+        function openOrderModal(id, name) {
+            pendingBranchId = id;
+            pendingBranchName = name;
+            document.getElementById('orderNumberInput').value = '';
+            document.getElementById('orderValueInput').value = '';
+            document.getElementById('orderCountInput').value = '1';
+            document.getElementById('orderModal').classList.add('active');
+        }
+
+        function closeOrderModal() { document.getElementById('orderModal').classList.remove('active'); }
+
+        function saveOrderData() {
+            const orderNum = document.getElementById('orderNumberInput').value.trim();
+            const orderVal = document.getElementById('orderValueInput').value.trim();
+            const count = parseInt(document.getElementById('orderCountInput').value) || 1;
+            
+            if(!orderNum) return showToast("يرجى إدخال رقم الأوردر", "error");
+
+            closeOrderModal();
+            recordClick(pendingBranchId, pendingBranchName, count, orderNum, orderVal);
+        }
+
+        function openWeightModal(id, name) {
+            pendingBranchId = id;
+            pendingBranchName = name;
+            document.getElementById('weightBranchTitle').innerText = `للفرع: ${name}`;
+            document.getElementById('manualWeightInput').value = '1';
+            document.getElementById('weightModal').classList.add('active');
+            setTimeout(() => document.getElementById('manualWeightInput').focus(), 100);
+        }
+
+        function closeWeightModal() { document.getElementById('weightModal').classList.remove('active'); }
+
+        function saveManualWeight() {
+            const count = parseInt(document.getElementById('manualWeightInput').value) || 1;
+            if(count <= 0) return showToast("أدخل رقم صحيح أكبر من صفر", "error");
+            
+            closeWeightModal();
+            recordClick(pendingBranchId, pendingBranchName, count);
+        }
+
+        // --- الحفظ الأساسي للسجلات ---
+        async function recordClick(toBranchId, toBranchName, count = 1, orderNum = '', orderVal = '') {
             const date = document.getElementById('recordDate').value;
             const delId = document.getElementById('recordDelegate').value;
-            if(!delId) return showToast("اختر المندوب أولاً", "error");
-
+            
             const rec = {
                 branchId: toBranchId, 
                 branchName: toBranchName,
                 delegateId: delId, 
                 delegateName: delegates[delId].name,
                 delegateCode: delegates[delId].code,
-                sourceBranchId: delegates[delId].branchId || 'admin', // الفرع مصدر المقص
+                sourceBranchId: delegates[delId].branchId || 'admin',
                 time: new Date().toLocaleTimeString('ar-EG'),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                count: count,
+                orderNumber: orderNum,
+                orderValue: orderVal
             };
 
             try {
                 const res = await fetch(`${DB_URL}records/${date}.json`, { method: 'POST', body: JSON.stringify(rec) });
                 if(res.ok) {
-                    showToast(`تم تحويل مقصة لـ ${toBranchName}`);
+                    showToast(`تم التسجيل بنجاح لـ ${toBranchName} (الكمية: ${count})`);
                     await loadRecords();
                 }
             } catch (e) { showToast("خطأ في الحفظ", "error"); }
@@ -551,7 +639,7 @@
                 const res = await fetch(`${DB_URL}records/${date}.json`);
                 currentRecords[date] = await res.json() || {};
                 renderRecordsTable(date);
-                renderBranchButtons(); // تحديث عداد الأزرار وترتيبها بعد جلب السجلات
+                renderBranchButtons(); 
             } catch (e) {}
         }
 
@@ -559,40 +647,70 @@
             const tbody = document.getElementById('recordsTableBody');
             const data = currentRecords[date] || {};
             
-            // تصفية السجلات بناء على الصلاحية (الإدارة ترى الكل، الفرع يرى مقصات مناديبه فقط)
             const filteredKeys = Object.keys(data).filter(k => {
                 if(currentUser.role === 'admin') return true;
-                
                 const record = data[k];
-                // التوافق مع السجلات القديمة التي لم يكن يُسجل فيها (sourceBranchId)
                 if (!record.sourceBranchId) {
                     const delegate = delegates[record.delegateId];
-                    // إذا كان المندوب القديم تم ربطه بالفرع الحالي، إعرض السجل
                     return delegate && delegate.branchId === currentUser.id;
                 }
-                
                 return record.sourceBranchId === currentUser.id;
             });
             
             filteredKeys.sort((a,b) => data[b].timestamp - data[a].timestamp);
             
-            document.getElementById('totalClicksCounter').textContent = filteredKeys.length;
-            tbody.innerHTML = filteredKeys.length ? '' : `<tr><td colspan="${currentUser.role==='admin'?5:4}" class="p-4 text-center">لا توجد سجلات</td></tr>`;
+            // حساب الإجمالي بناء على الكمية (count) وليس عدد الصفوف فقط
+            let totalCounter = 0;
+            filteredKeys.forEach(k => { totalCounter += (Number(data[k].count) || 1); });
+            
+            document.getElementById('totalClicksCounter').textContent = totalCounter;
+            
+            tbody.innerHTML = filteredKeys.length ? '' : `<tr><td colspan="${currentUser.role==='admin'?7:6}" class="p-4 text-center">لا توجد سجلات</td></tr>`;
             
             filteredKeys.forEach((k, i) => {
                 const r = data[k];
+                const rCount = Number(r.count) || 1;
+                const orderDetails = r.orderNumber ? `<span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">رقم: ${r.orderNumber} ${r.orderValue ? ` | ق: ${r.orderValue}` : ''}</span>` : '<span class="text-gray-300">-</span>';
+
                 tbody.innerHTML += `
                 <tr class="border-b hover:bg-blue-50">
                     <td class="p-3">${i+1}</td><td class="p-3" dir="ltr">${r.time}</td>
                     <td class="p-3 text-sm"><span class="bg-gray-100 px-2 rounded border">${r.delegateCode}</span> ${r.delegateName}</td>
                     <td class="p-3 font-bold text-primary">${r.branchName}</td>
+                    <td class="p-3 text-center"><span class="bg-accent px-2 py-0.5 text-white font-bold rounded-full">x${rCount}</span></td>
+                    <td class="p-3">${orderDetails}</td>
                     ${currentUser.role === 'admin' ? `<td class="p-3 text-center"><button onclick="deleteRecord('${date}', '${k}')" class="text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded"><i class="fa-solid fa-trash"></i></button></td>` : ''}
                 </tr>`;
             });
+
+            updateDelegateTotal(); // تحديث إجمالي المندوب المعروض حالياً
+        }
+
+        function updateDelegateTotal() {
+            const delId = document.getElementById('recordDelegate').value;
+            const dateStr = document.getElementById('recordDate').value;
+            const box = document.getElementById('delegateTotalBox');
+            const valSpan = document.getElementById('delegateTotalValue');
+            
+            if(!delId) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            const records = currentRecords[dateStr] || {};
+            let delTotal = 0;
+            Object.values(records).forEach(r => {
+                if(r.delegateId === delId) {
+                    delTotal += (Number(r.count) || 1);
+                }
+            });
+
+            valSpan.textContent = delTotal;
+            box.classList.remove('hidden');
         }
 
         async function deleteRecord(date, recordId) {
-            if(!confirm("هل أنت متأكد من حذف هذه المَقصّة؟")) return;
+            if(!confirm("هل أنت متأكد من حذف هذا السجل؟")) return;
             try {
                 await fetch(`${DB_URL}records/${date}/${recordId}.json`, { method: 'DELETE' });
                 showToast("تم الحذف بنجاح");
@@ -600,7 +718,7 @@
             } catch(e) { showToast("خطأ أثناء الحذف", "error"); }
         }
 
-        // --- عمليات الإضافة (Admin) ---
+        // --- عمليات التعديل والحفظ الأخرى ---
         async function handleAddAdmin(e) {
             e.preventDefault();
             const d = { name: document.getElementById('adminName').value, code: document.getElementById('adminCode').value, password: document.getElementById('adminPass').value, timestamp: Date.now() };
@@ -628,9 +746,7 @@
             showToast("تم حفظ المندوب");
         }
 
-        // --- عمليات التعديل (Modals) ---
         let currentEditType = '', currentEditId = '';
-        
         function openEditModal(type, id) {
             currentEditType = type; currentEditId = id;
             const modal = document.getElementById('editModal');
@@ -640,28 +756,17 @@
             if(type === 'admin') {
                 title.innerText = "تعديل بيانات المسؤول";
                 const d = admins[id];
-                fields.innerHTML = `
-                    <input type="text" id="editAdminName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <input type="text" id="editAdminCode" value="${d.code}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <input type="text" id="editAdminPass" value="${d.password}" placeholder="كلمة المرور" class="w-full px-4 py-2 border rounded-lg">`;
+                fields.innerHTML = `<input type="text" id="editAdminName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3"><input type="text" id="editAdminCode" value="${d.code}" class="w-full px-4 py-2 border rounded-lg mb-3"><input type="text" id="editAdminPass" value="${d.password}" placeholder="كلمة المرور" class="w-full px-4 py-2 border rounded-lg">`;
             } else if (type === 'branch') {
                 title.innerText = "تعديل بيانات الفرع";
                 const d = branches[id];
-                fields.innerHTML = `
-                    <input type="text" id="editBranchName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <input type="text" id="editBranchCode" value="${d.code||''}" placeholder="كود الفرع" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <input type="text" id="editBranchPass" value="${d.password||''}" placeholder="كلمة المرور" class="w-full px-4 py-2 border rounded-lg">`;
+                fields.innerHTML = `<input type="text" id="editBranchName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3"><input type="text" id="editBranchCode" value="${d.code||''}" placeholder="كود الفرع" class="w-full px-4 py-2 border rounded-lg mb-3"><input type="text" id="editBranchPass" value="${d.password||''}" placeholder="كلمة المرور" class="w-full px-4 py-2 border rounded-lg">`;
             } else if (type === 'delegate') {
                 title.innerText = "تعديل بيانات المندوب";
                 const d = delegates[id];
                 let branchOptions = '<option value="">-- بدون فرع --</option>';
-                Object.keys(branches).forEach(k => {
-                    branchOptions += `<option value="${k}" ${d.branchId===k?'selected':''}>${branches[k].name}</option>`;
-                });
-                fields.innerHTML = `
-                    <input type="text" id="editDelName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <input type="text" id="editDelCode" value="${d.code}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <select id="editDelBranch" class="w-full px-4 py-2 border rounded-lg">${branchOptions}</select>`;
+                Object.keys(branches).forEach(k => { branchOptions += `<option value="${k}" ${d.branchId===k?'selected':''}>${branches[k].name}</option>`; });
+                fields.innerHTML = `<input type="text" id="editDelName" value="${d.name}" class="w-full px-4 py-2 border rounded-lg mb-3"><input type="text" id="editDelCode" value="${d.code}" class="w-full px-4 py-2 border rounded-lg mb-3"><select id="editDelBranch" class="w-full px-4 py-2 border rounded-lg">${branchOptions}</select>`;
             }
             modal.classList.add('active');
         }
@@ -692,7 +797,11 @@
 
         // --- التقارير ---
         async function generateReport() {
-            const start = document.getElementById('repFromDate').value, end = document.getElementById('repToDate').value, code = document.getElementById('repDelCode').value.trim();
+            const start = document.getElementById('repFromDate').value;
+            const end = document.getElementById('repToDate').value;
+            const code = document.getElementById('repDelCode').value.trim();
+            const orderFilter = document.getElementById('repOrderNum').value.trim();
+            
             document.getElementById('reportLoading').classList.remove('hidden');
             let all = [];
             const dates = [];
@@ -701,26 +810,48 @@
                 dates.push(curr.toISOString().split('T')[0]);
                 curr.setDate(curr.getDate() + 1);
             }
+            
             const res = await Promise.all(dates.map(d => fetch(`${DB_URL}records/${d}.json`).then(r => r.json())));
             res.forEach((day, i) => {
-                if(day) Object.values(day).forEach(r => {
-                    if(!code || r.delegateCode === code) all.push({...r, date: dates[i]});
-                });
+                if(day) {
+                    Object.values(day).forEach(r => {
+                        const codeMatch = !code || r.delegateCode === code;
+                        const orderMatch = !orderFilter || (r.orderNumber && r.orderNumber.includes(orderFilter));
+                        
+                        if(codeMatch && orderMatch) {
+                            all.push({...r, date: dates[i]});
+                        }
+                    });
+                }
             });
+            
             all.sort((a,b) => b.timestamp - a.timestamp);
-            document.getElementById('reportTotalClicks').textContent = all.length;
+            
+            let reportTotal = 0;
             const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = all.length ? '' : '<tr><td colspan="5" class="p-6 text-center">لا توجد بيانات</td></tr>';
+            tbody.innerHTML = '';
+            
             all.forEach(r => {
-                tbody.innerHTML += `<tr class="border-b">
-                    <td class="p-3 text-sm">${r.date}</td><td class="p-3 text-xs" dir="ltr">${r.time}</td>
-                    <td class="p-3 font-bold bg-gray-50">${r.delegateCode}</td><td class="p-3">${r.delegateName}</td>
+                const rCount = Number(r.count) || 1;
+                reportTotal += rCount;
+                
+                const orderDetails = r.orderNumber ? `<span class="font-bold text-amber-700">رقم: ${r.orderNumber}</span><br><span class="text-xs text-gray-500">قيمة: ${r.orderValue||'-'}</span>` : '<span class="text-gray-300">-</span>';
+                
+                tbody.innerHTML += `
+                <tr class="border-b">
+                    <td class="p-3 text-sm"><div>${r.date}</div><div class="text-xs text-gray-500" dir="ltr">${r.time}</div></td>
+                    <td class="p-3"><span class="font-bold bg-gray-50 px-1 rounded border">${r.delegateCode}</span> ${r.delegateName}</td>
                     <td class="p-3 font-bold text-teal-600">${r.branchName}</td>
+                    <td class="p-3 text-center"><span class="bg-accent px-2 py-1 text-white font-bold rounded">x${rCount}</span></td>
+                    <td class="p-3">${orderDetails}</td>
                 </tr>`;
             });
+            
+            if(all.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">لا توجد بيانات مطابقة</td></tr>';
+            
+            document.getElementById('reportTotalClicks').textContent = reportTotal;
             document.getElementById('reportLoading').classList.add('hidden');
         }
     </script>
 </body>
-</html>
-
+                                                                                        </html>
