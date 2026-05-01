@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -318,9 +318,9 @@
         </div>
     </div>
 
-    <!-- نافذة الأوردرات المعلقة -->
+    <!-- نافذة الأوردرات المعلقة تم التعديل عليها هنا -->
     <div id="pendingOrdersModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl max-h-[85vh] flex flex-col transform transition-all">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-5xl max-h-[85vh] flex flex-col transform transition-all">
             <div class="flex justify-between items-center mb-5 border-b pb-4">
                 <h2 class="text-2xl font-bold text-amber-600 flex items-center"><i class="fa-solid fa-clock-rotate-left ml-3 text-3xl"></i> الأوردرات المعلقة (قيد التوصيل)</h2>
                 <button onclick="closePendingOrdersModal()" class="text-gray-400 hover:text-red-500 transition-colors bg-gray-100 hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -334,6 +334,8 @@
                         <tr>
                             <th class="p-4 border-b font-bold">التاريخ والوقت</th>
                             <th class="p-4 border-b font-bold">رقم الأوردر</th>
+                            <!-- التعديل هنا: إضافة عمود القيمة -->
+                            <th class="p-4 border-b font-bold">القيمة</th>
                             <th class="p-4 border-b font-bold">المندوب</th>
                             <th class="p-4 border-b font-bold text-center">إجراء (تأكيد الاستلام)</th>
                         </tr>
@@ -721,16 +723,16 @@
             let delegatePhoneStr = delegate.phone ? delegate.phone : 'غير مسجل';
 
             // الرسالة المنسقة والمطلوبة
-            const message = ` تم تسجيل الطلب بنجاح 🟢\n\n` +
+            const message = ` تم تسجيل الطلب بنجاح \n\n` +
             `*\[ تفاصيل الأوردر \]*\n` +
-            `• حالة الطلب : جاري التوصيل 🚚\n` +
+            `• حالة الطلب : جاري التوصيل \n` +
             `• رقم الأوردر: ${orderNum}\n` +
             `• إجمالي القيمة: ${orderVal ? orderVal + ' ج.م' : 'تحدد عند الاستلام'}\n\n` +
             `*\[ بيانات المندوب \]*\n` +
             `• الاسم: ${delegate.name}\n` +
             `• الهاتف: ${delegatePhoneStr}\n\n` +
             ` شكراً لاختياركم صيدليات دكتور وائل حافظ ⚕️\n` +
-            ` نتمنى لكم دوام الصحة والعافية 🤍`;
+            ` نتمنى لكم دوام الصحة والعافية `;
 
             const encodedMsg = encodeURIComponent(message);
             const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMsg}`;
@@ -827,7 +829,7 @@
             } catch(e) { showToast("حدث خطأ أثناء الحذف", "error"); }
         }
 
-        // --- الأوردرات المعلقة ---
+        // --- الأوردرات المعلقة تم التعديل عليها هنا ---
         async function openPendingOrdersModal() {
             document.getElementById('pendingOrdersModal').classList.add('active');
             const tbody = document.getElementById('pendingOrdersTableBody');
@@ -865,13 +867,16 @@
                 pendingOrders.sort((a,b) => b.timestamp - a.timestamp);
 
                 if(pendingOrders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-clipboard-check text-4xl text-green-400 mb-3 block"></i><span class="font-bold text-lg">ممتاز! لا توجد أوردرات معلقة حالياً.</span></td></tr>';
+                    // تم تعديل colspan هنا إلى 5
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-clipboard-check text-4xl text-green-400 mb-3 block"></i><span class="font-bold text-lg">ممتاز! لا توجد أوردرات معلقة حالياً.</span></td></tr>';
                 } else {
                     pendingOrders.forEach(r => {
+                        // التعديل هنا: إضافة العمود الخاص بالقيمة وإعطائه تنسيق جيد
                         tbody.innerHTML += `
                         <tr class="border-b hover:bg-orange-50/30 transition-colors">
                             <td class="p-4 text-sm"><div class="font-bold text-gray-700">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div></td>
                             <td class="p-4"><span class="font-extrabold text-orange-600 bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg shadow-sm tracking-wider"># ${r.orderNumber}</span></td>
+                            <td class="p-4 font-bold text-gray-800">${r.orderValue ? r.orderValue + ' <span class="text-xs text-gray-500">ج.م</span>' : '<span class="text-gray-400 text-sm">غير محدد</span>'}</td>
                             <td class="p-4 font-semibold text-gray-800"><i class="fa-solid fa-motorcycle text-gray-400 mr-1"></i> ${r.delegateName}</td>
                             <td class="p-4 text-center">
                                 <button onclick="markOrderAsDelivered('${r.date}', '${r.id}')" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 shadow-md transform hover:scale-105 transition-all"><i class="fa-solid fa-check-double mr-1"></i> تأكيد التسليم</button>
