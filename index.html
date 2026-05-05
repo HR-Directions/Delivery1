@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -79,6 +78,7 @@
                     <i class="fa-solid fa-scissors text-2xl text-accent"></i>
                     <h1 class="text-2xl font-bold tracking-wider">نظام مقصات</h1>
                     <span id="userInfoDisplay" class="bg-white text-primary text-xs px-2 py-1 rounded-full font-bold ml-4 shadow-sm"></span>
+                    <span id="liveSyncIndicator" class="hidden flex items-center text-[10px] bg-green-500/20 text-green-100 border border-green-400 px-2 py-1 rounded-full"><div class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></div>مزامنة حية</span>
                 </div>
                 <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg shadow-inner" id="mainNav">
                     <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
@@ -233,9 +233,9 @@
                                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                                     <div><label class="block text-sm font-semibold mb-2 text-gray-600">من تاريخ</label><input type="date" id="repFromDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
                                     <div><label class="block text-sm font-semibold mb-2 text-gray-600">إلى تاريخ</label><input type="date" id="repToDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">كود المندوب</label><input type="text" id="repDelCode" placeholder="الكل إذا تُرك فارغاً" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">كود المندوب</label><input type="text" id="repDelCode" placeholder="الكل إذا فارغ" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
                                     <div><label class="block text-sm font-semibold mb-2 text-gray-600">رقم الأوردر</label><input type="text" id="repOrderNum" placeholder="بحث برقم أوردر" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-                                    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold h-[42px] hover:bg-blue-600 transition shadow-sm"><i class="fa-solid fa-magnifying-glass ml-1"></i> عرض التقرير</button>
+                                    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold h-[42px] hover:bg-blue-600 transition shadow-sm"><i class="fa-solid fa-magnifying-glass ml-1"></i> عرض</button>
                                 </div>
                             </div>
                             
@@ -249,25 +249,33 @@
                                 </div>
                             </div>
 
+                            <div id="bulkDeleteContainer" class="hidden mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm transition-all duration-300">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-red-200 text-red-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-inner" id="selectedCountBadge">0</div>
+                                    <span class="text-red-800 font-bold text-sm" id="selectedCountText">سجل محدد للحذف</span>
+                                </div>
+                                <button onclick="executeBulkDelete()" class="w-full sm:w-auto bg-red-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-red-700 transition shadow-md active:scale-95 flex justify-center items-center"><i class="fa-solid fa-trash-can ml-2"></i> تأكيد الحذف النهائي</button>
+                            </div>
+
                             <div id="reportLoading" class="text-center py-6 hidden"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-secondary"></i></div>
                             
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                                 <table class="w-full text-right border-collapse">
                                     <thead class="bg-gray-50 text-sm border-b"><tr>
+                                        <th class="p-3 text-center w-12"><input type="checkbox" id="selectAllReports" class="w-4 h-4 cursor-pointer accent-red-600" onclick="toggleSelectAllReports(this)"></th>
                                         <th class="p-3">التاريخ والوقت</th>
                                         <th class="p-3">المُسجل</th>
                                         <th class="p-3">المندوب</th>
                                         <th class="p-3">مُحول إلى</th>
                                         <th class="p-3 text-center">الكمية</th>
                                         <th class="p-3">تفاصيل الأوردر</th>
-                                        <th class="p-3">حالة ومدة التوصيل</th>
+                                        <th class="p-3">الحالة</th>
                                     </tr></thead>
                                     <tbody id="reportTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- قسم التتبع وسجل النشاط -->
                         <div id="trackingSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
                                 <div class="flex justify-between items-center mb-4">
@@ -303,7 +311,6 @@
         </main>
     </div>
 
-    <!-- Modals -->
     <div id="editModal" class="modal">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all">
             <div class="flex justify-between items-center mb-5 border-b pb-3">
@@ -408,6 +415,69 @@
         const recordsCache = {};
         let pendingBranchId = '';
         let pendingBranchName = '';
+        
+        // تصميم أيقونة ريس الاحترافية
+        const racingBikeIcon = `<svg class="w-5 h-5 inline text-current mr-1 drop-shadow-sm" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M400 320c-44.2 0-80 35.8-80 80s35.8 80 80 80 80-35.8 80-80-35.8-80-80-80zm0 112c-17.6 0-32-14.4-32-32s14.4-32 32-32 32 14.4 32 32-14.4 32-32 32zM112 320c-44.2 0-80 35.8-80 80s35.8 80 80 80 80-35.8 80-80-35.8-80-80-80zm0 112c-17.6 0-32-14.4-32-32s14.4-32 32-32 32 14.4 32 32-14.4 32-32 32zm225.4-181.9l-58.6-58.6c-8.9-8.9-22-12.7-34.4-9.9L164.7 203.2c-12.2 2.8-21.7 12.3-24.5 24.5l-21.6 95.7c-2.3 10.3 5.4 19.9 15.8 19.9h32c8.8 0 16-7.2 16-16v-68.5l67-15.1 46.2 46.2c6.2 6.2 16.4 6.2 22.6 0l35.4-35.4c6.1-6.2 6.1-16.4-.2-22.6z"/></svg>`;
+
+        // نظام المزامنة اللحظية
+        let liveSyncSource = null;
+
+        function startLiveSync(dateStr) {
+            if (liveSyncSource) {
+                liveSyncSource.close();
+            }
+            
+            // تفعيل الاتصال الحي (SSE) مع فايربيز
+            liveSyncSource = new EventSource(`${DB_URL}records/${dateStr}.json`);
+            document.getElementById('liveSyncIndicator').classList.remove('hidden');
+            
+            liveSyncSource.addEventListener('put', (e) => {
+                const data = JSON.parse(e.data);
+                if(data.data !== null && data.path === "/") {
+                    currentRecords[dateStr] = data.data || {};
+                } else if (data.path !== "/") {
+                    const key = data.path.replace('/', '');
+                    if (data.data === null) {
+                        if (currentRecords[dateStr]) delete currentRecords[dateStr][key];
+                    } else {
+                        if (!currentRecords[dateStr]) currentRecords[dateStr] = {};
+                        currentRecords[dateStr][key] = data.data;
+                    }
+                }
+                updateUIToMatchData(dateStr);
+            });
+
+            liveSyncSource.addEventListener('patch', (e) => {
+                const data = JSON.parse(e.data);
+                if (!currentRecords[dateStr]) currentRecords[dateStr] = {};
+                for (let key in data.data) {
+                     const id = key.split('/')[0]; 
+                     if(key.includes('/')) {
+                         const prop = key.split('/')[1];
+                         if(currentRecords[dateStr][id]) {
+                             currentRecords[dateStr][id][prop] = data.data[key];
+                         }
+                     } else {
+                         currentRecords[dateStr][id] = Object.assign(currentRecords[dateStr][id] || {}, data.data[key]);
+                     }
+                }
+                updateUIToMatchData(dateStr);
+            });
+            
+            liveSyncSource.onerror = () => {
+                document.getElementById('liveSyncIndicator').classList.add('hidden');
+            };
+        }
+
+        function updateUIToMatchData(dateStr) {
+            // تحديث الشاشة فقط إذا كنا في نفس تاريخ المزامنة
+            if (document.getElementById('recordDate').value === dateStr) {
+                const searchTerm = document.getElementById('mainSearchInput').value.trim().toLowerCase();
+                renderRecordsTable(dateStr, searchTerm);
+                renderBranchButtons();
+                checkOverdueOrdersBackground(); 
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
@@ -422,11 +492,10 @@
             }
         });
 
-        // ----- نظام التتبع (Logs) -----
         async function logActivity(actionType, details) {
             if (!currentUser) return;
             const logData = {
-                actionType: actionType, // 'delete', 'edit', 'past_add'
+                actionType: actionType, 
                 details: details,
                 userId: currentUser.id,
                 userName: currentUser.name,
@@ -489,7 +558,6 @@
                 `;
             });
         }
-        // --------------------------------
 
         function switchLoginTab(tab) {
             currentLoginTab = tab;
@@ -869,8 +937,8 @@
                 branchId: toBranchId, branchName: toBranchName,
                 delegateId: delId, delegateName: delegates[delId].name, delegateCode: delegates[delId].code,
                 sourceBranchId: delegates[delId].branchId || 'admin',
-                createdByUserId: currentUser.id, // اضافة معرف المستخدم الحالي
-                createdByUserName: currentUser.name, // اضافة اسم المستخدم الحالي
+                createdByUserId: currentUser.id,
+                createdByUserName: currentUser.name,
                 time: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit', second:'2-digit'}),
                 timestamp: Date.now(), count: count, orderNumber: orderNum, orderValue: orderVal,
                 customerWhatsapp: customerWhatsapp, status: isOrder ? 'pending' : 'completed'
@@ -881,12 +949,10 @@
                 if(res.ok) {
                     showToast(`تم التسجيل بنجاح لـ ${toBranchName} (كمية: ${count})`);
                     
-                    // تسجيل الإضافة بأثر رجعي في التتبع
                     if (date !== todayStr) {
                         logActivity('past_add', `تم تسجيل حركة بأثر رجعي للمندوب (${delegates[delId].name}) موجهة لـ (${toBranchName}) بتاریخ ${date}، الكمية: ${count}`);
                     }
 
-                    await loadRecords();
                     if(sendWhatsapp) sendWhatsappMessage(customerWhatsapp, orderNum, orderVal, delegates[delId]);
                 }
             } catch (e) { showToast("حدث خطأ أثناء الحفظ في قاعدة البيانات", "error"); }
@@ -906,7 +972,11 @@
                 const data = await getDayData(date, true); 
                 currentRecords[date] = data || {};
                 document.getElementById('mainSearchInput').value = '';
-                renderRecordsTable(date); renderBranchButtons(); 
+                renderRecordsTable(date); 
+                renderBranchButtons(); 
+                
+                // تشغيل المزامنة اللحظية للتاريخ المحدد
+                startLiveSync(date);
             } catch (e) {}
         }
 
@@ -951,7 +1021,7 @@
                     const r = data[k];
                     const rCount = Number(r.count) || 1;
                     let orderDetails = '<span class="text-gray-300 font-bold">-</span>';
-                    const creatorName = r.createdByUserName || '<span class="text-xs text-gray-400">غير محدد</span>'; // المستخدم
+                    const creatorName = r.createdByUserName || '<span class="text-xs text-gray-400">غير محدد</span>';
                     
                     if (r.orderNumber) {
                         let statusBadge = r.status === 'delivered' ? '<span class="text-[11px] bg-green-500 text-white px-1.5 py-0.5 rounded shadow-sm mr-1"><i class="fa-solid fa-check"></i> مُسلم</span>' : '<span class="text-[11px] bg-amber-500 text-white px-1.5 py-0.5 rounded shadow-sm mr-1 animate-pulse"><i class="fa-solid fa-clock"></i> معلق</span>';
@@ -989,17 +1059,15 @@
         async function deleteRecord(date, recordId) {
             if(!confirm("⚠️ تحذير: هل أنت متأكد من حذف هذا السجل نهائياً؟")) return;
             
-            const recToDelete = currentRecords[date][recordId]; // جلب السجل قبل حذفه للتتبع
+            const recToDelete = currentRecords[date][recordId];
             
             try {
                 await fetch(`${DB_URL}records/${date}/${recordId}.json`, { method: 'DELETE' });
                 
-                // تسجيل عملية الحذف في التتبع
                 const isOrd = recToDelete.orderNumber ? `(أوردر رقم: ${recToDelete.orderNumber})` : '';
                 logActivity('delete', `تم حذف حركة بتاريخ ${date} للمندوب (${recToDelete.delegateName}) موجهة لفرع (${recToDelete.branchName}) الكمية: ${recToDelete.count || 1} ${isOrd}`);
 
                 showToast("تم حذف السجل بنجاح");
-                loadRecords();
             } catch(e) { showToast("حدث خطأ أثناء الحذف", "error"); }
         }
 
@@ -1042,7 +1110,7 @@
                             <td class="p-4 text-sm"><div class="font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div>${overdueWarning}</td>
                             <td class="p-4"><span class="font-extrabold text-orange-600 bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg shadow-sm tracking-wider"># ${r.orderNumber}</span></td>
                             <td class="p-4 font-bold text-gray-800">${r.orderValue ? r.orderValue + ' <span class="text-xs text-gray-500">ج.م</span>' : '<span class="text-gray-400 text-sm">غير محدد</span>'}</td>
-                            <td class="p-4 font-semibold text-gray-800"><i class="fa-solid fa-motorcycle text-gray-400 mr-1"></i> ${r.delegateName}</td>
+                            <td class="p-4 font-semibold text-gray-800 flex items-center">${racingBikeIcon} ${r.delegateName}</td>
                             <td class="p-4 text-center"><button onclick="markOrderAsDelivered('${r.date}', '${r.id}')" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 shadow-md transform hover:scale-105 transition-all"><i class="fa-solid fa-check-double mr-1"></i> تأكيد التسليم</button></td>
                         </tr>`;
                     });
@@ -1059,7 +1127,6 @@
                 await fetch(`${DB_URL}records/${date}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'delivered', deliveryTimestamp: Date.now() }) });
                 showToast("تم التحديث! الأوردر الآن 'مُسلم'");
                 checkOverdueOrdersBackground(); openPendingOrdersModal();
-                if(document.getElementById('recordDate').value === date) loadRecords();
             } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
         }
 
@@ -1131,7 +1198,7 @@
 
             try {
                 await fetch(url, { method: 'PATCH', body: JSON.stringify(data) });
-                logActivity('edit', logDesc); // تسجيل عملية التعديل
+                logActivity('edit', logDesc); 
                 showToast("تم تحديث البيانات بنجاح");
                 closeModal();
                 loadAllData();
@@ -1143,6 +1210,64 @@
             const totalMinutes = Math.floor(ms / 60000); const hours = Math.floor(totalMinutes / 60); const minutes = totalMinutes % 60;
             if(hours > 0) return `${hours} س و ${minutes} د`;
             return `${minutes} دقيقة`;
+        }
+
+        // وظائف الحذف الجماعي للتقارير
+        function toggleSelectAllReports(source) {
+            const checkboxes = document.querySelectorAll('.report-row-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            updateBulkDeleteBtn();
+        }
+
+        function updateBulkDeleteBtn() {
+            const checkboxes = document.querySelectorAll('.report-row-checkbox:checked');
+            const container = document.getElementById('bulkDeleteContainer');
+            const countBadge = document.getElementById('selectedCountBadge');
+            
+            if (checkboxes.length > 0) {
+                container.classList.remove('hidden');
+                container.classList.add('flex');
+                countBadge.textContent = checkboxes.length;
+            } else {
+                container.classList.add('hidden');
+                container.classList.remove('flex');
+                document.getElementById('selectAllReports').checked = false;
+            }
+        }
+
+        async function executeBulkDelete() {
+            const checkboxes = document.querySelectorAll('.report-row-checkbox:checked');
+            if (checkboxes.length === 0) return;
+            if (!confirm(`⚠️ تحذير خطير: هل أنت متأكد من الحذف النهائي لعدد ${checkboxes.length} سجلات؟ لا يمكن التراجع عن هذه العملية.`)) return;
+            
+            const btn = document.querySelector('#bulkDeleteContainer button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin ml-2"></i> جاري الحذف...';
+            btn.disabled = true;
+
+            let successCount = 0;
+
+            try {
+                const deletePromises = Array.from(checkboxes).map(async (cb) => {
+                    const id = cb.value;
+                    const date = cb.getAttribute('data-date');
+                    await fetch(`${DB_URL}records/${date}/${id}.json`, { method: 'DELETE' });
+                    successCount++;
+                });
+
+                await Promise.all(deletePromises);
+                
+                logActivity('delete', `قام المستخدم بحذف جماعي لعدد ${successCount} سجل من التقارير.`);
+                showToast(`تم حذف ${successCount} سجل بنجاح`);
+                generateReport(); 
+                
+            } catch(e) {
+                showToast("حدث خطأ أثناء الحذف الجماعي", "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                updateBulkDeleteBtn(); 
+            }
         }
 
         async function generateReport() {
@@ -1170,10 +1295,12 @@
                 all.sort((a,b) => b.timestamp - a.timestamp);
                 
                 let reportTotalClicks = 0; const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = '';
-                
+                document.getElementById('selectAllReports').checked = false;
+                updateBulkDeleteBtn(); // اخفاء الحاوية عند البحث الجديد
+
                 all.forEach(r => {
                     const rCount = Number(r.count) || 1; reportTotalClicks += rCount;
-                    const orderDetails = r.orderNumber ? `<div class="bg-gray-50 border border-gray-200 p-2 rounded-lg inline-block text-right"><div class="font-bold text-orange-600 text-sm mb-1"><i class="fa-solid fa-hashtag text-xs"></i> ${r.orderNumber}</div><div class="text-xs font-semibold text-gray-500">القيمة: <span class="text-gray-800">${r.orderValue||'غير محدد'}</span></div></div>` : '<span class="text-gray-300 font-bold">-</span>';
+                    const orderDetails = r.orderNumber ? `<div class="bg-gray-50 border border-gray-200 p-2 rounded-lg inline-block text-right w-full"><div class="font-bold text-orange-600 text-sm mb-1"><i class="fa-solid fa-hashtag text-xs"></i> ${r.orderNumber}</div><div class="text-xs font-semibold text-gray-500">القيمة: <span class="text-gray-800">${r.orderValue||'غير محدد'}</span></div></div>` : '<span class="text-gray-300 font-bold">-</span>';
                     const creatorName = r.createdByUserName || '<span class="text-xs text-gray-400">غير محدد</span>';
                     
                     let deliveryStatusHtml = '<span class="text-gray-300 font-bold">-</span>';
@@ -1184,23 +1311,24 @@
                         } else {
                             const isOverdue = (Date.now() - r.timestamp) > 3600000;
                             if(isOverdue) deliveryStatusHtml = `<div class="text-red-600 font-bold text-sm bg-red-50 inline-block px-2 py-1 rounded border border-red-200 shadow-sm animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> متأخر جداً</div>`;
-                            else deliveryStatusHtml = `<div class="text-amber-500 font-bold text-sm bg-amber-50 inline-block px-2 py-1 rounded border border-amber-100"><i class="fa-solid fa-motorcycle"></i> قيد التوصيل</div>`;
+                            else deliveryStatusHtml = `<div class="text-amber-500 font-bold text-sm bg-amber-50 flex items-center justify-center px-2 py-1 rounded border border-amber-100">${racingBikeIcon} قيد التوصيل</div>`;
                         }
                     }
 
                     tbody.innerHTML += `
                     <tr class="border-b hover:bg-blue-50/50 transition-colors">
+                        <td class="p-3 text-center"><input type="checkbox" class="report-row-checkbox w-4 h-4 cursor-pointer accent-red-600" value="${r.id}" data-date="${r.date}" onclick="updateBulkDeleteBtn()"></td>
                         <td class="p-3"><div class="font-bold text-sm text-gray-700">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div></td>
                         <td class="p-3 text-sm font-bold text-primary bg-blue-50/30">${creatorName}</td>
                         <td class="p-3"><span class="font-bold bg-white px-2 py-0.5 rounded border shadow-sm text-xs ml-1">${r.delegateCode}</span> <span class="font-semibold text-gray-800">${r.delegateName}</span></td>
                         <td class="p-3 font-bold text-teal-700">${r.branchName}</td>
                         <td class="p-3 text-center"><span class="bg-accent px-3 py-1 text-white font-bold rounded-full shadow-sm text-sm">x${rCount}</span></td>
                         <td class="p-3">${orderDetails}</td>
-                        <td class="p-3">${deliveryStatusHtml}</td>
+                        <td class="p-3 text-center">${deliveryStatusHtml}</td>
                     </tr>`;
                 });
                 
-                if(all.length === 0) tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-magnifying-glass text-3xl mb-3 text-gray-300 block"></i><span class="font-bold">عفواً، لا توجد بيانات مطابقة لخيارات البحث</span></td></tr>';
+                if(all.length === 0) tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-magnifying-glass text-3xl mb-3 text-gray-300 block"></i><span class="font-bold">عفواً، لا توجد بيانات مطابقة لخيارات البحث</span></td></tr>';
                 
                 let cashTotal = reportTotalClicks * 5;
                 document.getElementById('reportTotalClicks').innerHTML = `${cashTotal.toLocaleString('en-US')} <span class="text-2xl font-semibold">ج.م</span><div class="text-sm font-normal mt-3 text-emerald-100 block opacity-90 drop-shadow-sm">( تم احتساب ${reportTotalClicks.toLocaleString('en-US')} حركة بمقدار 5 ج.م للحركة )</div>`;
@@ -1211,5 +1339,3 @@
     </script>
 </body>
 </html>
-
-
