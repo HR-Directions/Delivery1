@@ -1479,7 +1479,7 @@
             const end = document.getElementById('repToDate').value;
             const dateRangeStr = start === end ? `تاريخ: ${start}` : `من: ${start}  إلى: ${end}`;
             
-            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'الإدارة العامة' : currentUser.name;
+            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'تقرير الخدمات  ' : currentUser.name;
             document.getElementById('printDateRange').textContent = dateRangeStr;
 
             const delegateStats = {};
@@ -1488,10 +1488,12 @@
             currentReportData.forEach(r => {
                 const rCount = Number(r.count) || 1;
                 const dCode = r.delegateCode || 'بدون كود';
-                const dName = r.delegateName || 'غير معروف';
+                const delegateDisplayName = r.delegateName;
+
                 
                 if (!delegateStats[dCode]) {
-                    delegateStats[dCode] = { name: dName.split(' ')[0], count: 0 };
+                    delegateStats[dCode] = { name: dName${racingBikeIcon} ${r.delegateName}
+                };
                 }
                 delegateStats[dCode].count += rCount;
                 grandTotalMoves += rCount;
