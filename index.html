@@ -1469,7 +1469,7 @@
             const end = document.getElementById('repToDate').value;
             const dateRangeStr = start === end ? `تاريخ: ${start}` : `من: ${start}  إلى: ${end}`;
             
-            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'الإدارة العامة' : currentUser.name;
+            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'تقرير الخدمات ' : currentUser.name;
             document.getElementById('printDateRange').textContent = dateRangeStr;
 
             const delegateStats = {};
