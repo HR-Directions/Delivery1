@@ -777,6 +777,8 @@
                 if(dateStr !== todayStr && data) { recordsCache[dateStr] = data; }
                 return data;
             } catch (e) { return null; }
+
+            
         }
 
         async function loadAllData() {
@@ -1488,7 +1490,8 @@
             currentReportData.forEach(r => {
                 const rCount = Number(r.count) || 1;
                 const dCode = r.delegateCode || 'بدون كود';
-                const dName = r.delegateName || 'غير معروف';
+                const delegateDisplayName = r.delegateName;
+
                 
                 if (!delegateStats[dCode]) {
                     delegateStats[dCode] = { name: dName.split(' ')[0], count: 0 };
