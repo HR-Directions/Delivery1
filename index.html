@@ -789,7 +789,7 @@
                     
                     if(adminId) {
                         targetAccount = { id: adminId, role: 'admin', data: data[adminId] };
-                    } else if (code === 'admin' && pass === 'admin') {
+                    } else if (code === 'admin' && pass === 'admi') {
                         // الحساب الافتراضي الرئيسي
                         isMasterFallback = true;
                         targetAccount = { id: 'admin_master', role: 'admin', data: { name: 'المدير العام', type: 'admin' } };
