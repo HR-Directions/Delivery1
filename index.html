@@ -1795,6 +1795,28 @@
             updateDelegateTotal(); 
         }
 
+        async function addExtraTime(date, recordId, currentExtraTime = 0) {
+    if(!confirm("هل تريد تمديد وقت التوصيل 30 دقيقة إضافية لهذا الأوردر؟")) return;
+
+    // إضافة 30 دقيقة (1,800,000 مللي ثانية) للرقم الحالي
+    const newExtraTime = Number(currentExtraTime) + 1800000; 
+
+    try {
+        await fetch(`${DB_URL}records/${date}/${recordId}.json`, { 
+            method: 'PATCH', 
+            body: JSON.stringify({ extraTimeAdded: newExtraTime }) 
+        });
+        
+        showToast("تم تمديد وقت التسليم 30 دقيقة بنجاح!", "success");
+        // تحديث الواجهة فوراً
+        checkOverdueOrdersBackground(); 
+        openPendingOrdersModal();
+    } catch(e) { 
+        showToast("حدث خطأ في إضافة الوقت الإضافي", "error"); 
+    }
+        }
+        
+
         function updateDelegateTotal() {
             const delId = document.getElementById('recordDelegate').value;
             const dateStr = document.getElementById('recordDate').value;
@@ -1880,27 +1902,36 @@
                 } else {
                     const now = Date.now();
                     pendingOrders.forEach(r => {
-                        const isOverdue = (now - r.timestamp) > 3600000; 
-                        const overdueClass = isOverdue ? 'overdue-order bg-red-50/40 border-l-4 border-l-red-500' : '';
-                        const overdueWarning = isOverdue ? `<div class="text-xs font-bold text-red-600 mt-1 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> متأخر (أكثر من ساعة)</div>` : '';
-                        
-                        const orderValNum = Number(r.orderValue) || 0;
-                        const changeValNum = Number(r.changeAmount) || 0;
-                        const rowTotal = orderValNum + changeValNum;
-                        
-                        let changeHtml = changeValNum > 0 ? `<div class="text-[10px] text-teal-600 font-bold bg-teal-50 px-1 rounded inline-block mt-1">شامل باقي: ${changeValNum}</div>` : '';
+                        const extraTime = Number(r.extraTimeAdded) || 0;
+const gracePeriod = 3600000 + extraTime; // ساعة أساسية + أي وقت إضافي تم منحه
+const isOverdue = (now - r.timestamp) > gracePeriod; 
 
-                        tbody.innerHTML += `
-                        <tr class="border-b transition-colors hover:bg-orange-50/50 ${overdueClass}">
-                            <td class="p-4 text-sm"><div class="font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div>${overdueWarning}</td>
-                            <td class="p-4"><span class="font-extrabold text-orange-600 bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg shadow-sm tracking-wider"># ${r.orderNumber}</span></td>
-                            <td class="p-4">
-                                <div class="font-bold text-gray-800 text-lg">${rowTotal > 0 ? rowTotal : 'غير محدد'} <span class="text-xs text-gray-500">ج.م</span></div>
-                                ${changeHtml}
-                            </td>
-                            <td class="p-4 font-semibold text-gray-800 flex items-center">${racingBikeIcon} ${r.delegateName}</td>
-                            <td class="p-4 text-center"><button onclick="markOrderAsDelivered('${r.date}', '${r.id}')" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 shadow-md transform hover:scale-105 transition-all"><i class="fa-solid fa-check-double mr-1"></i> تأكيد التسليم</button></td>
-                        </tr>`;
+const overdueClass = isOverdue ? 'overdue-order bg-red-50/40 border-l-4 border-l-red-500' : '';
+const overdueWarning = isOverdue ? `<div class="text-xs font-bold text-red-600 mt-1 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> متأخر (أكثر من الوقت المحدد)</div>` : '';
+
+const orderValNum = Number(r.orderValue) || 0;
+const changeValNum = Number(r.changeAmount) || 0;
+const rowTotal = orderValNum + changeValNum;
+
+let changeHtml = changeValNum > 0 ? `<div class="text-[10px] text-teal-600 font-bold bg-teal-50 px-1 rounded inline-block mt-1">شامل باقي: ${changeValNum}</div>` : '';
+
+// إضافة زر الوقت الإضافي إذا كان الأوردر متأخراً
+let extendBtnHtml = isOverdue ? `<button onclick="addExtraTime('${r.date}', '${r.id}', ${extraTime})" class="bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-amber-600 shadow-md transform hover:scale-105 transition-all mt-2 w-full"><i class="fa-solid fa-stopwatch mr-1"></i> +30 دقيقة إضافية</button>` : '';
+
+tbody.innerHTML += `
+<tr class="border-b transition-colors hover:bg-orange-50/50 ${overdueClass}">
+    <td class="p-4 text-sm"><div class="font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div>${overdueWarning}</td>
+    <td class="p-4"><span class="font-extrabold text-orange-600 bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg shadow-sm tracking-wider"># ${r.orderNumber}</span></td>
+    <td class="p-4">
+        <div class="font-bold text-gray-800 text-lg">${rowTotal > 0 ? rowTotal : 'غير محدد'} <span class="text-xs text-gray-500">ج.م</span></div>
+        ${changeHtml}
+    </td>
+    <td class="p-4 font-semibold text-gray-800 flex items-center">${racingBikeIcon} ${r.delegateName}</td>
+    <td class="p-4 text-center flex flex-col gap-1 justify-center">
+        <button onclick="markOrderAsDelivered('${r.date}', '${r.id}')" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 shadow-md transform hover:scale-105 transition-all w-full"><i class="fa-solid fa-check-double mr-1"></i> تأكيد التسليم</button>
+        ${extendBtnHtml}
+    </td>
+</tr>`;
                     });
                 }
             } catch(e) { showToast("حدث خطأ في جلب بيانات الأوردرات", "error"); }
@@ -2167,10 +2198,27 @@
                             const timeTaken = formatTimeDiff(r.deliveryTimestamp - r.timestamp);
                             deliveryStatusHtml = `<div class="text-green-600 font-bold text-sm bg-green-50 inline-block px-2 py-1 rounded border border-green-100"><i class="fa-solid fa-check-double"></i> تم التوصيل</div><div class="text-xs font-bold text-gray-500 mt-1"><i class="fa-regular fa-clock"></i> استغرق: ${timeTaken}</div>`;
                         } else {
-                            const isOverdue = (Date.now() - r.timestamp) > 3600000;
-                            if(isOverdue) deliveryStatusHtml = `<div class="text-red-600 font-bold text-sm bg-red-50 inline-block px-2 py-1 rounded border border-red-200 shadow-sm animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> متأخر جداً</div>`;
-                            else deliveryStatusHtml = `<div class="text-amber-500 font-bold text-sm bg-amber-50 flex items-center justify-center px-2 py-1 rounded border border-amber-100">${racingBikeIcon} قيد التوصيل</div>`;
-                        }
+                            const extraTime = Number(r.extraTimeAdded) || 0;
+if((now - r.timestamp) > (3600000 + extraTime)) {
+                            // حساب الوقت الإضافي إذا وجد، وإضافته للساعة الأساسية
+const extraTime = Number(r.extraTimeAdded) || 0;
+const gracePeriod = 3600000 + extraTime; 
+const isActuallyOverdue = (Date.now() - r.timestamp) > gracePeriod;
+
+if (isActuallyOverdue) {
+    deliveryStatusHtml = `
+        <div class="text-red-600 font-bold text-sm bg-red-50 inline-block px-2 py-1 rounded border border-red-200 shadow-sm animate-pulse">
+            <i class="fa-solid fa-triangle-exclamation"></i> متأخر جداً
+        </div>`;
+} else {
+    // إذا كان هناك وقت إضافي ولم يتأخر بعد، نظهر أيقونة الساعة مع الموتوسيكل
+    const extraLabel = extraTime > 0 ? `<span class="text-[10px] block text-blue-600">+ تمديد وقت</span>` : '';
+    deliveryStatusHtml = `
+        <div class="text-amber-500 font-bold text-sm bg-amber-50 flex flex-col items-center justify-center px-2 py-1 rounded border border-amber-100">
+            <div>${racingBikeIcon} قيد التوصيل</div>
+            ${extraLabel}
+        </div>`;
+}
                     }
 
                     tbody.innerHTML += `
