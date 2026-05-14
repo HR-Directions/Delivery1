@@ -1798,20 +1798,22 @@
         async function addExtraTime(date, recordId, currentExtraTime = 0) {
     if(!confirm("هل تريد تمديد وقت التوصيل 30 دقيقة إضافية لهذا الأوردر؟")) return;
 
-    // إضافة 30 دقيقة (1,800,000 مللي ثانية) للرقم الحالي
     const newExtraTime = Number(currentExtraTime) + 1800000; 
 
     try {
-        await fetch(`${DB_URL}records/${date}/${recordId}.json`, { 
+        // تم تغيير DB_URL إلى BASE_URL ليتوافق مع باقي كودك
+        await fetch(`${BASE_URL}records/${date}/${recordId}.json`, { 
             method: 'PATCH', 
             body: JSON.stringify({ extraTimeAdded: newExtraTime }) 
         });
         
         showToast("تم تمديد وقت التسليم 30 دقيقة بنجاح!", "success");
-        // تحديث الواجهة فوراً
-        checkOverdueOrdersBackground(); 
+        
+        // تحديث البيانات فوراً
+        if (typeof checkOverdueOrdersBackground === "function") checkOverdueOrdersBackground(); 
         openPendingOrdersModal();
     } catch(e) { 
+        console.error(e);
         showToast("حدث خطأ في إضافة الوقت الإضافي", "error"); 
     }
         }
