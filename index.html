@@ -117,7 +117,7 @@
             <span id="printGrandTotal" style="font-size: 18px;">0</span> ج.م
         </div>
         <div style="text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px;">
-            تحسب الحركات بالقيمة المحددة من الإدارة 
+         نود تذكيركم بأن كافة العمليات والتحويلات تُحسب وفقاً لتعليمات الإدارة المعتمدة
         </div>
     </div>
 
@@ -2804,7 +2804,7 @@
             const endDT = document.getElementById('repToDate').value.replace('T', ' ');
             const dateRangeStr = `من: ${startDT} إلى: ${endDT}`;
             
-            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'تقرير الخدات' : currentUser.name;
+            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'تقرير الخدمات' : currentUser.name;
             document.getElementById('printDateRange').textContent = dateRangeStr;
 
             const delegateStats = {};
