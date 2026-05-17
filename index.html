@@ -1977,7 +1977,7 @@
     if (formattedPhone.startsWith('01')) formattedPhone = '2' + formattedPhone;
     
     // الرسالة الجديدة الاحترافية مع رابط التتبع
-    const message = `أهلاً بك في صيدليات دكتور وائل حافظ 👨‍⚕️\n\nتم استلام طلبك بنجاح وجاري تجهيزه الآن 📦\n\n*رقم الأوردر:* ${orderNum}\n*القيمة:* ${orderVal ? orderVal + ' ج.م' : 'تحدد لاحقاً'}\n\n📍 *يمكنك متابعة حالة طلبك لحظة بلحظة، ومعرفة وقت التوصيل وتقييم الخدمة من خلال هذا الرابط:*\n${TRACKING_URL}?phone=${formattedPhone}\n\nنتمنى لكم دوام الصحة والعافية 💙`;
+    const message = `تفاصيل الطلب\n\nتم استلام طلبك بنجاح وجاري تجهيزه الآن \n\n*رقم الأوردر:* ${orderNum}\n*القيمة:* ${orderVal ? orderVal + ' ج.م' : 'تحدد لاحقاً'}\n\n *يمكنك متابعة حالة طلبك لحظة بلحظة، ومعرفة وقت التوصيل وتقييم الخدمة من خلال هذا الرابط:*\n${TRACKING_URL}?phone=${formattedPhone}\n\nنتمنى لكم دوام الصحة والعافية 💙`;
     
     window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
 }
