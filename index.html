@@ -1969,15 +1969,17 @@
             } catch (e) { showToast("حدث خطأ أثناء الحفظ في قاعدة البيانات", "error"); }
         }
 
-        function sendWhatsappMessage(phone, orderNum, orderVal, delegate) {
-            let formattedPhone = phone.replace(/\D/g, '');
-            if (formattedPhone.startsWith('01')) formattedPhone = '2' + formattedPhone;
-            
-            // الرسالة الجديدة الاحترافية مع رابط التتبع
-            const message = `أهلاً بك في صيدليات دكتور وائل حافظ 👨‍⚕️\n\nتم استلام طلبك بنجاح وجاري تجهيزه الآن 📦\n\n*رقم الأوردر:* ${orderNum}\n*القيمة:* ${orderVal ? orderVal + ' ج.م' : 'تحدد لاحقاً'}\n\n📍 *يمكنك متابعة حالة طلبك لحظة بلحظة، ومعرفة وقت التوصيل وتقييم الخدمة من خلال هذا الرابط:*\n${TRACKING_URL}?phone=${formattedPhone}\n\nنتمنى لكم دوام الصحة والعافية 💙`;
-            
-            window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+        function sendWhatsappTracking(orderNum, orderVal, formattedPhone) {
+    // 1️⃣ ⚠️ ضَع رابط صفحة تتبع العميل الخاصة بك هنا بين العلامتين (تأكد من وجود https://)
+    const TRACKING_URL = "https://2u.pw/oOFaRj"; 
+
+    // 2️⃣ تجهيز نص الرسالة الاحترافية المحدثة وتضمين الرابط بداخلها
+    const message = `أهلاً بك في صيدليات دكتور وائل حافظ 👨‍⚕️\n\nتم استلام طلبك بنجاح وجاري تجهيزه الآن 📦\n\n*رقم الأوردر:* ${orderNum}\n*العيمة:* ${orderVal ? orderVal + ' ج.م' : 'تحدد لاحقاً'}\n\n📍 *يمكنك متابعة حالة طلبك لحظة بلحظة، ومعرفة وقت التوصيل وتقييم الخدمة من خلال هذا الرابط:*\n${TRACKING_URL}?phone=${formattedPhone}\n\nنتمنى لكم دوام الصحة والعافية 💙`;
+    
+    // 3️⃣ فتح نافذة شات الواتساب لإرسال النص مباشرة للعميل
+    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
         }
+        
 
         async function loadRecords() {
             const date = document.getElementById('recordDate').value;
