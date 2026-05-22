@@ -117,7 +117,7 @@
             <span id="printGrandTotal" style="font-size: 18px;">0</span> ج.م
         </div>
         <div style="text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px dashed #000; padding-top: 5px;">
-            نظام مقصات للإدارة الاحترافية
+             Logistics system
         </div>
     </div>
 
@@ -125,7 +125,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center relative overflow-hidden">
             <div class="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-secondary to-primary"></div>
             <i class="fa-solid fa-shield-halved text-5xl text-primary mb-4"></i>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">نظام المقصات</h1>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Logistics system</h1>
             <p class="text-sm font-semibold text-gray-500 mb-8 flex items-center justify-center gap-1"><i class="fa-solid fa-lock text-green-500"></i> نظام حماية الأجهزة المعتمدة</p>
             
             <div id="loginPendingMsg" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl mb-6 shadow-inner">
@@ -162,7 +162,7 @@
             <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-scissors text-2xl text-accent"></i>
-                    <h1 class="text-2xl font-bold tracking-wider">نظام مقصات</h1>
+                    <h1 class="text-2xl font-bold tracking-wider">Logistics system</h1>
                     <span id="userInfoDisplay" class="bg-white text-primary text-xs px-2 py-1 rounded-full font-bold ml-4 shadow-sm"></span>
                 </div>
                 <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg shadow-inner" id="mainNav">
@@ -3198,7 +3198,7 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "تقرير الحركات");
             
-            const fileName = `تقرير_مقصات_${new Date().toISOString().split('T')[0]}.xlsx`;
+            const fileName = `تقرير_اللوجيستي _${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(wb, fileName);
             
             showToast("تم تحميل التقرير بصيغة إكسيل (XLSX) بنجاح", "success");
