@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنظومة اللوجستية - محرك الشوارع والرادار التكتيكي V11.0</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <style>
+        body { font-family: 'Cairo', sans-serif; overflow: hidden; background-color: #020617; }
+        
+        /* خريطة العمليات */
+        #coverageMap { width: 100%; height: 100vh; z-index: 1; outline: none; }
+        
+        /* القائمة الجانبية الزجاجية الفاخرة */
+        .sidebar-container { 
+            z-index: 1000; 
+            background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.8); 
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        /* حل مشكلة اختفاء نصوص الفروع والفلاتر عند فتح القائمة على جميع المتصفحات */
+        select option {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            padding: 10px !important;
+        }
+        
+        /* تخصيص السكرول بار */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        /* أنيميشن النبض للمؤشرات النشطة */
+        .pulse-marker-active { animation: pulseRed 1.8s infinite; }
+        .tactical-marker-container { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .tactical-marker-container:hover { transform: scale(1.15) translateY(-6px); z-index: 9999 !important; }
+
+        @keyframes pulseRed {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+            70% { transform: scale(1.2); opacity: 0.7; box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        @keyframes pulseAmber {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .delegate-motorcycle-pulse { animation: pulseAmber 2s infinite; }
+
+        /* حركية مسارات الشوارع المكتشفة */
+        .route-animation {
+            stroke-dasharray: 8, 12;
+            animation: dashMove 15s linear infinite;
+        }
+        @keyframes dashMove { to { stroke-dashoffset: -1000; } }
+
+        /* الكلاستر الذكي الرقمي */
+        .custom-cluster {
+            background: linear-gradient(135deg, rgba(37,99,235,0.95), rgba(29,78,216,0.98));
+            color: white; font-weight: 900;
+            border: 2px solid rgba(147, 197, 253, 0.6); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 25px rgba(37, 99, 235, 0.6);
+            font-family: 'Cairo', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .radar-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 500;
+            background: radial-gradient(circle at center, transparent 40%, rgba(2, 6, 23, 0.75) 100%);
+        }
+
+        /* تعديل النوافذ المنبثقة على الخريطة */
+        .leaflet-popup-content-wrapper { background: rgba(15, 23, 42, 0.98) !important; color: #f1f5f9 !important; border: 1px solid #334155 !important; border-radius: 14px !important; backdrop-filter: blur(10px) !important; }
+        .leaflet-popup-tip { background: rgba(15, 23, 42, 0.98) !important; border: 1px solid #334155 !important; }
+        .leaflet-control-zoom a { background-color: rgba(30, 41, 59, 0.9) !important; color: #94a3b8 !important; border-color: #334155 !important; }
+        .leaflet-control-zoom a:hover { color: #fff !important; background-color: #334155 !important; }
+    </style>
+</head>
+<body class="flex h-screen w-full text-slate-100 select-none relative overflow-hidden">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-950 z-[9999] flex flex-col items-center justify-center transition-all duration-700">
+        <div class="flex flex-col items-center gap-6 p-8 rounded-3xl bg-slate-900/80 border border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+            <div class="relative w-32 h-32">
+                <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-t-blue-500 border-r-amber-500 rounded-full animate-spin"></div>
+                <i class="fa-solid fa-route absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl text-blue-500 animate-pulse"></i>
+            </div>
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-black text-white tracking-widest">محرك مسارات الشوارع V11.0</h2>
+                <p class="text-slate-400 text-xs font-semibold">جاري جلب خرائط الشوارع الحقيقية وتأمين خوادم التوجيه...</p>
+            </div>
+        </div>
+    </div>
+
+    <aside id="mainSidebar" class="sidebar-container absolute right-0 top-0 bottom-0 w-full md:w-[420px] flex flex-col border-l border-slate-800 overflow-y-auto shrink-0 translate-x-0">
+        
+        <div class="p-5 bg-slate-900/90 border-b border-slate-800 flex justify-between items-center sticky top-0 z-20 backdrop-blur-xl">
+            <div>
+                <h1 class="font-black text-xl flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-cyan-300">
+                    <i class="fa-solid fa-map-location-dot text-blue-400"></i> رادار مسارات الشوارع
+                </h1>
+                <p class="text-slate-400 text-[11px] mt-1 font-semibold flex items-center gap-1.5">
+                    حساب جيو-مروري عبر الشوارع الحقيقية
+                    <span id="liveStatus" class="flex items-center gap-1 text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full hidden border border-emerald-500/20"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div> مباشر</span>
+                </p>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <span class="bg-gradient-to-r from-amber-600 to-orange-600 text-white text-[10px] px-2.5 py-1 rounded-md font-black tracking-wider shadow-md">V11.0 STREETS</span>
+                <button onclick="exportToExcel()" class="bg-slate-800 hover:bg-emerald-600/30 border border-slate-700 hover:border-emerald-500/50 text-slate-300 hover:text-emerald-400 transition-all text-[10px] px-2.5 py-1.5 rounded flex items-center gap-1.5 font-bold">
+                    <i class="fa-solid fa-file-excel"></i> تصدير التقرير
+                </button>
+            </div>
+        </div>
+
+        <div class="p-4 flex-1 flex flex-col gap-4 pb-20">
+            
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-center hover:border-blue-500/40 transition">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1"><i class="fa-solid fa-boxes-stacked text-blue-400 ml-1"></i>الشحنات</p>
+                    <p class="text-xl font-black text-blue-400 font-mono" id="statsCount">0</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-center hover:border-amber-500/40 transition">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1"><i class="fa-solid fa-motorcycle text-amber-400 ml-1"></i>المناديب</p>
+                    <p class="text-xl font-black text-amber-400 font-mono" id="statsDrivers">0</p>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-center hover:border-emerald-500/40 transition">
+                    <p class="text-[10px] text-slate-400 font-bold mb-1"><i class="fa-solid fa-wallet text-emerald-400 ml-1"></i>التحصيل</p>
+                    <p class="text-xl font-black text-emerald-400 font-mono" id="statsFinance">0</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-4 rounded-xl border border-blue-900/40 space-y-3 shadow-inner">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-cyan-400 text-xs flex items-center gap-2"><i class="fa-solid fa-road"></i> محرك الشوارع لحساب المسافة والزمن</h3>
+                    <span id="slaBadge" class="text-[9px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full">0% مخاطر التأخير</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">نقطة الانطلاق (أ)</label>
+                        <select id="measureSrc" class="w-full px-2.5 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">-- اختر فرع الانطلاق --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">نقطة الهدف (ب)</label>
+                        <select id="measureDst" class="w-full px-2.5 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">-- اختر فرع أو شحنة --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="calculateSelectDistance()" class="w-full py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold text-xs rounded-lg transition shadow-md flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-route"></i> تتبع وحساب مسار الشارع الفعلي
+                </button>
+
+                <div id="measureResultBox" class="bg-slate-950/80 border border-slate-800 rounded-lg p-3 hidden space-y-2 text-xs">
+                    <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                        <span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-road text-slate-500"></i> مسافة الشوارع الفعلية:</span>
+                        <span id="resDistance" class="font-bold text-cyan-400 font-mono text-sm">0.00 كم</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center pt-1">
+                        <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                            <p class="text-[9px] text-amber-400 font-bold"><i class="fa-solid fa-motorcycle"></i> وقت الوصول (ذهاب)</p>
+                            <p id="resGoTime" class="font-black text-white mt-0.5 font-mono text-xs">0 دقيقة</p>
+                        </div>
+                        <div class="bg-slate-900 p-1.5 rounded border border-slate-800">
+                            <p class="text-[9px] text-emerald-400 font-bold"><i class="fa-solid fa-arrow-rotate-left"></i> وقت الرجوع (إياب)</p>
+                            <p id="resReturnTime" class="font-black text-white mt-0.5 font-mono text-xs">0 دقيقة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </span>
+                <input type="text" id="searchTerm" oninput="applyFilters()" placeholder="البحث برقم الأوردر، عنوان العميل، أو المندوب..." class="w-full pr-9 pl-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+            </div>
+
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <h3 class="font-bold text-slate-200 text-xs flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-400"></i> خيارات الفرز الجغرافي والزمني</h3>
+                    <button onclick="toggleAutoRefresh()" id="btnRefresh" class="text-[10px] bg-slate-950 border border-slate-700 px-2.5 py-1 rounded-md text-slate-300 hover:text-white transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-sync"></i> تحديث تلقائي
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">المحافظة المستهدفة</label>
+                        <select id="geoGov" onchange="updateCitiesDropdown()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-blue-500 transition-all"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">المنطقة الفرعية</label>
+                        <select id="geoCity" onchange="applyFilters()" disabled class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-semibold text-white outline-none transition-all cursor-not-allowed"></select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">تاريخ البدء</label>
+                        <input type="date" id="filterFromDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">تاريخ الانتهاء</label>
+                        <input type="date" id="filterToDate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-[10px] font-bold text-blue-400 mb-1"><i class="fa-solid fa-warehouse mr-1"></i> فرز حسب الفرع</label>
+                        <select id="filterBranch" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-blue-500 transition-all"><option value="all">كل الفروع</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-amber-400 mb-1"><i class="fa-solid fa-id-card mr-1"></i> مسار حركة مندوب</label>
+                        <select id="filterDelegate" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-semibold text-white outline-none focus:ring-1 focus:ring-amber-500 transition-all"><option value="all">كل المناديب</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex-1 flex flex-col overflow-hidden">
+                <h3 class="font-bold text-slate-200 text-xs flex items-center gap-2 border-b border-slate-800 pb-2"><i class="fa-solid fa-chart-line text-purple-400"></i> الكثافة التشغيلية ومؤشرات الحركة</h3>
+                <div class="overflow-y-auto space-y-4 flex-1 pr-1 mt-3 text-xs" id="leaderboardBox"></div>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-xs space-y-3">
+                <div class="flex justify-between items-center">
+                    <label class="font-bold text-slate-300">التمثيل البصري للبيانات</label>
+                    <div class="flex bg-slate-950 rounded-lg p-1 border border-slate-800">
+                        <button onclick="changeVisualMode('heat')" id="btnHeatMode" class="px-3 py-1.5 font-bold text-slate-400 rounded transition-all">خريطة حرارية</button>
+                        <button onclick="changeVisualMode('markers')" id="btnMarkersMode" class="px-3 py-1.5 bg-blue-600 font-bold text-white rounded transition-all shadow-md">مؤشرات رقمية</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 relative h-full bg-slate-950 transition-all duration-300 w-full z-0">
+        <div id="coverageMap"></div>
+        <div class="radar-overlay"></div>
+        
+        <div class="absolute top-4 left-4 z-[2000] flex flex-col gap-2.5 pointer-events-auto">
+            
+            <button onclick="toggleSidebar()" title="إظهار / إخفاء لوحة التحكم الجانبية" class="w-11 h-11 bg-slate-900 border border-slate-700 text-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:bg-slate-800 hover:border-blue-500/50 flex items-center justify-center transition-all duration-300 transform active:scale-95">
+                <i id="sidebarToggleIcon" class="fa-solid fa-bars text-base"></i>
+            </button>
+
+            <button onclick="toggleFreeMeasureMode()" id="btnFreeMeasure" title="تفعيل أداة قياس الشوارع بين أي نقطتين" class="w-11 h-11 bg-slate-900 border border-slate-700 text-slate-300 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:bg-slate-800 hover:border-cyan-500/50 flex items-center justify-center transition-all duration-300 transform active:scale-95">
+                <i class="fa-solid fa-road animate-pulse text-base"></i>
+            </button>
+            
+            <button onclick="locateMe()" title="تحديد موقعي الجغرافي الآن" class="w-11 h-11 bg-blue-600 border border-blue-500 text-white rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:bg-blue-500 flex items-center justify-center transition-all duration-300 transform active:scale-95">
+                <i class="fa-solid fa-crosshairs text-base"></i>
+            </button>
+
+            <button onclick="toggleMapTheme()" title="تغيير ثيم الخريطة (فاتح / داكن)" class="w-11 h-11 bg-slate-900 border border-slate-700 text-amber-400 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:bg-slate-800 flex items-center justify-center transition-all duration-300 transform active:scale-95">
+                <i id="mapThemeIcon" class="fa-solid fa-sun text-base"></i>
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const DB_URL = "https://story-64520-default-rtdb.firebaseio.com/"; 
+        let map, heatLayer, baseLayer;
+        let rawRecords = {}, rawBranches = {}, rawDelegates = {};
+        let visualMode = 'markers'; 
+        let currentMapTheme = 'dark'; 
+        
+        let markerClusterGroup, branchLayerGroup, delegateLayerGroup, routingLinesGroup, customMeasureGroup;
+        let autoRefreshInterval = null;
+        let currentFilteredPoints = []; 
+
+        // متغيرات أداة القياس بالشوارع
+        let isFreeMeasureMode = false;
+        let measurePoints = [];
+
+        const mapStyles = { 
+            dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+            light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+        };
+
+        const geoData = {
+            cairo: { name: "القاهرة", center: [30.0444, 31.2357], zoom: 11, radius: 25000, cities: { nasr_city: { name: "مدينة نصر", center: [30.0595, 31.3370], zoom: 14, radius: 5000 }, maadi: { name: "المعادي", center: [29.9598, 31.2700], zoom: 14, radius: 4500 }, heliopolis: { name: "مصر الجديدة", center: [30.1044, 31.3262], zoom: 14, radius: 4000 }, new_cairo: { name: "القاهرة الجديدة", center: [30.0166, 31.4398], zoom: 13, radius: 9000 } } },
+            giza: { name: "الجيزة", center: [30.0131, 31.2089], zoom: 11, radius: 25000, cities: { october: { name: "6 أكتوبر", center: [29.9702, 30.9329], zoom: 12, radius: 11000 }, zayed: { name: "الشيخ زايد", center: [30.0456, 29.9855], zoom: 14, radius: 5500 }, mohandeseen: { name: "المهندسين", center: [30.0445, 31.2030], zoom: 14, radius: 3500 }, haram: { name: "الهرم", center: [29.9950, 31.1444], zoom: 14, radius: 4500 } } },
+            alex: { name: "الإسكندرية", center: [31.2001, 29.9187], zoom: 12, radius: 20000, cities: { smouha: { name: "سموحة", center: [31.2114, 29.9407], zoom: 14, radius: 3500 }, sidi_bishr: { name: "سيدي بشر", center: [31.2662, 29.9880], zoom: 14, radius: 4500 } } }
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mainSidebar');
+            const icon = document.getElementById('sidebarToggleIcon');
+            sidebar.classList.toggle('translate-x-full'); 
+            if (sidebar.classList.contains('translate-x-full')) {
+                icon.className = "fa-solid fa-bars text-base";
+            } else {
+                icon.className = "fa-solid fa-xmark text-base text-red-400";
+            }
+            setTimeout(() => { if(map) map.invalidateSize({animate: true}); }, 400);
+        }
+
+        function toggleMapTheme() {
+            currentMapTheme = currentMapTheme === 'dark' ? 'light' : 'dark';
+            baseLayer.setUrl(mapStyles[currentMapTheme]);
+            const icon = document.getElementById('mapThemeIcon');
+            icon.className = currentMapTheme === 'light' ? "fa-solid fa-moon text-base text-slate-400" : "fa-solid fa-sun text-base text-amber-400";
+        }
+
+        function toggleFreeMeasureMode() {
+            isFreeMeasureMode = !isFreeMeasureMode;
+            const btn = document.getElementById('btnFreeMeasure');
+            measurePoints = [];
+            customMeasureGroup.clearLayers();
+
+            if(isFreeMeasureMode) {
+                btn.className = "w-11 h-11 bg-cyan-600 border border-cyan-500 text-white rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center transition-all duration-300 transform scale-105";
+                map.getContainer().style.cursor = 'crosshair';
+                alert("تم تفعيل حساب الشوارع الحقيقي! اضغط الآن على أي نقطتين بالشوارع على الخريطة لحساب مسار التوصيل والزمن.");
+            } else {
+                btn.className = "w-11 h-11 bg-slate-900 border border-slate-700 text-slate-300 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:bg-slate-800 flex items-center justify-center transition-all duration-300 transform active:scale-95";
+                map.getContainer().style.cursor = '';
+            }
+        }
+
+        function locateMe() {
+            if(map) {
+                map.locate({setView: true, maxZoom: 15, enableHighAccuracy: true});
+                map.once('locationfound', function(e) {
+                    L.circleMarker(e.latlng, {radius: 9, fillColor: "#3b82f6", color: "#fff", weight: 2, fillOpacity: 1}).addTo(map)
+                     .bindPopup("<div class='text-center font-cairo font-bold text-xs'>موقعك الإداري الحالي</div>").openPopup();
+                });
+            }
+        }
+
+        // دالة مركزية لجلب مسارات الشوارع الحقيقية من محرك الخرائط العالمي المفتوح OSRM
+        async function fetchRealStreetRoute(lat1, lng1, lat2, lng2) {
+            try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("OSRM API Routing Error");
+                const data = await res.json();
+                
+                if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    return {
+                        distanceKm: route.distance / 1000,
+                        durationMin: Math.round(route.duration / 60),
+                        geometry: route.geometry
+                    };
+                }
+            } catch (err) {
+                console.warn("فشل الاتصال بمحرك التوجيه، تم تفعيل الحساب الاحتياطي الحركي خطياً:", err);
+            }
+            
+            // حساب احتياطي في حال انقطاع إنترنت المحرك العالمي
+            const dMeters = map.distance([lat1, lng1], [lat2, lng2]);
+            const dKm = dMeters / 1000;
+            // إضافة معامل تعرج افتراضي للشوارع قدره 1.3
+            const realEstimatedKm = dKm * 1.3; 
+            return {
+                distanceKm: realEstimatedKm,
+                durationMin: Math.round((realEstimatedKm / 35) * 60),
+                geometry: {
+                    type: "LineString",
+                    coordinates: [[lng1, lat1], [lng2, lat2]]
+                }
+            };
+        }
+
+        async function initDashboard() {
+            try {
+                const today = new Date();
+                const pastDays = new Date(); pastDays.setDate(today.getDate() - 7);
+                document.getElementById('filterToDate').value = today.toISOString().split('T')[0];
+                document.getElementById('filterFromDate').value = pastDays.toISOString().split('T')[0];
+
+                map = L.map('coverageMap', { zoomControl: false }).setView([26.8206, 30.8025], 6);
+                L.control.zoom({ position: 'topleft' }).addTo(map);
+                baseLayer = L.tileLayer(mapStyles.dark, { attribution: '© CARTO' }).addTo(map);
+                
+                markerClusterGroup = L.markerClusterGroup({
+                    chunkedLoading: true, maxClusterRadius: 50,
+                    iconCreateFunction: function(cluster) {
+                        const count = cluster.getChildCount();
+                        let size = count < 10 ? 36 : count < 50 ? 46 : 56;
+                        return L.divIcon({ html: `<div style="width:${size}px; height:${size}px;" class="custom-cluster">${count}</div>`, className: '', iconSize: [size, size] });
+                    }
+                });
+                
+                branchLayerGroup = L.layerGroup();
+                delegateLayerGroup = L.layerGroup();
+                routingLinesGroup = L.layerGroup(); 
+                customMeasureGroup = L.layerGroup(); 
+
+                markerClusterGroup.addTo(map);
+                branchLayerGroup.addTo(map);
+                routingLinesGroup.addTo(map);
+                delegateLayerGroup.addTo(map);
+                customMeasureGroup.addTo(map);
+
+                map.on('click', handleMapClickForMeasurement);
+
+                const govSelect = document.getElementById('geoGov');
+                govSelect.innerHTML = '<option value="all">الجمهورية بأكملها</option>';
+                Object.keys(geoData).forEach(k => govSelect.innerHTML += `<option value="${k}">${geoData[k].name}</option>`);
+
+                await fetchAllData();
+
+            } catch (error) {
+                console.error("Initialization Error:", error);
+            } finally {
+                const loading = document.getElementById('loadingOverlay');
+                if(loading) {
+                    loading.classList.add('opacity-0', 'pointer-events-none');
+                    setTimeout(() => loading.remove(), 700);
+                }
+            }
+        }
+
+        // معالجة قياس الشوارع بالنقر المباشر على الخريطة
+        async function handleMapClickForMeasurement(e) {
+            if (!isFreeMeasureMode) return;
+
+            measurePoints.push(e.latlng);
+            L.circleMarker(e.latlng, { radius: 6, fillColor: '#06b6d4', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(customMeasureGroup);
+
+            if (measurePoints.length === 2) {
+                const p1 = measurePoints[0];
+                const p2 = measurePoints[1];
+
+                // استدعاء محرك مسارات الشوارع الفعلي
+                const routeData = await fetchRealStreetRoute(p1.lat, p1.lng, p2.lat, p2.lng);
+
+                if(routeData) {
+                    // رسم المسار الفعلي للشوارع على الخريطة بشكل متعرج
+                    const geojsonLayer = L.geoJSON(routeData.geometry, {
+                        style: { color: '#06b6d4', weight: 4, opacity: 0.85, dashArray: '4, 8' }
+                    }).addTo(customMeasureGroup);
+
+                    // حساب أزمنة التحرك والرجوع بدقة
+                    const returnTimeMin = Math.round(routeData.durationMin * 1.15); // الرجوع أسرع قليلاً لعدم وجود حمولة
+
+                    const midPoint = L.latLng((p1.lat + p2.lat) / 2, (p1.lng + p2.lng) / 2);
+                    L.popup()
+                        .setLatLng(midPoint)
+                        .setContent(`
+                            <div class="text-right p-1 font-cairo text-xs min-w-[200px]">
+                                <h4 class="font-black text-cyan-400 border-b border-slate-800 pb-1 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-route"></i> مسار الشوارع الفعلي</h4>
+                                <p class="mb-1">المسافة الحقيقية: <span class="font-mono font-bold text-white text-sm">${routeData.distanceKm.toFixed(2)} كم</span></p>
+                                <p class="text-amber-400 mb-0.5"><i class="fa-solid fa-motorcycle"></i> زمن الوصول (ذهاب): <span class="font-mono text-white">${routeData.durationMin} دقيقة</span></p>
+                                <p class="text-emerald-400"><i class="fa-solid fa-arrow-rotate-left"></i> زمن الرجوع (إياب): <span class="font-mono text-white">${returnTimeMin} دقيقة</span></p>
+                            </div>
+                        `)
+                        .openOn(map);
+                }
+
+                measurePoints = [];
+                toggleFreeMeasureMode(); 
+            }
+        }
+
+        // قياس المسافة والوقت الحقيقي عبر الشوارع من لوحة التحكم الجانبية
+        async function calculateSelectDistance() {
+            const srcKey = document.getElementById('measureSrc').value;
+            const dstVal = document.getElementById('measureDst').value;
+
+            if(!srcKey || !dstVal) {
+                alert("يرجى تحديد نقطة الانطلاق والهدف أولاً من القوائم المنسدلة.");
+                return;
+            }
+
+            const branchSrc = rawBranches[srcKey];
+            let lat1 = branchSrc ? branchSrc.parsedLat : null;
+            let lng1 = branchSrc ? branchSrc.parsedLng : null;
+
+            let lat2 = null, lng2 = null;
+
+            if(dstVal.startsWith('branch_')) {
+                const bKey = dstVal.replace('branch_', '');
+                if(rawBranches[bKey]) {
+                    lat2 = rawBranches[bKey].parsedLat;
+                    lng2 = rawBranches[bKey].parsedLng;
+                }
+            } else if(dstVal.startsWith('order_')) {
+                const oNum = dstVal.replace('order_', '');
+                const match = currentFilteredPoints.find(p => String(p.raw.orderNumber) === oNum);
+                if(match) {
+                    lat2 = match.lat;
+                    lng2 = match.lng;
+                }
+            }
+
+            if(lat1 && lng1 && lat2 && lng2) {
+                customMeasureGroup.clearLayers();
+                
+                // الاستعلام من محرك مسارات شوارع المدينة الفعلي
+                const routeData = await fetchRealStreetRoute(lat1, lng1, lat2, lng2);
+
+                if(routeData) {
+                    const returnTimeMin = Math.round(routeData.durationMin * 1.15);
+
+                    // عرض النتيجة باللوحة الجانبية بدقة الشوارع
+                    document.getElementById('measureResultBox').classList.remove('hidden');
+                    document.getElementById('resDistance').textContent = `${routeData.distanceKm.toFixed(2)} كم`;
+                    document.getElementById('resGoTime').textContent = `${routeData.durationMin} دقيقة`;
+                    document.getElementById('resReturnTime').textContent = `${returnTimeMin} دقيقة`;
+
+                    // رسم خط التوجيه الحقيقي والمتعرج في الشوارع
+                    L.geoJSON(routeData.geometry, {
+                        style: { color: '#3b82f6', weight: 4, opacity: 0.9, className: 'route-animation' }
+                    }).addTo(customMeasureGroup);
+                    
+                    map.fitBounds(L.latLngBounds([[lat1, lng1], [lat2, lng2]]), { padding: [60, 60], maxZoom: 14 });
+                }
+            } else {
+                alert("حدث خطأ في جلب الإحداثيات الجغرافية، تأكد من أن النقاط المحددة تحتوي على مواقع صحيحة.");
+            }
+        }
+
+        async function fetchAllData() {
+            try {
+                const [resRecords, resBranches, resDelegates] = await Promise.all([
+                    fetch(`${DB_URL}records.json`), fetch(`${DB_URL}branches.json`), fetch(`${DB_URL}delegates.json`)
+                ]);
+                
+                rawRecords = await resRecords.json() || {};
+                rawBranches = await resBranches.json() || {};
+                rawDelegates = await resDelegates.json() || {};
+
+                renderBranchesOnMap(rawBranches);
+                applyFilters();
+            } catch (err) {
+                console.error("Data Synchronization Error:", err);
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('btnRefresh');
+            const liveBadge = document.getElementById('liveStatus');
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                btn.className = "text-[10px] bg-slate-950 border border-slate-700 px-2.5 py-1 rounded-md text-slate-300 hover:text-white transition-all flex items-center gap-1";
+                liveBadge.classList.add('hidden');
+            } else {
+                fetchAllData(); 
+                autoRefreshInterval = setInterval(fetchAllData, 30000); 
+                btn.className = "text-[10px] bg-emerald-600/20 border border-emerald-500/50 px-2.5 py-1 rounded-md text-emerald-400 font-bold transition-all flex items-center gap-1 shadow-lg shadow-emerald-500/20";
+                liveBadge.classList.remove('hidden');
+            }
+        }
+
+        function renderBranchesOnMap(branches) {
+            branchLayerGroup.clearLayers();
+            const measureSrcDropdown = document.getElementById('measureSrc');
+            const measureDstDropdown = document.getElementById('measureDst');
+            
+            measureSrcDropdown.innerHTML = '<option value="">-- اختر فرع الانطلاق --</option>';
+            measureDstDropdown.innerHTML = '<option value="">-- اختر الهدف (فرع/أوردر) --</option>';
+
+            Object.keys(branches || {}).forEach(key => {
+                const b = branches[key];
+                if (!b || typeof b !== 'object') return; 
+
+                let lat, lng;
+                if (b.lat !== undefined && b.lng !== undefined) { lat = parseFloat(b.lat); lng = parseFloat(b.lng); }
+                else if (b.location && typeof b.location === 'object') { lat = parseFloat(b.location.lat); lng = parseFloat(b.location.lng); }
+                else if (b.location && typeof b.location === 'string') { const coords = b.location.split(','); lat = parseFloat(coords[0]); lng = parseFloat(coords[1]); }
+
+                if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+                    b.parsedLat = lat; b.parsedLng = lng; 
+
+                    measureSrcDropdown.innerHTML += `<option value="${key}">${b.name}</option>`;
+                    measureDstDropdown.innerHTML += `<option value="branch_${key}">فرع: ${b.name}</option>`;
+
+                    const branchHtmlIcon = L.divIcon({
+                        html: `
+                            <div class="tactical-marker-container flex flex-col items-center justify-center -mt-10">
+                                <div class="bg-gradient-to-r from-red-600 to-red-800 border border-red-500 text-white text-[11px] font-black px-3 py-1 rounded-md shadow-xl whitespace-nowrap text-center mb-1 z-50">
+                                    <i class="fa-solid fa-building-shield ml-1 text-red-200"></i>${b.name || 'الفرع'}
+                                </div>
+                                <div class="relative">
+                                    <i class="fa-solid fa-location-dot text-red-500 text-[35px] drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]"></i>
+                                </div>
+                            </div>`,
+                        className: '', iconSize: [60, 60], iconAnchor: [30, 50]
+                    });
+
+                    L.marker([lat, lng], { icon: branchHtmlIcon, zIndexOffset: 8000 })
+                     .bindPopup(`<div class="text-right p-1 font-cairo"><h4 class="font-bold text-sm mb-1 text-blue-400 border-b border-slate-700 pb-1">${b.name || 'فرع'}</h4><p class="text-[11px] text-slate-400 mt-1">كود النظام: <span class="font-mono text-slate-200">${key}</span></p></div>`)
+                     .addTo(branchLayerGroup);
+                }
+            });
+        }
+
+        async function applyFilters() {
+            const fromTime = new Date(document.getElementById('filterFromDate').value).getTime();
+            const toTime = new Date(document.getElementById('filterToDate').value).setHours(23, 59, 59, 999);
+            const branchFilterId = document.getElementById('filterBranch').value;
+            const delegateFilterId = document.getElementById('filterDelegate').value;
+            const searchTerm = document.getElementById('searchTerm').value.trim().toLowerCase();
+            
+            const govVal = document.getElementById('geoGov').value;
+            const cityVal = document.getElementById('geoCity').value;
+
+            let targetArea = null;
+            if (govVal !== 'all') {
+                targetArea = (cityVal !== 'all') ? geoData[govVal].cities[cityVal] : geoData[govVal];
+                if (delegateFilterId === 'all') {
+                    map.flyTo(targetArea.center, targetArea.zoom, { duration: 1.2 });
+                }
+            }
+
+            const matchedPoints = [];
+            let totalFinance = 0; let overdueCount = 0;
+            const activeDrivers = {}; const activeBranches = {};
+
+            Object.keys(rawRecords || {}).forEach(dateKey => {
+                const dayRecords = rawRecords[dateKey];
+                if (!dayRecords || typeof dayRecords !== 'object') return; 
+
+                const dayTime = new Date(dateKey).getTime();
+                if (dayTime >= fromTime && dayTime <= toTime) {
+                    
+                    Object.keys(dayRecords).forEach(recKey => {
+                        const r = dayRecords[recKey];
+                        if (!r || typeof r !== 'object') return; 
+
+                        const passBranch = (branchFilterId === 'all') || (r.branchId === branchFilterId || r.sourceBranchId === branchFilterId);
+                        const passDelegate = (delegateFilterId === 'all') || (r.delegateId === delegateFilterId);
+                        
+                        const passSearch = !searchTerm || 
+                            (r.orderNumber && String(r.orderNumber).toLowerCase().includes(searchTerm)) ||
+                            (r.orderAddressInput && r.orderAddressInput.toLowerCase().includes(searchTerm)) ||
+                            (r.delegateName && r.delegateName.toLowerCase().includes(searchTerm));
+
+                        if (passBranch && passDelegate && passSearch && r.deliveryLocation) {
+                            let lat = typeof r.deliveryLocation === 'object' ? Number(r.deliveryLocation.lat) : Number(r.deliveryLocation.split(',')[0]);
+                            let lng = typeof r.deliveryLocation === 'object' ? Number(r.deliveryLocation.lng) : Number(r.deliveryLocation.split(',')[1]);
+
+                            if (!isNaN(lat) && !isNaN(lng)) {
+                                if (targetArea && map.distance(targetArea.center, [lat, lng]) > targetArea.radius) return;
+
+                                r.firebaseKey = recKey; r.recordDate = dateKey;
+                                matchedPoints.push({ lat, lng, raw: r });
+                                totalFinance += (Number(r.orderValue) || 0);
+                                if (['pending', 'preparing', 'معلق'].includes(r.status)) overdueCount++;
+
+                                const dId = r.delegateId || 'unknown';
+                                const dName = r.delegateName || (rawDelegates[dId] ? rawDelegates[dId].name : null) || `مندوب (${dId})`;
+                                
+                                if(!activeDrivers[dId]) activeDrivers[dId] = { name: dName, count: 0, lastLat: lat, lastLng: lng };
+                                activeDrivers[dId].count++;
+                                activeDrivers[dId].lastLat = lat; activeDrivers[dId].lastLng = lng;
+
+                                const bName = (rawBranches[r.branchId] ? rawBranches[r.branchId].name : null) || `فرع عام`;
+                                activeBranches[bName] = (activeBranches[bName] || 0) + 1;
+                            }
+                        }
+                    });
+                }
+            });
+
+            currentFilteredPoints = matchedPoints;
+
+            const measureDstDropdown = document.getElementById('measureDst');
+            let dstHtml = '<option value="">-- اختر الهدف (فرع/أوردر) --</option>';
+            Object.keys(rawBranches || {}).forEach(k => dstHtml += `<option value="branch_${k}">فرع: ${rawBranches[k].name}</option>`);
+            matchedPoints.slice(0, 30).forEach(p => {
+                dstHtml += `<option value="order_${p.raw.orderNumber}">أوردر #${p.raw.orderNumber} (${p.raw.orderValue}ج)</option>`;
+            });
+            measureDstDropdown.innerHTML = dstHtml;
+
+            document.getElementById('statsCount').textContent = matchedPoints.length.toLocaleString();
+            document.getElementById('statsDrivers').textContent = Object.keys(activeDrivers).length;
+            document.getElementById('statsFinance').textContent = Math.round(totalFinance).toLocaleString() + " ج";
+            
+            const slaRate = matchedPoints.length > 0 ? Math.round((overdueCount / matchedPoints.length) * 100) : 0;
+            const slaBadge = document.getElementById('slaBadge');
+            slaBadge.textContent = slaRate + "% مخاطر التأخير";
+
+            rebuildOperationalDropdowns(activeDrivers, activeBranches, branchFilterId, delegateFilterId);
+            renderZoneLeaderboards(activeDrivers, activeBranches);
+            await renderVisualDataLayers(matchedPoints, delegateFilterId, activeDrivers);
+
+            if (delegateFilterId !== 'all' && rawDelegates[delegateFilterId]) {
+                const d = rawDelegates[delegateFilterId];
+                let liveLat = null, liveLng = null;
+                if (d.lat !== undefined && d.lng !== undefined) { liveLat = parseFloat(d.lat); liveLng = parseFloat(d.lng); }
+                
+                if (liveLat && liveLng && !isNaN(liveLat) && !isNaN(liveLng)) {
+                    map.flyTo([liveLat, liveLng], 14, { duration: 1.2 });
+                }
+            } else if (govVal === 'all' && matchedPoints.length > 0 && branchFilterId === 'all' && delegateFilterId === 'all' && !searchTerm) {
+                map.fitBounds(L.latLngBounds(matchedPoints.map(p => [p.lat, p.lng])), { padding: [50, 50], maxZoom: 12 });
+            }
+        }
+
+        async function renderVisualDataLayers(points, selectedDelegateId, activeDriversDict) {
+            if (heatLayer) map.removeLayer(heatLayer);
+            if (markerClusterGroup) markerClusterGroup.clearLayers();
+            if (routingLinesGroup) routingLinesGroup.clearLayers();
+            if (delegateLayerGroup) delegateLayerGroup.clearLayers();
+
+            if (points.length === 0 && selectedDelegateId === 'all') return;
+
+            if (points.length > 0) {
+                if (visualMode === 'heat') {
+                    heatLayer = L.heatLayer(points.map(p => [p.lat, p.lng, 0.95]), { radius: 25, blur: 18, maxZoom: 14, minOpacity: 0.5 }).addTo(map);
+                } else {
+                    const markersToAdd = [];
+                    points.forEach(p => {
+                        const r = p.raw;
+                        const isPending = ['pending', 'preparing', 'معلق'].includes(r.status);
+                        const markerHexColor = isPending ? '#ef4444' : '#10b981';
+                        const icon = L.divIcon({ html: `<div class="w-3.5 h-3.5 rounded-full border-[1.5px] border-slate-950 shadow-[0_0_10px_${markerHexColor}] ${isPending ? 'pulse-marker-active' : ''}" style="background-color: ${markerHexColor};"></div>`, className: '', iconSize: [14, 14] });
+                        
+                        markersToAdd.push(L.marker([p.lat, p.lng], { icon }).bindPopup(`
+                            <div class="text-right p-1.5 font-cairo min-w-[170px]">
+                                <div class="flex justify-between items-center border-b border-slate-800 pb-1.5 mb-1.5">
+                                    <span class="font-bold text-xs text-blue-400">#${r.orderNumber || 'عام'}</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-bold font-mono">${r.orderValue || 0} ج</span>
+                                </div>
+                                <p class="text-[11px] text-slate-200 mb-1"><i class="fa-solid fa-motorcycle ml-1 text-slate-500"></i>${r.delegateName || 'غير محدد'}</p>
+                                <p class="text-[10px] text-slate-400 leading-relaxed"><i class="fa-solid fa-map-pin ml-1 text-slate-500"></i>${r.orderAddressInput || 'بدون عنوان'}</p>
+                            </div>
+                        `));
+                    });
+                    markerClusterGroup.addLayers(markersToAdd);
+                }
+            }
+
+            // رسم مسار المندوب الفعلي داخل شوارع المدينة بدقة متعرجة
+            if (selectedDelegateId !== 'all' && points.length > 0) {
+                let currentLat = null; let currentLng = null;
+                const dBranch = points[0].raw.branchId && rawBranches[points[0].raw.branchId] ? rawBranches[points[0].raw.branchId] : null;
+                
+                if (dBranch && dBranch.parsedLat) {
+                    currentLat = dBranch.parsedLat; currentLng = dBranch.parsedLng;
+                }
+
+                // رسم المسارات تتابعياً عبر محرك الشوارع لكل شحنة بالترتيب
+                for(let i=0; i < Math.min(points.length, 6); i++) {
+                    if(currentLat && currentLng) {
+                        const rData = await fetchRealStreetRoute(currentLat, currentLng, points[i].lat, points[i].lng);
+                        if(rData) {
+                            L.geoJSON(rData.geometry, { style: { color: '#f59e0b', weight: 3.5, opacity: 0.85, className: 'route-animation' } }).addTo(routingLinesGroup);
+                        }
+                    }
+                    currentLat = points[i].lat; currentLng = points[i].lng;
+                }
+            }
+
+            // إظهار المناديب على الخريطة على هيئة موتوسيكل تكتيكي مضيء يدعم الحركة والتتبع
+            Object.keys(rawDelegates || {}).forEach(dId => {
+                const dbDelegate = rawDelegates[dId];
+                if (!dbDelegate || selectedDelegateId !== 'all' && selectedDelegateId !== dId) return;
+
+                let liveLat = null, liveLng = null;
+                if (dbDelegate.lat !== undefined && dbDelegate.lng !== undefined) { liveLat = parseFloat(dbDelegate.lat); liveLng = parseFloat(dbDelegate.lng); }
+                else if (dbDelegate.location && typeof dbDelegate.location === 'string') { const c = dbDelegate.location.split(','); liveLat = parseFloat(c[0]); liveLng = parseFloat(c[1]); }
+
+                if ((!liveLat || !liveLng) && activeDriversDict[dId]) {
+                    liveLat = activeDriversDict[dId].lastLat; liveLng = activeDriversDict[dId].lastLng;
+                }
+
+                if (liveLat && liveLng && !isNaN(liveLat) && !isNaN(liveLng)) {
+                    const orderCount = activeDriversDict[dId] ? activeDriversDict[dId].count : 0;
+                    const dName = dbDelegate.name || `مندوب (${dId})`;
+                    const phone = dbDelegate.phone || dbDelegate.mobile || 'لا يوجد هاتف';
+
+                    // الهيكل البصري الجديد للمندوب (أيقونة موتوسيكل دائرية نيون ناصعة ومحاطة بنبض الإشارة)
+                    const delegateHtmlIcon = L.divIcon({
+                        html: `
+                            <div class="tactical-marker-container flex flex-col items-center justify-center -mt-10">
+                                <div class="bg-gradient-to-r from-amber-500 to-orange-600 border border-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded shadow-xl whitespace-nowrap mb-1 z-[9999] font-sans">
+                                    <i class="fa-solid fa-user-ninja ml-0.5"></i> ${dName}
+                                </div>
+                                <div class="relative w-11 h-11 bg-slate-950 border-[2.5px] border-amber-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.7)] delegate-motorcycle-pulse">
+                                    <i class="fa-solid fa-motorcycle text-amber-400 text-xl"></i>
+                                </div>
+                            </div>`,
+                        className: '', iconSize: [50, 60], iconAnchor: [25, 50]
+                    });
+
+                    L.marker([liveLat, liveLng], { icon: delegateHtmlIcon, zIndexOffset: 9999 })
+                     .bindPopup(`
+                        <div class="text-right p-1 font-cairo bg-slate-900 text-slate-100 min-w-[230px]">
+                            <h4 class="font-black text-xs text-amber-400 border-b border-slate-800 pb-1.5 mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-motorcycle text-sm"></i> رادار المناديب الحركي المباشر
+                            </h4>
+                            <div class="space-y-1.5 text-[11px] text-slate-300">
+                                <p><i class="fa-solid fa-user text-slate-500 ml-1"></i> الكابتن: <span class="font-bold text-white">${dName}</span></p>
+                                <p><i class="fa-solid fa-phone text-slate-500 ml-1"></i> رقم الهاتف: <span class="font-mono text-slate-100">${phone}</span></p>
+                                <p><i class="fa-solid fa-route text-cyan-400 ml-1"></i> الشحنات بالشوارع: <span class="font-bold text-blue-400 font-mono">${orderCount} أوردر</span></p>
+                                <p><i class="fa-solid fa-gauge-high text-emerald-400 ml-1"></i> حالة الحركة: <span class="text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded text-[10px]">يقود الآن</span></p>
+                                <div class="border-t border-slate-800 pt-1.5 mt-1">
+                                    <p class="text-[10px] text-slate-500 mb-0.5"><i class="fa-solid fa-satellite text-cyan-400 animate-pulse"></i> إحداثيات الـ GPS الجارية:</p>
+                                    <p class="text-[9px] font-mono text-slate-400 bg-slate-950 p-1 rounded text-center">${liveLat.toFixed(6)}, ${liveLng.toFixed(6)}</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-800">
+                                <a href="https://maps.google.com/?q=${liveLat},${liveLng}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-3 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-md w-full justify-center">
+                                    <i class="fa-solid fa-location-arrow"></i> فتح تتبع Google Maps المباشر
+                                </a>
+                            </div>
+                        </div>
+                     `)
+                     .addTo(delegateLayerGroup);
+                }
+            });
+        }
+
+        function exportToExcel() {
+            if (currentFilteredPoints.length === 0) return alert("لا توجد بيانات مطابقة للتصدير.");
+            let csvContent = "\uFEFFرقم الأوردر,تاريخ السجل,القيمة,الفرع,المندوب,الحالة,العنوان\n";
+            currentFilteredPoints.forEach(p => {
+                const r = p.raw;
+                const bName = (r.branchId && rawBranches[r.branchId] ? rawBranches[r.branchId].name : "غير مححدد");
+                csvContent += `${r.orderNumber || "-"},${r.recordDate || "-"},${r.orderValue || 0},${bName},${r.delegateName || "-"},${r.status || "-"},"${(r.orderAddressInput || "").replace(/"/g, '""')}"\n`;
+            });
+            const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })));
+            link.setAttribute("download", `Operational_Routing_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        function changeVisualMode(mode) {
+            visualMode = mode;
+            document.getElementById('btnHeatMode').className = `px-3 py-1.5 font-bold rounded-md transition-all ${mode==='heat' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`;
+            document.getElementById('btnMarkersMode').className = `px-3 py-1.5 font-bold rounded-md transition-all ${mode==='markers' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`;
+            applyFilters();
+        }
+
+        function updateCitiesDropdown() {
+            const govVal = document.getElementById('geoGov').value;
+            const citySelect = document.getElementById('geoCity');
+            citySelect.innerHTML = '<option value="all">كل المناطق الفرعية</option>';
+            if (govVal === 'all') { citySelect.disabled = true; citySelect.classList.add('cursor-not-allowed', 'text-slate-500'); } 
+            else { citySelect.disabled = false; citySelect.classList.remove('cursor-not-allowed', 'text-slate-500'); Object.keys(geoData[govVal].cities).forEach(k => citySelect.innerHTML += `<option value="${k}">${geoData[govVal].cities[k].name}</option>`); }
+            applyFilters();
+        }
+
+        function rebuildOperationalDropdowns(zoneDrivers, zoneBranches, currentB, currentD) {
+            const branchSelect = document.getElementById('filterBranch');
+            const delSelect = document.getElementById('filterDelegate');
+            
+            branchSelect.innerHTML = '<option value="all">كل الفروع المنخرطة</option>';
+            Object.keys(rawBranches || {}).forEach(k => {
+                if(!rawBranches[k]) return;
+                branchSelect.innerHTML += `<option value="${k}" ${currentB === k ? 'selected':''}>${rawBranches[k].name}${zoneBranches[rawBranches[k].name] ? ` (${zoneBranches[rawBranches[k].name]})` : ''}</option>`
+            });
+            
+            delSelect.innerHTML = '<option value="all">كل مناديب التوصيل</option>';
+            Object.keys(zoneDrivers || {}).forEach(k => delSelect.innerHTML += `<option value="${k}" ${currentD === k ? 'selected':''}>${zoneDrivers[k].name} (${zoneDrivers[k].count} شحنة)</option>`);
+        }
+
+        function renderZoneLeaderboards(drivers, branches) {
+            const box = document.getElementById('leaderboardBox');
+            let html = `<div class="space-y-2"><p class="text-[10px] font-black border-r-[3px] border-amber-500 pr-2 mb-2 text-amber-400 tracking-wide">المناديب الأكثر حركة ونشاطاً:</p>`;
+            const sortedDrivers = Object.values(drivers || {}).sort((a,b) => b.count - a.count).slice(0, 3);
+            if(sortedDrivers.length === 0) html += `<p class="text-slate-500 italic text-[10px] pr-2">لا توجد حركة مسجلة للمناديب حالياً</p>`;
+            sortedDrivers.forEach((d, i) => {
+                html += `<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-amber-500/20 transition-all"><span class="font-bold text-[11px] text-slate-300"><span class="text-slate-500 ml-1">#${i+1}</span> <i class="fa-solid fa-motorcycle text-slate-500 ml-1"></i> ${d.name}</span><span class="bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded text-[10px] font-mono border border-amber-500/20">${d.count} أوردر</span></div>`;
+            });
+            
+            html += `</div><div class="space-y-2 mt-5"><p class="text-[10px] font-black border-r-[3px] border-blue-500 pr-2 mb-2 text-blue-400 tracking-wide">كثافة الإنتاجية حسب الفروع الأولية:</p>`;
+            const sortedBranches = Object.entries(branches || {}).sort((a,b) => b[1] - a[1]).slice(0, 3);
+            if(sortedBranches.length === 0) html += `<p class="text-slate-500 italic text-[10px] pr-2">لا يوجد نشاط للفروع</p>`;
+            sortedBranches.forEach(([name, count], i) => {
+                html += `<div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-blue-500/20 transition-all"><span class="font-bold text-[11px] text-slate-300"><span class="text-slate-500 ml-1">#${i+1}</span> ${name}</span><span class="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded text-[10px] font-mono border border-blue-500/20">${count}</span></div>`;
+            });
+            box.innerHTML = html + `</div>`;
+        }
+
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>
