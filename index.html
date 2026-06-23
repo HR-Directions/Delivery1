@@ -160,7 +160,8 @@
     </div>
 
     <div id="appContainer" class="hidden flex-col h-full w-full">
-        <header class="bg-primary text-white shadow-md sticky top-0 z-50">
+       
+               <header class="bg-primary text-white shadow-md sticky top-0 z-50">
             <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-scissors text-2xl text-accent"></i>
@@ -168,42 +169,28 @@
                     <span id="userInfoDisplay" class="bg-white text-primary text-xs px-2 py-1 rounded-full font-bold ml-4 shadow-sm"></span>
                 </div>
                 <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg shadow-inner" id="mainNav">
-                    <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
+                    <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm whitespace-nowrap"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
                     
-                    <div class="relative group inline-block">
-                        <button onclick="toggleNotifMenu()" class="px-4 py-2 rounded-md font-semibold text-white hover:bg-white/20 transition-all shadow-sm flex items-center relative">
-                            <i class="fa-solid fa-bell text-xl"></i> الإشعارات
-                            <span id="notifUnreadBadge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold border border-primary">0</span>
-                        </button>
-                        <div id="notifDropdown" class="hidden absolute top-full mt-2 right-0 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden flex flex-col text-right">
-                            <div class="bg-gray-50 border-b border-gray-200 p-3 flex flex-col gap-2">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-bell text-secondary ml-1"></i> الإشعارات الواردة</h3>
-                                    <input type="date" id="notifDateFilter" class="text-xs border border-gray-300 rounded px-2 py-1 outline-none font-bold text-primary" onchange="loadNotificationsList(1)">
-                                </div>
-                                <div class="flex justify-between items-center text-xs border-t pt-2 mt-1">
-                                    <button onclick="changeNotifPage(1)" id="btnNotifNext" class="text-blue-600 font-bold hover:underline hidden"><i class="fa-solid fa-chevron-right"></i> السابق</button>
-                                    <span id="notifPageIndicator" class="text-gray-500 font-bold"></span>
-                                    <button onclick="changeNotifPage(-1)" id="btnNotifPrev" class="text-blue-600 font-bold hover:underline hidden">التالي <i class="fa-solid fa-chevron-left"></i></button>
-                                </div>
-                            </div>
-                            <div id="notifList" class="max-h-64 overflow-y-auto p-2 space-y-2">
-                                <div class="text-center text-gray-400 text-xs py-4">لا توجد إشعارات لعرضها</div>
-                            </div>
-                        </div>
-                    </div>
+                    <button onclick="openNotificationsModal()" class="relative px-4 py-2 rounded-md font-semibold text-white hover:bg-white/20 transition-all shadow-sm flex items-center whitespace-nowrap">
+                        <i class="fa-solid fa-bell text-xl ml-2"></i> الإشعارات
+                        <span id="notifUnreadBadge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold border border-primary">0</span>
+                    </button>
                     
-                    <button onclick="openPendingOrdersModal()" class="relative px-4 py-2 rounded-md font-semibold text-white hover:bg-white/20 transition-all bg-amber-500 shadow-sm hover:shadow-md">
+                    <button onclick="openPendingOrdersModal()" class="relative px-4 py-2 rounded-md font-semibold text-white hover:bg-white/20 transition-all bg-amber-500 shadow-sm hover:shadow-md whitespace-nowrap">
                         <i class="fa-solid fa-clock-rotate-left ml-2"></i>الأوردرات المعلقة
                         <span id="overdueBadge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full animate-ping"></span>
                         <span id="overdueBadgeSolid" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">!</span>
                     </button>
-                    <button onclick="switchTab('adminTab')" id="btn-adminTab" class="nav-btn hidden px-4 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white"><i class="fa-solid fa-gears ml-2"></i>الإدارة</button>
-                    <button onclick="openSettingsModal()" class="px-4 py-2 rounded-md font-semibold text-white hover:bg-white/20 transition-all"><i class="fa-solid fa-gear ml-2"></i>الإعدادات</button>
-                    <button onclick="logout()" class="px-4 py-2 rounded-md font-semibold text-red-300 hover:bg-red-500 hover:text-white transition-all"><i class="fa-solid fa-sign-out-alt ml-2"></i>خروج</button>
+                    
+                    <button onclick="switchTab('adminTab')" id="btn-adminTab" class="nav-btn hidden px-4 py-2 rounded-md font-semibold transition-all duration-200 hover:bg-white/20 text-white whitespace-nowrap"><i class="fa-solid fa-gears ml-2"></i>الإدارة</button>
+                    
+                    <button onclick="openSettingsModal()" class="px-4 py-2 rounded-md font-semibold text-white hover:bg-white/20 transition-all whitespace-nowrap"><i class="fa-solid fa-gear ml-2"></i>الإعدادات</button>
+                    
+                    <button onclick="logout()" class="px-4 py-2 rounded-md font-semibold text-red-300 hover:bg-red-500 hover:text-white transition-all whitespace-nowrap"><i class="fa-solid fa-sign-out-alt ml-2"></i>خروج</button>
                 </nav>
             </div>
         </header>
+        
 
         <main class="flex-grow container mx-auto px-4 py-8 overflow-auto relative">
             <section id="mainTab" class="tab-content active">
@@ -254,7 +241,7 @@
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8 relative">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
                         <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-hand-pointer ml-2 text-secondary"></i>توجيه الحركة (الفروع)</h3>
-                        <span class="text-xs font-semibold text-secondary bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100">كليك يمين لتحديد الكمية يدوياً</span>
+                        <span class="text-xs font-semibold text-secondary bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100">كليك يمين لتوجيه أصناف متعددة</span>
                     </div>
                     
                     <div id="pastDateWarning" class="hidden mb-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold flex items-center justify-center animate-pulse">
@@ -301,6 +288,7 @@
                             <button onclick="switchAdminTab('reportsSubTab')" id="btn-reportsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 bg-gray-50 text-primary border-r-4 border-r-primary transition-colors"><i class="fa-solid fa-table-list ml-2 w-5 text-center"></i>التقارير المتقدمة</button>
                             <button onclick="switchAdminTab('analyticsSubTab')" id="btn-analyticsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-chart-line ml-2 w-5 text-center"></i>الإحصائيات والرسوم</button>
                             <button onclick="switchAdminTab('adminsSubTab')" id="btn-adminsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-user-shield ml-2 w-5 text-center"></i>المسؤولين</button>
+                            <button onclick="switchAdminTab('cashSubTab'); loadCashSettings();" id="btn-cashSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-money-bill-wave ml-2 w-5 text-center text-green-500"></i>إدارة النقدية</button>
                             <button onclick="switchAdminTab('branchesSubTab')" id="btn-branchesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-store ml-2 w-5 text-center"></i>الفروع</button>
                             <button onclick="switchAdminTab('delegatesSubTab')" id="btn-delegatesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-users ml-2 w-5 text-center"></i>المناديب</button>
                             <button onclick="switchAdminTab('devicesSubTab'); loadDevices();" id="btn-devicesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors flex justify-between items-center"><span class="flex items-center"><i class="fa-solid fa-laptop-medical ml-2 w-5 text-center"></i>أجهزة الانضمام</span><span id="pendingDevicesBadge" class="hidden bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">!</span></button>
@@ -314,50 +302,78 @@
 
                     <div class="w-full md:w-3/4">
                         
+                        <div id="cashSubTab" class="sub-tab-content">
+                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+                                <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center"><i class="fa-solid fa-money-bill-wave text-emerald-500 ml-2 text-2xl"></i> إدارة نقدية تسعير الحركات</h2>
+                                <p class="text-sm font-semibold text-gray-500 mb-6">قم بتعيين القيمة المالية للحركات الموجهة بين الفروع. إذا تُركت مجهولة فستعادل الحركة الواحدة 1 ج.م افتراضياً.</p>
+                                
+                                <div class="mb-5 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-right-from-bracket ml-1 text-primary"></i> حدد فرع المصدر (المُرسِل)</label>
+                                    <select id="cashSourceBranchSelect" onchange="renderCashPricingMatrix()" class="w-full md:w-1/2 px-4 py-2.5 border border-gray-300 rounded-lg outline-none font-bold text-primary bg-white focus:ring-2 focus:ring-secondary">
+                                        <option value="">-- يرجى تحديد فرع المصدر --</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="cashPricingMatrixContainer" class="hidden">
+                                    <div class="overflow-x-auto border border-gray-200 rounded-xl mb-4">
+                                        <table class="w-full text-right border-collapse">
+                                            <thead class="bg-gray-50 border-b">
+                                                <tr>
+                                                    <th class="p-3 font-bold text-gray-700">الفرع المستلم (الوجهة)</th>
+                                                    <th class="p-3 font-bold text-gray-700 text-center w-48">قيمة الحركة الواحدة (ج.م)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="cashPricingMatrixBody"></tbody>
+                                        </table>
+                                    </div>
+                                    <button onclick="saveCashPricingMatrix()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2"><i class="fa-solid fa-floppy-disk"></i> حفظ مصفوفة التسعير الحالية</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="offersSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
                                 <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-accent ml-2"></i>إضافة عرض جديد لصفحة التتبع</h2>
                                 <form onsubmit="handleAddOffer(event)" class="space-y-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="text" id="offerTitle" required placeholder="عنوان العرض (مثال: خصم خاص)" class="px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold">
-        <div>
-            <label class="block text-xs mb-1 text-gray-500 font-bold">صورة العرض (تُضغط وتُرفع تلقائياً)</label>
-            <input type="file" id="offerMediaFile" accept="image/*" required class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none" onchange="processOfferImage(event)">
-            <input type="hidden" id="offerMediaBase64">
-        </div>
-        
-        <input type="text" id="offerCode" required placeholder="كود العرض (مثال: OFF2026)" class="px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold">
-        <input type="number" id="offerDiscount" required min="0" max="100" placeholder="نسبة الخصم المنفردة % (مثال: 20)" class="px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold">
-        
-        <div><label class="block text-xs mb-1 text-gray-500 font-bold">تاريخ البداية</label><input type="date" id="offerStart" required class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none"></div>
-        <div><label class="block text-xs mb-1 text-gray-500 font-bold">تاريخ النهاية (يختفي بعده)</label><input type="date" id="offerEnd" required class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none"></div>
-        <input type="text" id="offerWhatsapp" required placeholder="رقم واتساب الطلب (مثال: 01xxxxxxxxx)" class="md:col-span-2 px-4 py-2 border rounded-lg focus:border-primary outline-none" dir="ltr">
-    </div>
-    
-    <textarea id="offerProducts" required rows="2" placeholder="أسماء المنتجات الخاصة بالعرض (افصل بينها بفاصلة)..." class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold"></textarea>
-    
-    <textarea id="offerDetails" required rows="2" placeholder="تفاصيل وشروط العرض الأخرى..." class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none"></textarea>
-    <button type="submit" class="w-full bg-accent text-white py-2.5 rounded-lg font-bold hover:bg-orange-600 transition shadow-sm">نشر العرض</button>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <input type="text" id="offerTitle" required placeholder="عنوان العرض (مثال: خصم خاص)" class="px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold">
+                                        <div>
+                                            <label class="block text-xs mb-1 text-gray-500 font-bold">صورة العرض (تُضغط وتُرفع تلقائياً)</label>
+                                            <input type="file" id="offerMediaFile" accept="image/*" required class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none" onchange="processOfferImage(event)">
+                                            <input type="hidden" id="offerMediaBase64">
+                                        </div>
+                                        
+                                        <input type="text" id="offerCode" required placeholder="كود العرض (مثال: OFF2026)" class="px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold">
+                                        <input type="number" id="offerDiscount" required min="0" max="100" placeholder="نسبة الخصم المنفردة % (مثال: 20)" class="px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold">
+                                        
+                                        <div><label class="block text-xs mb-1 text-gray-500 font-bold">تاريخ البداية</label><input type="date" id="offerStart" required class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none"></div>
+                                        <div><label class="block text-xs mb-1 text-gray-500 font-bold">تاريخ النهاية (يختفي بعده)</label><input type="date" id="offerEnd" required class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none"></div>
+                                        <input type="text" id="offerWhatsapp" required placeholder="رقم واتساب الطلب (مثال: 01xxxxxxxxx)" class="md:col-span-2 px-4 py-2 border rounded-lg focus:border-primary outline-none" dir="ltr">
+                                    </div>
+                                    
+                                    <textarea id="offerProducts" required rows="2" placeholder="أسماء المنتجات الخاصة بالعرض (افصل بينها بفاصلة)..." class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none font-bold"></textarea>
+                                    
+                                    <textarea id="offerDetails" required rows="2" placeholder="تفاصيل وشروط العرض الأخرى..." class="w-full px-4 py-2 border rounded-lg focus:border-primary outline-none"></textarea>
+                                    <button type="submit" class="w-full bg-accent text-white py-2.5 rounded-lg font-bold hover:bg-orange-600 transition shadow-sm">نشر العرض</button>
                                 </form>
                                 
                             </div>
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                                 <table class="w-full text-right border-collapse">
-    <thead class="bg-gray-50 border-b">
-        <tr>
-            <th class="p-3">صورة</th>
-            <th class="p-3">كود العرض</th>
-            <th class="p-3">العنوان</th>
-            <th class="p-3">المنتجات المشمولة</th>
-            <th class="p-3">نسبة الخصم</th>
-            <th class="p-3">المدة</th>
-            <th class="p-3">الواتساب</th>
-            <th class="p-3 text-center">إجراء</th>
-        </tr>
-    </thead>
-    <tbody id="offersTableBody"></tbody>
-</table>
-
+                                    <thead class="bg-gray-50 border-b">
+                                        <tr>
+                                            <th class="p-3">صورة</th>
+                                            <th class="p-3">كود العرض</th>
+                                            <th class="p-3">العنوان</th>
+                                            <th class="p-3">المنتجات المشمولة</th>
+                                            <th class="p-3">نسبة الخصم</th>
+                                            <th class="p-3">المدة</th>
+                                            <th class="p-3">الواتساب</th>
+                                            <th class="p-3 text-center">إجراء</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="offersTableBody"></tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -378,13 +394,24 @@
 
                         <div id="reportsSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">من تاريخ ووقت</label><input type="datetime-local" id="repFromDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">إلى تاريخ ووقت</label><input type="datetime-local" id="repToDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">كود المندوب</label><input type="text" id="repDelCode" placeholder="الكل إذا فارغ" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">رقم الأوردر</label><input type="text" id="repOrderNum" placeholder="بحث برقم أوردر" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-                                    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold h-[42px] hover:bg-blue-600 transition shadow-sm"><i class="fa-solid fa-magnifying-glass ml-1"></i> عرض البيانات</button>
-                                </div>
+                              
+                      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end" id="reportFiltersGrid">
+    <div><label class="block text-sm font-semibold mb-2 text-gray-600">من تاريخ ووقت</label><input type="datetime-local" id="repFromDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+    <div><label class="block text-sm font-semibold mb-2 text-gray-600">إلى تاريخ ووقت</label><input type="datetime-local" id="repToDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+    
+    <div id="adminReportBranchContainer" class="hidden">
+        <label class="block text-sm font-semibold mb-2 text-gray-600">الفرع (للمدير العام)</label>
+        <select id="repBranchCode" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition font-bold bg-blue-50 text-primary border-blue-200">
+            <option value="">جميع الفروع</option>
+        </select>
+    </div>
+
+    <div><label class="block text-sm font-semibold mb-2 text-gray-600">كود المندوب</label><input type="text" id="repDelCode" placeholder="بحث بكود المندوب" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+    <div><label class="block text-sm font-semibold mb-2 text-gray-600">رقم الأوردر</label><input type="text" id="repOrderNum" placeholder="بحث برقم أوردر" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+    
+    <button onclick="generateReport()" class="bg-secondary text-white py-2 rounded-lg font-bold h-[42px] hover:bg-blue-600 transition shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> عرض البيانات</button>
+</div>
+        
                                 <div class="mt-5 flex flex-wrap justify-center gap-3">
                                     <button onclick="printThermalReport()" class="bg-slate-800 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-slate-700 transition shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-print text-lg"></i> طباعة ريسيت التقرير</button>
                                     <button onclick="exportReportToExcel()" class="bg-green-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-green-700 transition shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-file-excel text-lg"></i> تصدير إكسيل (XLSX)</button>
@@ -431,70 +458,70 @@
                             </div>
                         </div>
 
-                  <div id="analyticsSubTab" class="sub-tab-content">
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6 relative">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-chart-line ml-2 text-secondary"></i> تحليلات البيانات البصرية</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div><label class="block text-sm font-semibold mb-2 text-gray-600">من تاريخ ووقت</label><input type="datetime-local" id="chartFromDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-            <div><label class="block text-sm font-semibold mb-2 text-gray-600">إلى تاريخ ووقت</label><input type="datetime-local" id="chartToDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
-            <div>
-                <label class="block text-sm font-semibold mb-2 text-gray-600">تحليل بيانات فرع</label>
-                <select id="chartBranchSelect" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition font-semibold text-primary bg-blue-50 border-blue-200">
-                    <option value="">الكل (مقارنة الفروع)</option>
-                </select>
-            </div>
-            <button onclick="generateChart()" class="bg-primary text-white py-2 rounded-lg font-bold h-[42px] hover:bg-blue-800 transition shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-chart-pie"></i> رسم البيانات</button>
-        </div>
-    </div>
+                        <div id="analyticsSubTab" class="sub-tab-content">
+                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6 relative">
+                                <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-chart-line ml-2 text-secondary"></i> تحليلات البيانات البصرية</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">من تاريخ ووقت</label><input type="datetime-local" id="chartFromDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+                                    <div><label class="block text-sm font-semibold mb-2 text-gray-600">إلى تاريخ ووقت</label><input type="datetime-local" id="chartToDate" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition"></div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2 text-gray-600">تحليل بيانات فرع</label>
+                                        <select id="chartBranchSelect" class="w-full px-4 py-2 border rounded-lg outline-none focus:border-secondary transition font-semibold text-primary bg-blue-50 border-blue-200">
+                                            <option value="">الكل (مقارنة الفروع)</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="generateChart()" class="bg-primary text-white py-2 rounded-lg font-bold h-[42px] hover:bg-blue-800 transition shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-chart-pie"></i> رسم البيانات</button>
+                                </div>
+                            </div>
 
-              <div id="coverageSubTab" class="sub-tab-content hidden animate-[fadeIn_0.3s_ease-out]">
-    <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center max-w-lg mx-auto my-12">
-        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-content-center mx-auto mb-4 text-2xl">
-            <i class="fa-solid fa-map-location-dot"></i>
-        </div>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">خريطة التغطية الحرارية</h3>
-        <p class="text-gray-500 text-sm mb-6">تم نقل الخريطة لتفتح في نافذة مستقلة ملء الشاشة لتحسين الأداء ودقة العرض.</p>
-        <button onclick="window.open('map.html', '_blank')" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-all font-medium text-sm inline-flex items-center gap-2">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            فتح الخريطة الآن
-        </button>
-    </div>
-              </div>
-                      
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[400px] relative flex flex-col justify-between">
-        <div id="analyticsStatsContainer" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 hidden w-full">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow-sm">
-                <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-arrow-up-from-bracket ml-1"></i> إجمالي الحركات الصادرة</div>
-                <div id="statOutbound" class="text-2xl font-bold mt-1">0</div>
-                <div class="text-xs mt-2 bg-blue-700/30 inline-block px-2 py-1 rounded">نسبة المشاركة: <span id="statOutboundPct">0%</span></div>
-            </div>
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-4 rounded-xl shadow-sm">
-                <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-arrow-down-to-bracket ml-1"></i> إجمالي الحركات الواردة</div>
-                <div id="statInbound" class="text-2xl font-bold mt-1">0</div>
-                <div class="text-xs mt-2 bg-emerald-700/30 inline-block px-2 py-1 rounded">مساهمة السيستم: <span id="statInboundPct">0%</span></div>
-            </div>
-            <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-4 rounded-xl shadow-sm">
-                <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-chart-pie ml-1"></i> معدل كفاءة التحويل</div>
-                <div id="statConversionRate" class="text-2xl font-bold mt-1">0%</div>
-                <div class="text-xs mt-2 bg-amber-700/30 inline-block px-2 py-1 rounded">نسبة الصادر والوارد</div>
-            </div>
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-sm">
-                <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-code-branch ml-1"></i> الشريك الأكثر تعاملاً</div>
-                <div id="statTopPartner" class="text-lg font-bold mt-1 truncate">-</div>
-                <div class="text-xs mt-2 bg-purple-700/30 inline-block px-2 py-1 rounded">أعلى تبادل مع الفروع</div>
-            </div>
-        </div>
+                            <div id="coverageSubTab" class="sub-tab-content hidden animate-[fadeIn_0.3s_ease-out]">
+                                <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center max-w-lg mx-auto my-12">
+                                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-content-center mx-auto mb-4 text-2xl">
+                                        <i class="fa-solid fa-map-location-dot"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-800 mb-2">خريطة التغطية الحرارية</h3>
+                                    <p class="text-gray-500 text-sm mb-6">تم نقل الخريطة لتفتح في نافذة مستقلة ملء الشاشة لتحسين الأداء ودقة العرض.</p>
+                                    <button onclick="window.open('map.html', '_blank')" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-all font-medium text-sm inline-flex items-center gap-2">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                        فتح الخريطة الآن
+                                    </button>
+                                </div>
+                            </div>
+                                  
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[400px] relative flex flex-col justify-between">
+                                <div id="analyticsStatsContainer" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 hidden w-full">
+                                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow-sm">
+                                        <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-arrow-up-from-bracket ml-1"></i> إجمالي الحركات الصادرة</div>
+                                        <div id="statOutbound" class="text-2xl font-bold mt-1">0</div>
+                                        <div class="text-xs mt-2 bg-blue-700/30 inline-block px-2 py-1 rounded">نسبة المشاركة: <span id="statOutboundPct">0%</span></div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-4 rounded-xl shadow-sm">
+                                        <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-arrow-down-to-bracket ml-1"></i> إجمالي الحركات الواردة</div>
+                                        <div id="statInbound" class="text-2xl font-bold mt-1">0</div>
+                                        <div class="text-xs mt-2 bg-emerald-700/30 inline-block px-2 py-1 rounded">مساهمة السيستم: <span id="statInboundPct">0%</span></div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-4 rounded-xl shadow-sm">
+                                        <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-chart-pie ml-1"></i> معدل كفاءة التحويل</div>
+                                        <div id="statConversionRate" class="text-2xl font-bold mt-1">0%</div>
+                                        <div class="text-xs mt-2 bg-amber-700/30 inline-block px-2 py-1 rounded">نسبة الصادر والوارد</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-sm">
+                                        <div class="text-sm opacity-90 font-semibold"><i class="fa-solid fa-code-branch ml-1"></i> الشريك الأكثر تعاملاً</div>
+                                        <div id="statTopPartner" class="text-lg font-bold mt-1 truncate">-</div>
+                                        <div class="text-xs mt-2 bg-purple-700/30 inline-block px-2 py-1 rounded">أعلى تبادل مع الفروع</div>
+                                    </div>
+                                </div>
 
-        <div class="relative w-full flex-1 min-h-[350px] flex items-center justify-center">
-            <canvas id="mainAnalyticsChart" class="w-full h-full max-h-[350px]"></canvas>
-            <div id="analyticsChartEmptyMsg" class="absolute inset-0 flex items-center justify-center text-gray-400 font-semibold text-lg bg-gray-50 rounded-xl">حدد الفترة الزمنية واضغط على رسم البيانات</div>
-            <div id="analyticsChartLoading" class="hidden absolute inset-0 bg-white/90 z-10 flex flex-col items-center justify-center rounded-xl">
-                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary mb-3"></i>
-                <p class="font-bold text-gray-700">جاري تحليل البيانات وحساب النسب المئوية...</p>
-            </div>
-        </div>
-    </div>
-                  </div>
+                                <div class="relative w-full flex-1 min-h-[350px] flex items-center justify-center">
+                                    <canvas id="mainAnalyticsChart" class="w-full h-full max-h-[350px]"></canvas>
+                                    <div id="analyticsChartEmptyMsg" class="absolute inset-0 flex items-center justify-center text-gray-400 font-semibold text-lg bg-gray-50 rounded-xl">حدد الفترة الزمنية واضغط على رسم البيانات</div>
+                                    <div id="analyticsChartLoading" class="hidden absolute inset-0 bg-white/90 z-10 flex flex-col items-center justify-center rounded-xl">
+                                        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary mb-3"></i>
+                                        <p class="font-bold text-gray-700">جاري تحليل البيانات وحساب النسب المئوية...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
 
                         <div id="adminsSubTab" class="sub-tab-content">
@@ -848,7 +875,7 @@
                     </div>
                     <div id="changeAmountContainer" class="hidden transition-all duration-300">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">قيمة الباقي (ج.م)</label>
-                        <input type="number" id="orderChangeInput" placeholder="أدخل مبلغ الباقي الذي أخذه" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition text-center font-bold text-teal-600 bg-teal-50">
+                        <input type="number" id="orderChangeInput" placeholder="أدخل مبلغ الباقي الذي أخذه" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none text-center font-bold text-teal-600 bg-teal-50">
                     </div>
                 </div>
 
@@ -863,23 +890,23 @@
         </div>
     </div>
 
+    <!-- نافذة تحديد الكمية والاصناف المتعددة المطورة -->
     <div id="weightModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center transform transition-all border-2 border-secondary">
-            <h2 class="text-xl font-bold text-gray-800 mb-1">تحديد الكمية والتفاصيل</h2>
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg text-center transform transition-all border-2 border-secondary max-h-[90vh] flex flex-col">
+            <h2 class="text-xl font-bold text-gray-800 mb-1">تحديد الكميات والأصناف الموجهة</h2>
             <p class="text-sm font-semibold text-primary mb-4" id="weightBranchTitle"></p>
             
-            <div class="mb-4 text-right">
-                <label class="block text-xs font-bold text-gray-500 mb-1">كود الصنف (اختياري للتوجيه)</label>
-                <input type="text" id="manualItemCodeInput" placeholder="أدخل كود الصنف إن وجد..." class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-secondary font-bold text-center">
+            <div class="overflow-y-auto flex-grow pr-1 mb-4" id="weightRowsContainer">
+                <!-- سيتم ملئ الأسطر برمجياً هنا -->
             </div>
-
-            <div class="mb-5">
-                <label class="block text-xs font-bold text-gray-500 mb-1 text-right">الكمية المطلوبة</label>
-                <input type="number" id="manualWeightInput" min="1" max="100" value="1" class="w-full px-4 py-3 border-2 border-secondary bg-blue-50 rounded-xl focus:border-primary focus:ring-0 outline-none text-center text-3xl font-extrabold text-gray-800 shadow-inner">
+            
+            <div class="flex justify-between items-center mb-5 bg-gray-50 p-2.5 rounded-xl border border-gray-200">
+                <span class="text-xs font-bold text-gray-500">إضافة صنف آخر لهذه الحركة</span>
+                <button type="button" onclick="addWeightRow()" class="bg-teal-500 hover:bg-teal-600 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold shadow-md transition transform hover:scale-110 active:scale-95"><i class="fa-solid fa-plus text-base"></i></button>
             </div>
             
             <div class="flex gap-2">
-                <button onclick="saveManualWeight()" class="flex-[2] bg-secondary text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">تأكيد الإضافة</button>
+                <button onclick="saveManualWeight()" class="flex-[2] bg-secondary text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">تأكيد الإضافة والإرسال</button>
                 <button onclick="closeWeightModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">إلغاء</button>
             </div>
         </div>
@@ -927,6 +954,53 @@
     
     <div id="delegateSelectContainer">
     </div>
+    
+    <div id="notificationsModal" class="modal">
+    <div class="bg-gray-50 rounded-xl shadow-2xl p-6 w-full max-w-6xl max-h-[90vh] flex flex-col transform transition-all">
+        <div class="flex justify-between items-center mb-5 border-b border-gray-200 pb-4 bg-white p-4 rounded-lg shadow-sm">
+            <h2 class="text-2xl font-black text-primary flex items-center"><i class="fa-solid fa-bell-concierge ml-3 text-3xl text-secondary"></i> مركز إدارة الإشعارات والتحويلات</h2>
+            <button onclick="closeNotificationsModal()" class="text-gray-400 hover:text-red-500 transition-colors bg-gray-100 hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">من تاريخ</label>
+                    <input type="date" id="advNotifFrom" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-secondary font-bold text-gray-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">إلى تاريخ</label>
+                    <input type="date" id="advNotifTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-secondary font-bold text-gray-700">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">تصفية حسب الفرع المُرسل</label>
+                    <select id="advNotifBranch" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-secondary font-bold text-primary bg-blue-50">
+                        <option value="">جميع الفروع</option>
+                        </select>
+                </div>
+                <div>
+                    <div class="relative">
+                        <input type="text" id="advNotifSearch" placeholder="بحث باسم المندوب أو الصنف..." class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-secondary font-bold text-gray-700 pr-10">
+                        <i class="fa-solid fa-search absolute right-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+                <button onclick="fetchFilteredNotifications()" class="bg-secondary text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-blue-600 transition flex items-center gap-2"><i class="fa-solid fa-filter"></i> تطبيق الفلاتر والبحث</button>
+            </div>
+        </div>
+
+        <div class="overflow-y-auto flex-grow rounded-lg relative" id="advancedNotifsContainer">
+            <div id="advNotifLoading" class="hidden absolute inset-0 bg-white/80 z-20 flex flex-col items-center justify-center backdrop-blur-sm rounded-lg">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary mb-3"></i>
+                <p class="text-lg font-bold text-gray-700">جاري جلب وتجميع الإشعارات...</p>
+            </div>
+            <div id="advNotifsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+                </div>
+        </div>
+    </div>
+</div>
+
     
     <script>
         if ('serviceWorker' in navigator) {
@@ -1012,6 +1086,8 @@
         let localTrackedRecordIds = new Set();
         let notifiedRecordsIds = new Set();
         let unreadNotifCount = 0;
+        let cashSettings = {}; // مصفوفة أسعار الحركات المالية بين الفروع
+        let localSeenBranchNotifIds = new Set(); // سجل تتبع إشعارات الردود
 
         window.addEventListener('offline', updateOnlineStatus);
         window.addEventListener('online', updateOnlineStatus);
@@ -1432,348 +1508,484 @@
             }
         }
 
-        function startApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appContainer').classList.remove('hidden');
-            document.getElementById('appContainer').classList.add('flex');
-            
-            const roleBadge = currentUser.role === 'admin' ? '<i class="fa-solid fa-crown text-amber-500 mr-1"></i> الإدارة' : '<i class="fa-solid fa-store text-blue-500 mr-1"></i> فرع';
-            let extraInfo = '';
-            if(currentUser.role === 'admin' && currentUser.adminType === 'branch_manager') extraInfo = ' (مدير فرع)';
-            if(currentUser.role === 'admin' && currentUser.adminType === 'employee') extraInfo = ` (${currentUser.employeeType})`;
-            
-            document.getElementById('userInfoDisplay').innerHTML = `${roleBadge} : <span class="font-bold ml-1">${currentUser.name}${extraInfo}</span>`;
+      // الدالة المحدثة لضبط تشغيل النظام وتوزيع الصلاحيات بصرامة
+function startApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.remove('hidden');
+    document.getElementById('appContainer').classList.add('flex');
+    
+    const roleBadge = currentUser.role === 'admin' ? '<i class="fa-solid fa-crown text-amber-500 mr-1"></i> الإدارة' : '<i class="fa-solid fa-store text-blue-500 mr-1"></i> فرع';
+    let extraInfo = '';
+    if(currentUser.role === 'admin' && currentUser.adminType === 'branch_manager') extraInfo = ' (مدير فرع)';
+    if(currentUser.role === 'admin' && currentUser.adminType === 'employee') extraInfo = ` (${currentUser.employeeType})`;
+    
+    document.getElementById('userInfoDisplay').innerHTML = `${roleBadge} : <span class="font-bold ml-1">${currentUser.name}${extraInfo}</span>`;
 
-            if(currentUser.role === 'admin') {
-                if(currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') {
-                    document.getElementById('btn-adminTab').classList.remove('hidden');
-                    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-                    
-                    document.getElementById('btn-analyticsSubTab').style.display = 'none';
-                    document.getElementById('btn-adminsSubTab').style.display = 'none';
-                    document.getElementById('btn-branchesSubTab').style.display = 'none';
-                    document.getElementById('btn-delegatesSubTab').style.display = 'none';
-                    document.getElementById('btn-trackingSubTab').style.display = 'none';
-                    document.getElementById('btn-devicesSubTab').style.display = 'none';
-                    document.getElementById('btn-offersSubTab').style.display = 'none';
-                    document.getElementById('btn-feedbackSubTab').style.display = 'none';
-                    if(document.getElementById('btn-coverageSubTab')) document.getElementById('btn-coverageSubTab').style.display = 'none';
-                    
-                    switchTab('mainTab');
-                    if (currentUser.employeeType === 'موظف خدمة عملاء') {
-                        document.getElementById('btn-adminTab').classList.add('hidden');
-                    } else {
-                        switchAdminTab('reportsSubTab'); 
-                    }
-                } else if(currentUser.adminType === 'employee') {
-                    document.getElementById('btn-adminTab').classList.add('hidden');
-                    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-                    switchTab('mainTab');
-                } else {
-                    document.getElementById('btn-adminTab').classList.remove('hidden');
-                    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-                    document.getElementById('btn-devicesSubTab').style.display = 'flex';
-                    if(document.getElementById('btn-coverageSubTab')) document.getElementById('btn-coverageSubTab').style.display = 'block';
-                    switchTab('mainTab');
-                }
-            } else {
+    // === توزيع الصلاحيات والتحكم في ظهور تبويبات الإدارة ===
+    if(currentUser.role === 'admin') {
+        if(currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') {
+            document.getElementById('btn-adminTab').classList.remove('hidden');
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+            
+            // إخفاء جميع تبويبات الإدارة جذرياً باستثناء التقارير المتقدمة
+            const adminTabsToHide = [
+                'btn-analyticsSubTab', 
+                'btn-adminsSubTab', 
+                'btn-cashSubTab', 
+                'btn-branchesSubTab', 
+                'btn-delegatesSubTab', 
+                'btn-trackingSubTab', 
+                'btn-devicesSubTab', 
+                'btn-offersSubTab', 
+                'btn-feedbackSubTab', 
+                'btn-notificationsSubTab' // تمت إضافته لضمان إخفائه لمدير الفرع
+            ];
+            
+            adminTabsToHide.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if(btn) btn.style.display = 'none';
+            });
+            
+            // إخفاء زر أماكن التغطية (الخريطة) لمدير الفرع
+            const coverageBtn = document.querySelector('.admin-sub-tab-btn[data-sub-tab="coverage"]');
+            if (coverageBtn) coverageBtn.style.display = 'none';
+
+            switchTab('mainTab');
+            
+            if (currentUser.employeeType === 'موظف خدمة عملاء') {
                 document.getElementById('btn-adminTab').classList.add('hidden');
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-                switchTab('mainTab');
+            } else {
+                // توجيهه مباشرة إلى التقارير المتقدمة عند فتح الإدارة
+                switchAdminTab('reportsSubTab'); 
             }
-            
-            loadAllData();
-            checkOverdueOrdersBackground();
-            updateDelegatesOutStatus();
-            
-            if (currentUser.role === 'admin' && currentUser.adminType !== 'employee' && currentUser.adminType !== 'branch_manager') {
-                checkPendingDevicesBackground();
-                setInterval(checkPendingDevicesBackground, 10000); 
-            }
-            
-            setInterval(() => {
-                checkOverdueOrdersBackground();
-                updateDelegatesOutStatus();
-            }, 60000);
 
-            setInterval(async () => {
-                const currentDevId = getDeviceId();
-                try {
-                    await fetch(`${DB_URL}devices/${currentDevId}.json`, {
-                        method: 'PATCH',
-                        body: JSON.stringify({ lastSeen: Date.now() })
-                    });
-                } catch(e) {}
-            }, 10000);
+        } else if(currentUser.adminType === 'employee') {
+            // موظف عادية أو موظف رئيسية
+            document.getElementById('btn-adminTab').classList.add('hidden');
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+            switchTab('mainTab');
 
-            setInterval(async () => {
-                const dateStr = document.getElementById('recordDate').value;
-                const isAnyModalOpen = document.querySelectorAll('.modal.active').length > 0;
+        } else {
+            // المدير العام (صلاحيات كاملة)
+            document.getElementById('btn-adminTab').classList.remove('hidden');
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+            document.getElementById('btn-devicesSubTab').style.display = 'flex';
+            
+            const coverageBtn = document.querySelector('.admin-sub-tab-btn[data-sub-tab="coverage"]');
+            if(coverageBtn) coverageBtn.style.display = 'flex';
+            
+            switchTab('mainTab');
+        }
+    } else {
+        // حساب الفروع العادية
+        document.getElementById('btn-adminTab').classList.add('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+        switchTab('mainTab');
+    }
+    
+    // تشغيل باقي الخدمات الخلفية للنظام
+    loadAllData();
+    checkOverdueOrdersBackground();
+    updateDelegatesOutStatus();
+    
+    // فحص طلبات الأجهزة للمدير العام فقط
+    if (currentUser.role === 'admin' && currentUser.adminType !== 'employee' && currentUser.adminType !== 'branch_manager') {
+        checkPendingDevicesBackground();
+        setInterval(checkPendingDevicesBackground, 10000); 
+    }
+
+    // دوال التحديث التلقائي
+    setInterval(() => {
+        checkOverdueOrdersBackground();
+        updateDelegatesOutStatus();
+    }, 60000);
+
+    setInterval(async () => {
+        const currentDevId = getDeviceId();
+        try {
+            await fetch(`${DB_URL}devices/${currentDevId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ lastSeen: Date.now() })
+            });
+        } catch(e) {}
+    }, 10000);
+
+    setInterval(async () => {
+        const dateStr = document.getElementById('recordDate').value;
+        const isAnyModalOpen = document.querySelectorAll('.modal.active').length > 0;
+        
+        if(!isAnyModalOpen && document.getElementById('mainTab').classList.contains('active')) {
+            try {
+                const data = await getDayData(dateStr, true);
+                if (JSON.stringify(currentRecords[dateStr] || {}) !== JSON.stringify(data || {})) {
+                    currentRecords[dateStr] = data || {};
+                    const searchTerm = document.getElementById('mainSearchInput').value.trim().toLowerCase();
+                    renderRecordsTable(dateStr, searchTerm);
+                    renderBranchButtons();
+                    updateDelegatesOutStatus();
+                }
                 
-                if(!isAnyModalOpen && document.getElementById('mainTab').classList.contains('active')) {
-                    try {
-                        const data = await getDayData(dateStr, true);
-                        if (JSON.stringify(currentRecords[dateStr] || {}) !== JSON.stringify(data || {})) {
-                            currentRecords[dateStr] = data || {};
-                            const searchTerm = document.getElementById('mainSearchInput').value.trim().toLowerCase();
-                            renderRecordsTable(dateStr, searchTerm);
-                            renderBranchButtons();
-                            updateDelegatesOutStatus();
-                        }
-                        
-                        const todayStr = new Date().toISOString().split('T')[0];
-                        if (dateStr === todayStr && data) {
-                            let isInitialSystemLoad = (localTrackedRecordIds.size === 0);
-                            
-                            Object.keys(data).forEach(id => {
-                                const rec = data[id];
-                                if (!localTrackedRecordIds.has(id)) {
-                                    localTrackedRecordIds.add(id);
-                                    if (!isInitialSystemLoad) {
-                                        const currentBrId = (currentUser.role === 'branch') ? currentUser.id : (currentUser.assignedBranch || '');
-                                        if (!currentBrId || rec.branchId === currentBrId || rec.createdByUserId === currentUser.id) {
-                                            if (rec.createdByUserId !== currentUser.id) { 
-                                                const delName = rec.delegateName || 'غير محدد';
-                                                const brName = rec.branchName || 'الفرع';
-                                                let itmCode = rec.itemCode || '';
-                                                
-                                                triggerLiveMovementNotification(delName, brName, itmCode);
-                                                checkIncomingNotifications(data);
-                                            }
-                                        }
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (dateStr === todayStr && data) {
+                    let isInitialSystemLoad = (localTrackedRecordIds.size === 0);
+                    
+                    Object.keys(data).forEach(id => {
+                        const rec = data[id];
+                        if (!localTrackedRecordIds.has(id)) {
+                            localTrackedRecordIds.add(id);
+                            if (!isInitialSystemLoad) {
+                                const currentBrId = (currentUser.role === 'branch') ? currentUser.id : (currentUser.assignedBranch || '');
+                                if (!currentBrId || rec.branchId === currentBrId || rec.createdByUserId === currentUser.id) {
+                                    if (rec.createdByUserId !== currentUser.id) { 
+                                        const delName = rec.delegateName || 'غير محدد';
+                                        const brName = rec.branchName || 'الفرع';
+                                        let itmCode = rec.itemCode || '';
+                                        
+                                        triggerLiveMovementNotification(delName, brName, itmCode);
+                                        checkIncomingNotifications(data);
                                     }
                                 }
-                            });
-                        }
-
-                    } catch(e) {}
-                }
-
-                if(document.getElementById('devicesSubTab').classList.contains('active')) {
-                    try {
-                        const devRes = await fetch(`${DB_URL}devices.json`);
-                        const devData = await devRes.json();
-                        if(devData) {
-                            allDevices = devData;
-                            renderDevices();
-                        }
-                    } catch(e) {}
-                }
-
-                try {
-                    const alertsRes = await fetch(`${DB_URL}system_alerts.json`);
-                    const alertsData = await alertsRes.json();
-                    if (alertsData) {
-                        if (localReloadSignal === 0) localReloadSignal = alertsData.lastReloadSignal || Date.now();
-                        if (localAlertTimestamp === 0) localAlertTimestamp = alertsData.latestMessage?.timestamp || Date.now();
-
-                        if (alertsData.lastReloadSignal > localReloadSignal) {
-                            localReloadSignal = alertsData.lastReloadSignal;
-                            if (alertsData.reloadNotes) {
-                                document.getElementById('reloadNotesContent').textContent = alertsData.reloadNotes;
-                                document.getElementById('reloadNotesContainer').classList.remove('hidden');
-                            } else {
-                                document.getElementById('reloadNotesContainer').classList.add('hidden');
                             }
-                            document.getElementById('forceReloadModal').classList.add('active');
-                            playAlertSound('delay'); 
                         }
-                        
-                        if (alertsData.latestMessage?.timestamp > localAlertTimestamp) {
-                            localAlertTimestamp = alertsData.latestMessage.timestamp;
-                            showSystemAlertModal(alertsData.latestMessage.text);
-                        }
+                    });
+                }
+
+            } catch(e) {}
+        }
+
+        if(document.getElementById('devicesSubTab').classList.contains('active')) {
+            try {
+                const devRes = await fetch(`${DB_URL}devices.json`);
+                const devData = await devRes.json();
+                if(devData) {
+                    allDevices = devData;
+                    renderDevices();
+                }
+            } catch(e) {}
+        }
+
+        try {
+            const alertsRes = await fetch(`${DB_URL}system_alerts.json`);
+            const alertsData = await alertsRes.json();
+            if (alertsData) {
+                if (localReloadSignal === 0) localReloadSignal = alertsData.lastReloadSignal || Date.now();
+                if (localAlertTimestamp === 0) localAlertTimestamp = alertsData.latestMessage?.timestamp || Date.now();
+
+                if (alertsData.lastReloadSignal > localReloadSignal) {
+                    localReloadSignal = alertsData.lastReloadSignal;
+                    if (alertsData.reloadNotes) {
+                        document.getElementById('reloadNotesContent').textContent = alertsData.reloadNotes;
+                        document.getElementById('reloadNotesContainer').classList.remove('hidden');
+                    } else {
+                        document.getElementById('reloadNotesContainer').classList.add('hidden');
                     }
-                } catch(e) {}
-            }, 3000);
-        }
-
-        let currentNotifPage = 1;
-        const NOTIFS_PER_PAGE = 10;
-        let filteredNotifs = [];
-
-        function toggleNotifMenu() {
-            const dropdown = document.getElementById('notifDropdown');
-            dropdown.classList.toggle('hidden');
-            if (!dropdown.classList.contains('hidden')) {
-                unreadNotifCount = 0;
-                document.getElementById('notifUnreadBadge').classList.add('hidden');
-                loadNotificationsList(1);
+                    document.getElementById('forceReloadModal').classList.add('active');
+                    playAlertSound('delay'); 
+                }
+                
+                if (alertsData.latestMessage?.timestamp > localAlertTimestamp) {
+                    localAlertTimestamp = alertsData.latestMessage.timestamp;
+                    showSystemAlertModal(alertsData.latestMessage.text);
+                }
             }
-        }
+        } catch(e) {}
 
-        async function loadNotificationsList(page = 1) {
-            currentNotifPage = page;
-            const dateStr = document.getElementById('notifDateFilter').value || new Date().toISOString().split('T')[0];
-            const list = document.getElementById('notifList');
-            list.innerHTML = '<div class="text-center text-gray-500 text-xs py-4"><i class="fa-solid fa-spinner fa-spin text-xl mb-2"></i><br>جاري التحميل...</div>';
-            
-            const data = await getDayData(dateStr, true);
-            filteredNotifs = [];
-            
-            if(data && currentUser) {
-                const myTargetId = currentUser.role === 'branch' ? currentUser.id : ((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') ? currentUser.assignedBranch : null);
-                Object.keys(data).forEach(k => {
-                    const r = data[k];
-                    if (r.branchId === myTargetId && r.createdByUserId !== currentUser.id) {
-                        filteredNotifs.push({id: k, ...r});
+        try {
+            const bNotifRes = await fetch(`${DB_URL}branch_notifications.json`);
+            const bNotifData = await bNotifRes.json();
+            if (bNotifData) {
+                Object.keys(bNotifData).forEach(k => {
+                    const bn = bNotifData[k];
+                    if (!localSeenBranchNotifIds.has(k)) {
+                        localSeenBranchNotifIds.add(k);
+                        const isTarget = (currentUser.id === bn.targetId) || (currentUser.role === 'admin' && bn.targetId === 'admin');
+                        if (isTarget && (Date.now() - bn.timestamp < 120000)) { 
+                            showToast(bn.text, "warning");
+                            playAlertSound('alert');
+                        }
                     }
                 });
             }
-            
-            filteredNotifs.sort((a,b) => b.timestamp - a.timestamp);
-            renderNotifs();
-        }
+        } catch(e) {}
+    }, 3000);
+}
+  
+// ==========================================
+// منظومة مركز الإشعارات المتقدمة (النافذة المستقلة)
+// ==========================================
 
-        function renderNotifs() {
-            const list = document.getElementById('notifList');
-            list.innerHTML = '';
-            
-            const totalPages = Math.ceil(filteredNotifs.length / NOTIFS_PER_PAGE);
-            document.getElementById('btnNotifPrev').classList.toggle('hidden', currentNotifPage >= totalPages);
-            document.getElementById('btnNotifNext').classList.toggle('hidden', currentNotifPage <= 1);
-            document.getElementById('notifPageIndicator').textContent = totalPages > 0 ? `صفحة ${currentNotifPage} من ${totalPages}` : '';
+function openNotificationsModal() {
+    const modal = document.getElementById('notificationsModal');
+    
+    // إخفاء إشعار الدائرة الحمراء (Badge) عند فتح المركز
+    document.getElementById('notifUnreadBadge').classList.add('hidden');
+    unreadNotifCount = 0;
 
-            if (filteredNotifs.length === 0) {
-                list.innerHTML = '<div class="text-center text-gray-400 text-xs py-4">لا توجد إشعارات في هذا التاريخ</div>';
-                return;
-            }
+    // تعيين التواريخ الافتراضية (تاريخ اليوم)
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('advNotifFrom').value = todayStr;
+    document.getElementById('advNotifTo').value = todayStr;
 
-            const startIdx = (currentNotifPage - 1) * NOTIFS_PER_PAGE;
-            const pageData = filteredNotifs.slice(startIdx, startIdx + NOTIFS_PER_PAGE);
+    // تعبئة قائمة الفروع في الفلتر
+    const branchSelect = document.getElementById('advNotifBranch');
+    branchSelect.innerHTML = '<option value="">جميع الفروع المُرسِلة</option>';
+    if (typeof branches !== 'undefined') {
+        Object.keys(branches).forEach(k => {
+            branchSelect.innerHTML += `<option value="${k}">${branches[k].name}</option>`;
+        });
+    }
 
-            pageData.forEach(r => {
-                const itemText = r.itemCode ? `<span class="bg-blue-50 border border-blue-200 text-primary px-1 rounded mx-1">${r.itemCode}</span>` : '';
-                list.innerHTML += `
-                    <div class="p-2 bg-blue-50/50 border border-blue-100 rounded-lg text-right mb-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-gray-800"><i class="fa-solid fa-store ml-1 text-blue-500"></i>${r.createdByUserName}</span>
-                            <span class="text-[10px] text-gray-500" dir="ltr">${r.time}</span>
-                        </div>
-                        <p class="text-xs text-gray-600 mb-1">المندوب: <span class="font-bold text-gray-800">${r.delegateName}</span></p>
-                        ${itemText ? `<p class="text-[11px] text-gray-500">كود الصنف: ${itemText}</p>` : ''}
-                    </div>
-                `;
-            });
-        }
+    document.getElementById('advNotifSearch').value = '';
+    modal.classList.add('active');
+    
+    fetchFilteredNotifications();
+}
 
-        function changeNotifPage(dir) {
-            currentNotifPage += dir;
-            renderNotifs();
-        }
+function closeNotificationsModal() {
+    document.getElementById('notificationsModal').classList.remove('active');
+}
 
-        function checkIncomingNotifications(dayRecords) {
-            if (!currentUser || !dayRecords) return;
-            
-            const myTargetId = currentUser.role === 'branch' ? currentUser.id : ((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') ? currentUser.assignedBranch : null);
-            if (!myTargetId) return;
+// دالة جلب البيانات وتطبيق الفلاتر عليها
+async function fetchFilteredNotifications() {
+    const fromStr = document.getElementById('advNotifFrom').value;
+    const toStr = document.getElementById('advNotifTo').value;
+    const branchFilter = document.getElementById('advNotifBranch').value;
+    const searchFilter = document.getElementById('advNotifSearch').value.trim().toLowerCase();
 
-            let hasNew = false;
-            Object.keys(dayRecords).forEach(k => {
-                const r = dayRecords[k];
-                if (r.branchId === myTargetId && r.createdByUserId !== currentUser.id && !notifiedRecordsIds.has(k)) {
-                    if (Date.now() - r.timestamp < 1800000) { 
-                        notifiedRecordsIds.add(k);
-                        hasNew = true;
-                        showToast(`حركة جديدة! المندوب: ${r.delegateName} ${r.itemCode ? `| الصنف: ${r.itemCode}` : ''}`, "warning");
-                        unreadNotifCount++;
-                    } else {
-                        notifiedRecordsIds.add(k);
-                    }
-                }
-            });
+    if (!fromStr || !toStr) return showToast("يرجى تحديد تواريخ الفلترة", "error");
 
-            if (hasNew) {
-                const badge = document.getElementById('notifUnreadBadge');
-                badge.textContent = unreadNotifCount;
-                badge.classList.remove('hidden');
+    const loading = document.getElementById('advNotifLoading');
+    loading.classList.remove('hidden');
+    
+    const grid = document.getElementById('advNotifsGrid');
+    grid.innerHTML = '';
+
+    let datesToFetch = [];
+    let curr = new Date(fromStr.split('T')[0]);
+    let endD = new Date(toStr.split('T')[0]);
+    
+    while(curr <= endD) {
+        datesToFetch.push(curr.toISOString().split('T')[0]);
+        curr.setDate(curr.getDate() + 1);
+    }
+
+    let collectedNotifs = [];
+
+    try {
+        const results = await Promise.all(datesToFetch.map(d => getDayData(d, true)));
+        
+        results.forEach((dayData, index) => {
+            if(dayData) {
+                const dateStr = datesToFetch[index];
                 
-                if(!document.getElementById('notifDropdown').classList.contains('hidden')) {
-                    loadNotificationsList(1);
-                }
+                Object.keys(dayData).forEach(k => {
+                    const r = dayData[k];
+                    
+                    // هل هذا الإشعار موجه لي؟ (لفرعي أو للإدارة)
+                    const myTargetId = currentUser.role === 'branch' ? currentUser.id : ((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') ? currentUser.assignedBranch : null);
+                    
+                    let isTarget = false;
+                    if (currentUser.role === 'admin' && currentUser.adminType === 'admin') isTarget = true; // مدير عام يرى كل شيء
+                    else if (r.branchId === myTargetId && r.createdByUserId !== currentUser.id) isTarget = true;
+
+                    if (isTarget) {
+                        // تطبيق فلتر الفرع المصدر
+                        if (branchFilter && r.sourceBranchId !== branchFilter) return;
+
+                        // تطبيق فلتر البحث
+                        if (searchFilter) {
+                            const matchItem = r.itemCode && r.itemCode.toLowerCase().includes(searchFilter);
+                            const matchDel = r.delegateName && r.delegateName.toLowerCase().includes(searchFilter);
+                            if (!matchItem && !matchDel) return;
+                        }
+
+                        r.id = k;
+                        r.date = dateStr;
+                        collectedNotifs.push(r);
+                    }
+                });
             }
+        });
+
+        // ترتيب تنازلي (الأحدث أولاً)
+        collectedNotifs.sort((a,b) => b.timestamp - a.timestamp);
+        renderAdvancedNotifs(collectedNotifs);
+
+    } catch (e) {
+        console.error(e);
+        showToast("حدث خطأ أثناء جلب الإشعارات", "error");
+    } finally {
+        loading.classList.add('hidden');
+    }
+}
+
+// رسم الإشعارات المجمعة في النافذة
+function renderAdvancedNotifs(notifsArray) {
+    const grid = document.getElementById('advNotifsGrid');
+    grid.innerHTML = '';
+
+    if (notifsArray.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><i class="fa-solid fa-box-open text-6xl mb-4 text-gray-300 block"></i><span class="text-xl font-bold">لا توجد تحويلات واردة مطابقة للبحث في هذه الفترة</span></div>';
+        return;
+    }
+
+    // تجميع الحركات المرسلة في نفس الوقت ونفس الفرع لتكوين "باقة/فاتورة"
+    const groupedOrders = {};
+    notifsArray.forEach(r => {
+        const groupKey = r.date + '_' + r.time + '_' + r.createdByUserId;
+        if (!groupedOrders[groupKey]) {
+            groupedOrders[groupKey] = {
+                senderName: r.createdByUserName,
+                sourceBranchName: r.sourceBranchId && branches[r.sourceBranchId] ? branches[r.sourceBranchId].name : 'فرع مجهول',
+                delegateName: r.delegateName,
+                time: r.time,
+                date: r.date,
+                items: []
+            };
         }
+        groupedOrders[groupKey].items.push(r);
+    });
 
-        function triggerLiveMovementNotification(delegateName, branchName, itemCode) {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const gainNode = audioCtx.createGain();
-                gainNode.connect(audioCtx.destination);
-                gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    // رسم الكروت
+    Object.keys(groupedOrders).forEach(groupKey => {
+        const group = groupedOrders[groupKey];
+        
+        let allConfirmed = true;
+        let anyModified = false;
+        let itemsHtml = '';
+        
+        group.items.forEach(r => {
+            if (!r.isAcceptedByReceiver) allConfirmed = false;
+            if (r.quantityEdited) anyModified = true;
 
-                const osc1 = audioCtx.createOscillator();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(600, audioCtx.currentTime);
-                osc1.connect(gainNode);
-                osc1.start();
-                osc1.stop(audioCtx.currentTime + 0.15);
+            const itemCodeDisplay = r.itemCode ? r.itemCode : 'صنف مجهول';
+            const reqQty = r.quantityEdited ? r.originalCount : (r.count || r.quantity || 1);
+            const currentQty = r.count || r.quantity || 1;
 
-                setTimeout(() => {
-                    const osc2 = audioCtx.createOscillator();
-                    osc2.type = 'sine';
-                    osc2.frequency.setValueAtTime(850, audioCtx.currentTime);
-                    osc2.connect(gainNode);
-                    osc2.start();
-                    osc2.stop(audioCtx.currentTime + 0.25);
-                }, 130);
-            } catch(e) {}
+            let itemActions = '';
+            if (!r.isAcceptedByReceiver) {
+                itemActions = `
+    <div class="flex flex-wrap gap-2 justify-end mt-2 w-full">
+        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', 'confirm')" class="bg-[#10b981] hover:bg-[#059669] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-check-double"></i> تأكيد كامل</button>
+        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', 'edit')" class="bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-pen"></i> تعديل عجز</button>
+    </div>
+`;
 
-            let banner = document.getElementById('floatingAlertBanner');
-            if (!banner) {
-                banner = document.createElement('div');
-                banner.id = 'floatingAlertBanner';
-                banner.className = 'fixed top-24 left-1/2 transform -translate-x-1/2 z-[9999] bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-extrabold px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-4 animate-bounce text-base min-w-[320px] justify-center';
-                document.body.appendChild(banner);
+              
+            } else {
+                itemActions = `<div class="text-xs text-green-700 bg-green-50 px-2 py-1.5 rounded border border-green-200 font-bold mt-2 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> تم استلام (${currentQty}) بنجاح</div>`;
             }
 
-            banner.innerHTML = `
-                <div class="text-3xl text-yellow-300 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div class="text-right">
-                    <p class="text-[10px] tracking-wider text-red-100 font-bold uppercase">تنبيه بحركة موجهة جديدة</p>
-                    <p class="text-white font-black mt-0.5">المندوب: ${delegateName}</p>
-                    <p class="text-xs font-bold bg-black/30 px-2 py-1 rounded mt-1.5 border border-white/15">
-                        <i class="fa-solid fa-paper-plane ml-1 text-yellow-300"></i> متوجه إلى: ${branchName} ${itemCode ? ` | صنف: ${itemCode}` : ''}
-                    </p>
+            itemsHtml += `
+                <div class="bg-white border border-gray-200 rounded-lg p-3 mb-2 shadow-sm hover:shadow transition">
+                    <div class="flex justify-between items-center font-bold">
+                        <span class="text-primary text-sm flex items-center gap-1"><i class="fa-solid fa-box-archive text-gray-400"></i> ${itemCodeDisplay}</span>
+                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs border">الكمية المرسلة: ${reqQty}</span>
+                    </div>
+                    ${itemActions}
                 </div>
             `;
-            banner.style.display = 'flex';
+        });
 
-            setTimeout(() => { banner.style.display = 'none'; }, 6000);
+        let globalStatusHtml = '';
+        if (allConfirmed) {
+            globalStatusHtml = anyModified ? 
+                '<span class="bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full border border-amber-200 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> يوجد عجز بالطلب</span>' : 
+                '<span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full border border-green-200 font-bold"><i class="fa-solid fa-check-double"></i> تم الاستلام بالكامل</span>';
+        } else {
+            globalStatusHtml = '<span class="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full border border-red-200 font-bold animate-pulse"><i class="fa-solid fa-clock"></i> بانتظار الجرد والتأكيد</span>';
         }
 
-        let lastAlertTime = 0;
-        function playAlertSound(type = 'alert') {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (type === 'alert') {
-                    for(let i = 0; i < 3; i++) {
-                        const osc = ctx.createOscillator();
-                        const gainNode = ctx.createGain();
-                        osc.type = 'square'; 
-                        osc.frequency.setValueAtTime(800, ctx.currentTime + (i * 0.2)); 
-                        gainNode.gain.setValueAtTime(0.5, ctx.currentTime + (i * 0.2));
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (i * 0.2) + 0.15);
-                        osc.connect(gainNode);
-                        gainNode.connect(ctx.destination);
-                        osc.start(ctx.currentTime + (i * 0.2));
-                        osc.stop(ctx.currentTime + (i * 0.2) + 0.15);
-                    }
-                } else if (type === 'delay') {
-                    for(let i = 0; i < 2; i++) {
-                        const osc = ctx.createOscillator();
-                        const gainNode = ctx.createGain();
-                        osc.type = 'triangle'; 
-                        osc.frequency.setValueAtTime(400, ctx.currentTime + (i * 0.6));
-                        gainNode.gain.setValueAtTime(0.6, ctx.currentTime + (i * 0.6));
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (i * 0.6) + 0.5);
-                        osc.connect(gainNode);
-                        gainNode.connect(ctx.destination);
-                        osc.start(ctx.currentTime + (i * 0.6));
-                        osc.stop(ctx.currentTime + (i * 0.6) + 0.5);
-                    }
-                }
-            } catch(e) {}
+        grid.innerHTML += `
+            <div class="bg-gradient-to-br from-blue-50/30 to-white border border-blue-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col relative overflow-hidden">
+                <div class="absolute -left-6 -top-6 text-7xl text-blue-100 opacity-50"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                <div class="relative z-10 flex justify-between items-start mb-3 border-b border-gray-100 pb-3">
+                    <div>
+                        <div class="font-black text-gray-800 text-sm flex items-center gap-1"><i class="fa-solid fa-store text-secondary"></i> ${group.sourceBranchName}</div>
+                        <div class="text-[11px] text-gray-500 font-bold mt-1">بواسطة: ${group.senderName}</div>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">${group.date}</div>
+                        <div class="text-[10px] text-gray-500 mt-1 text-center" dir="ltr">${group.time}</div>
+                    </div>
+                </div>
+                <div class="relative z-10 flex justify-between items-center mb-3 bg-white p-2 rounded-lg border border-gray-100">
+                    <p class="text-xs text-gray-600 font-bold"><i class="fa-solid fa-motorcycle text-gray-400"></i> المندوب: <span class="text-gray-800">${group.delegateName}</span></p>
+                    ${globalStatusHtml}
+                </div>
+                <div class="relative z-10 bg-gray-50 p-2 rounded-xl border border-gray-200 flex-grow">
+                    <div class="text-xs font-black text-gray-500 mb-2 mr-1">تفاصيل ومحتويات الإرسالية:</div>
+                    ${itemsHtml}
+                </div>
+            </div>
+        `;
+    });
+}
+
+// دالة الرد والتأكيد أو التعديل من داخل النافذة
+async function replyToAdvancedNotif(date, recordId, action) {
+    try {
+        const res = await fetch(`${DB_URL}records/${date}/${recordId}.json`);
+        const rec = await res.json();
+        if(!rec) return showToast("عذراً، هذه الحركة لم تعد متوفرة في النظام", "error");
+
+        if (action === 'confirm') {
+            await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
+            });
+            showToast("تم تأكيد الاستلام بنجاح", "success");
+            
+        } else if (action === 'edit') {
+            const oldQty = rec.count || rec.quantity || 1;
+            const newQtyStr = prompt(`جرد الصنف (${rec.itemCode || 'بدون كود'}):\nيرجى إدخال الكمية الفعلية التي وصلت للفرع (المرسل: ${oldQty}):`, oldQty);
+            
+            if (newQtyStr === null || newQtyStr.trim() === '') return; 
+            
+            const newQty = parseInt(newQtyStr);
+            if (isNaN(newQty) || newQty <= 0) return showToast("خطأ: يرجى إدخال رقم صحيح", "error");
+            if (newQty === oldQty) return showToast("الكمية مطابقة! تم استخدام 'تأكيد كامل' بدلاً من التعديل", "warning");
+
+            if(!confirm(`تأكيد الجرد: استلام (${newQty}) بدلاً من (${oldQty}) للصنف؟`)) return;
+            
+            await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ 
+                    count: newQty, 
+                    quantity: newQty, 
+                    status: 'confirmed',
+                    originalCount: oldQty,
+                    quantityEdited: true,
+                    isAcceptedByReceiver: true
+                })
+            });
+            
+            showToast("تم حفظ العجز والكمية المستلمة بنجاح", "success");
+            
+            // إشعار الفرع المرسل بوجود تعديل
+            await fetch(`${DB_URL}branch_notifications.json`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    text: `تنبيه عجز: استلم الفرع الصنف (${rec.itemCode || ''}) بكمية (${newQty}) بدلاً من المكتوبة (${oldQty}).`,
+                    senderId: currentUser.id,
+                    targetId: rec.createdByUserId,
+                    timestamp: Date.now()
+                })
+            });
+            logActivity('edit', `تعديل استلام الصنف ${rec.itemCode}: من ${oldQty} إلى ${newQty}`);
         }
+        
+        // تحديث النافذة تلقائياً بعد الإجراء
+        fetchFilteredNotifications();
+        if (typeof loadRecords === 'function') loadRecords();
+        
+    } catch(e) {
+        showToast("خطأ أثناء الاتصال بقاعدة البيانات", "error");
+    }
+}
+
+
+        
 
         async function checkPendingDevicesBackground() {
             try {
@@ -2071,6 +2283,167 @@
                 }
             } catch(e) {}
         }
+        
+        // ==========================================
+// 1. دوال إدارة النقدية وإعدادات الفروع
+// ==========================================
+
+function loadCashSettings() {
+    const select = document.getElementById('cashSourceBranchSelect');
+    if (!select) return;
+
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">-- يرجى تحديد فرع المصدر --</option>';
+
+    // كائن branches المعرف مسبقاً في النظام
+    if (typeof branches !== 'undefined') {
+        Object.keys(branches).forEach(k => {
+            select.innerHTML += `<option value="${k}">${branches[k].name}</option>`;
+        });
+    }
+
+    if (currentVal && branches[currentVal]) {
+        select.value = currentVal;
+        renderCashPricingMatrix();
+    } else {
+        const matrixContainer = document.getElementById('cashPricingMatrixContainer');
+        if (matrixContainer) matrixContainer.classList.add('hidden');
+    }
+}
+
+function renderCashPricingMatrix() {
+    const sourceBranchId = document.getElementById('cashSourceBranchSelect').value;
+    const container = document.getElementById('cashPricingMatrixContainer');
+    const tbody = document.getElementById('cashPricingMatrixBody');
+
+    if (!sourceBranchId || !container || !tbody) {
+        if (container) container.classList.add('hidden');
+        return;
+    }
+
+    tbody.innerHTML = '';
+    const sourceSettings = (typeof cashSettings !== 'undefined' && cashSettings[sourceBranchId]) || {};
+
+    Object.keys(branches).forEach(targetId => {
+        if (sourceBranchId === targetId) return; 
+
+        const targetName = branches[targetId].name;
+        const currentPrice = sourceSettings[targetId] || 1; // السعر الافتراضي 1 إذا لم يحدد
+
+        tbody.innerHTML += `
+            <tr class="border-b hover:bg-gray-50 transition">
+                <td class="p-3 font-bold text-gray-800">${targetName}</td>
+                <td class="p-3 text-center">
+                    <input type="number" min="0" step="0.5" 
+                           class="cash-price-input w-24 px-2 py-1.5 border border-gray-300 rounded-lg text-center font-extrabold text-primary outline-none focus:border-secondary focus:ring-1 focus:ring-secondary" 
+                           data-target="${targetId}" 
+                           value="${currentPrice}">
+                </td>
+            </tr>
+        `;
+    });
+
+    container.classList.remove('hidden');
+}
+
+async function saveCashPricingMatrix() {
+    const sourceBranchId = document.getElementById('cashSourceBranchSelect').value;
+    if (!sourceBranchId) return;
+
+    const inputs = document.querySelectorAll('.cash-price-input');
+    if (typeof cashSettings === 'undefined') window.cashSettings = {};
+    if (!cashSettings[sourceBranchId]) cashSettings[sourceBranchId] = {};
+
+    inputs.forEach(input => {
+        const targetId = input.getAttribute('data-target');
+        const price = parseFloat(input.value) || 1;
+        cashSettings[sourceBranchId][targetId] = price;
+    });
+
+    const btn = document.querySelector('#cashPricingMatrixContainer button');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الحفظ...';
+        btn.disabled = true;
+    }
+
+    try {
+        await fetch(`${DB_URL}cash_settings/${sourceBranchId}.json`, {
+            method: 'PUT',
+            body: JSON.stringify(cashSettings[sourceBranchId])
+        });
+        
+        showToast("تم حفظ مصفوفة التسعير بنجاح", "success");
+        if (typeof logActivity === 'function') {
+            logActivity('edit', `قام بتعديل تسعيرة الحركات النقدية الصادرة من فرع: ${branches[sourceBranchId].name}`);
+        }
+    } catch (error) {
+        console.error("خطأ في حفظ النقدية:", error);
+        showToast("حدث خطأ أثناء الحفظ في قاعدة البيانات", "error");
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+}
+
+// ==========================================
+// 2. دالة جلب السعر الديناميكي وحساب التقارير المتقدمة
+// ==========================================
+
+// الدالة الأساسية لجلب سعر الحركة بين فرعين من المصفوفة المحفوظة
+function getMovementPrice(sourceBranchId, targetBranchId) {
+    if (typeof cashSettings !== 'undefined' && cashSettings[sourceBranchId] && cashSettings[sourceBranchId][targetBranchId]) {
+        return parseFloat(cashSettings[sourceBranchId][targetBranchId]) || 1;
+    }
+    return 1; // السعر الافتراضي في حال عدم وجود تسعيرة مخصصة بعد
+}
+
+// تحديث دالة معالجة وعرض التقرير المتقدم بناءً على المصفوفة
+function renderAdvancedReport(movementsList) {
+    const tableBody = document.getElementById('advancedReportTableBody');
+    const totalValueDisplay = document.getElementById('advancedReportTotalValue');
+    
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+    
+    let overallValueSum = 0;
+
+    movementsList.forEach(item => {
+        // تحديد فرع المصدر والوجهة من بيانات الحركة
+        const fromBranchId = item.sourceBranchId || item.fromBranch;
+        const toBranchId = item.targetBranchId || item.toBranch;
+        
+        const fromBranchName = (branches[fromBranchId] && branches[fromBranchId].name) || 'فرع غير معروف';
+        const toBranchName = (branches[toBranchId] && branches[toBranchId].name) || 'فرع غير معروف';
+        
+        // 🌟 الحساب الديناميكي الاحترافي بناءً على الفروع المحددة للحركة
+        const currentPriceRate = getMovementPrice(fromBranchId, toBranchId);
+        const movementCount = parseFloat(item.count) || 1;
+        const dynamicCalculatedValue = movementCount * currentPriceRate;
+        
+        overallValueSum += dynamicCalculatedValue;
+
+        // إدخال الصفوف في جدول التقرير متوافق مع تصميم واجهتك
+        tableBody.innerHTML += `
+            <tr class="border-b hover:bg-gray-50 transition text-sm">
+                <td class="p-3 text-center font-mono font-bold text-gray-600">${item.id || '#'}</td>
+                <td class="p-3 text-center font-bold text-primary">${fromBranchName}</td>
+                <td class="p-3 text-center font-bold text-secondary">${toBranchName}</td>
+                <td class="p-3 text-center text-gray-500">${item.date || '-'}</td>
+                <td class="p-3 text-center font-black text-gray-800">${movementCount}</td>
+                <td class="p-3 text-center font-bold text-emerald-600">${currentPriceRate.toFixed(2)} ج.م</td>
+                <td class="p-3 text-center font-black text-primary bg-blue-50/50">${dynamicCalculatedValue.toFixed(2)} ج.م</td>
+            </tr>
+        `;
+    });
+
+    if (totalValueDisplay) {
+        totalValueDisplay.textContent = overallValueSum.toLocaleString('ar-EG', { minimumFractionDigits: 2 }) + ' ج.م';
+    }
+}
+
 
         async function fetchWithCache(url, cacheKey) {
             try {
@@ -2086,6 +2459,9 @@
                 return {};
             }
         }
+        
+     
+
 
         async function getDayData(dateStr, forceFetch = false) {
             const todayStr = new Date().toISOString().split('T')[0];
@@ -2113,6 +2489,14 @@
                 branches = await fetchWithCache(`${DB_URL}branches.json`, 'local_branches');
                 admins = await fetchWithCache(`${DB_URL}admins.json`, 'local_admins');
                 
+                // جلب مصفوفة إعدادات نقدية الحركات
+                try {
+                    const res = await fetch(`${DB_URL}cash_settings.json`);
+                    cashSettings = await res.json() || {};
+                } catch(e) {
+                    cashSettings = {};
+                }
+                
                 updateUIComponents();
                 await loadRecords();
             } catch (e) { showToast("خطأ في الاتصال بالخادم", "error"); }
@@ -2125,46 +2509,7 @@
             updateAdminsUI();
         }
 
-        function updateBranchesSelect() {
-            const selects = [document.getElementById('adminAssignedBranch'), document.getElementById('editAdminAssignedBranch')];
-            selects.forEach(select => {
-                if(!select) return;
-                const currentVal = select.value;
-                select.innerHTML = '<option value="">-- يرجى تحديد الفرع الخاص به --</option>';
-                Object.keys(branches).forEach(k => {
-                    select.innerHTML += `<option value="${k}" ${currentVal===k?'selected':''}>${branches[k].name}</option>`;
-                });
-            });
-            
-            const chartSelect = document.getElementById('chartBranchSelect');
-            if(chartSelect) {
-                const currentVal = chartSelect.value;
-                chartSelect.innerHTML = '<option value="">الكل (مقارنة الفروع)</option>';
-                Object.keys(branches).forEach(k => {
-                    chartSelect.innerHTML += `<option value="${k}" ${currentVal===k?'selected':''}>${branches[k].name}</option>`;
-                });
-            }
-        }
-
-        function updateAdminsUI() {
-            const tbody = document.getElementById('adminsTableBody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            Object.keys(admins).forEach(k => {
-                const a = admins[k];
-                let typeName = '<span class="bg-blue-100 text-primary px-2 py-1 rounded text-xs font-bold">مسؤول عام</span>';
-                if (a.type === 'employee') {
-                    typeName = `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">${a.employeeType || 'موظف'}</span>`;
-                }
-                if (a.type === 'branch_manager') {
-                    const brName = a.assignedBranch && branches[a.assignedBranch] ? branches[a.assignedBranch].name : 'فرع مجهول';
-                    typeName = `<span class="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-bold">مسؤول فرع (${brName})</span>`;
-                }
-
-                tbody.innerHTML += `<tr class="border-b hover:bg-gray-50 transition-colors"><td class="p-3 font-bold text-gray-800">${a.name}</td><td class="p-3 text-gray-600">${a.code}</td><td class="p-3">${typeName}</td><td class="p-3 text-center"><button onclick="openEditModal('admin', '${k}')" class="text-secondary hover:text-primary bg-blue-50 p-2 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`;
-            });
-        }
-
+        
         function updateBranchesUI() {
             const tbody = document.getElementById('branchesTableBody');
             const selectDel = document.getElementById('delBranch');
@@ -2403,23 +2748,82 @@
             recordClick(pendingBranchId, pendingBranchName, count, orderNum, orderVal, orderWhatsapp, sendWhatsapp, changeAmount, customTimeMs, paymentMethod, orderContact, orderAddress);
         }
 
+        // فتح نافذة الأصناف المتعددة المطورة وإعادة بنائها بصفوف ديناميكية
         function openWeightModal(id, name) {
             pendingBranchId = id; pendingBranchName = name;
             document.getElementById('weightBranchTitle').innerHTML = `إلى: <span class="font-extrabold text-lg">${name}</span>`;
-            document.getElementById('manualWeightInput').value = '1';
-            document.getElementById('manualItemCodeInput').value = ''; 
+            
+            const container = document.getElementById('weightRowsContainer');
+            container.innerHTML = '';
+            
+            addWeightRow(); // بناء السطر الأول تلقائياً
             document.getElementById('weightModal').classList.add('active');
-            setTimeout(() => { document.getElementById('manualItemCodeInput').focus(); }, 100);
+        }
+
+        // دالة إضافة سطر صنف جديد (كود + كمية) بجانب بعضهما
+        function addWeightRow(code = '', qty = 1) {
+            const container = document.getElementById('weightRowsContainer');
+            const rowId = 'row_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            
+            const rowHtml = `
+                <div id="${rowId}" class="flex items-center gap-3 bg-blue-50/40 border border-blue-100 p-3 rounded-xl mb-3 weight-row">
+                    <div class="flex-1 text-right">
+                        <label class="block text-[11px] font-bold text-gray-400 mb-1">كود الصنف</label>
+                        <input type="text" class="row-item-code w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-secondary font-bold text-center" value="${code}" placeholder="أدخل كود الصنف...">
+                    </div>
+                    <div class="w-24 text-right">
+                        <label class="block text-[11px] font-bold text-gray-400 mb-1">الكمية</label>
+                        <input type="number" min="1" max="100" class="row-item-qty w-full px-3 py-2 border border-secondary rounded-lg focus:border-primary outline-none text-center font-extrabold text-lg" value="${qty}">
+                    </div>
+                    <div class="pt-5">
+                        <button type="button" onclick="deleteWeightRow('${rowId}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-9 h-9 rounded-lg flex items-center justify-center transition border border-red-200"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHtml);
+        }
+
+        // دالة حذف سطر صنف من القائمة
+        function deleteWeightRow(rowId) {
+            const container = document.getElementById('weightRowsContainer');
+            if (container.querySelectorAll('.weight-row').length <= 1) {
+                showToast("يجب الاحتفاظ بصنف واحد على الأقل داخل القائمة!", "warning");
+                return;
+            }
+            const row = document.getElementById(rowId);
+            if (row) row.remove();
         }
 
         function closeWeightModal() { document.getElementById('weightModal').classList.remove('active'); }
 
-        function saveManualWeight() {
-            const count = parseInt(document.getElementById('manualWeightInput').value) || 1;
-            const itemCode = document.getElementById('manualItemCodeInput').value.trim();
-            if(count <= 0) return showToast("الرجاء إدخال رقم صحيح أكبر من صفر", "error");
-            closeWeightModal(); 
-            recordClick(pendingBranchId, pendingBranchName, count, '', '', '', false, 0, null, 'نقدي', '', '', itemCode);
+        // حفظ بيانات الأصناف المتعددة المدخلة وتوجيهها كحركات منفردة ذكية في قاعدة البيانات
+        async function saveManualWeight() {
+            const rows = document.querySelectorAll('.weight-row');
+            let validEntries = [];
+            
+            for(let row of rows) {
+                const code = row.querySelector('.row-item-code').value.trim();
+                const qty = parseInt(row.querySelector('.row-item-qty').value) || 0;
+                
+                if(!code) {
+                    showToast("يرجى إدخال كود الصنف في جميع الخانات المضافة", "error");
+                    return;
+                }
+                if(qty <= 0) {
+                    showToast("الكمية المحددة يجب أن تفوق الصفر", "error");
+                    return;
+                }
+                validEntries.push({ code, qty });
+            }
+            
+            closeWeightModal();
+            
+            // تسجيل كل صنف كحركة مستقلة في قاعدة البيانات لتتبعها والرد عليها بدقة
+            for(let entry of validEntries) {
+                await recordClick(pendingBranchId, pendingBranchName, entry.qty, '', '', '', false, 0, null, 'نقدي', '', '', entry.code);
+            }
+            
+            loadRecords();
         }
 
         async function recordClick(toBranchId, toBranchName, count = 1, orderNum = '', orderVal = '', customerWhatsapp = '', sendWhatsapp = false, changeAmount = 0, customDeliveryTime = null, paymentMethod = 'نقدي', customerContact = '', customerAddress = '', itemCode = '') {
@@ -2521,199 +2925,201 @@
                 }
                 
                 if (hasAccess && k !== currentDelegateId && d.status !== 'inactive') { 
-                    select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
+                    // الكود الجديد الصحيح
+select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
+
                 }
             });
             
             document.getElementById('changeDelegateModal').classList.add('active');
         }
 
-let isAssigningForDelivery = false;
+        let isAssigningForDelivery = false;
 
-function assignDelegateForDelivery(date, recordId) {
-    isAssigningForDelivery = true;
-    openChangeDelegateModal(recordId, date, 'pending');
-}
-
-function closeChangeDelegateModal() {
-    document.getElementById('changeDelegateModal').classList.remove('active');
-    recordToChangeDelegate = null;
-    changeDelegateDate = null;
-    isAssigningForDelivery = false; 
-}
-
-async function saveDelegateChange() {
-    const newDelId = document.getElementById('newDelegateSelect').value;
-    if (!newDelId) return showToast("يجب اختيار مندوب أولاً", "error");
-    
-    const newDel = delegates[newDelId];
-    
-    try {
-        let payload = { 
-            delegateId: newDelId, 
-            delegateName: newDel.name, 
-            delegateCode: newDel.code,
-            sourceBranchId: newDel.branchId || 'admin'
-        };
-
-        if (isAssigningForDelivery) {
-            payload.status = 'out_for_delivery';
-            payload.outForDeliveryTimestamp = Date.now();
+        function assignDelegateForDelivery(date, recordId) {
+            isAssigningForDelivery = true;
+            openChangeDelegateModal(recordId, date, 'pending');
         }
 
-        await fetch(`${DB_URL}records/${changeDelegateDate}/${recordToChangeDelegate}.json`, { 
-            method: 'PATCH', 
-            body: JSON.stringify(payload) 
-        });
-        
-        logActivity('edit', `تغيير المندوب لسجل بتاريخ ${changeDelegateDate} إلى المندوب (${newDel.name})`);
-        
-        if (isAssigningForDelivery) {
-            showToast("تم تحديد المندوب وتحديث الحالة إلى 'خرج للتوصيل' بنجاح", "success");
-        } else {
-            showToast("تم تبديل المندوب بنجاح", "success");
-        }
-        
-        closeChangeDelegateModal();
-        loadRecords(); 
-
-        if (isAssigningForDelivery) {
-            openPendingOrdersModal(); 
-            checkOverdueOrdersBackground(); 
-            updateDelegatesOutStatus();
+        function closeChangeDelegateModal() {
+            document.getElementById('changeDelegateModal').classList.remove('active');
+            recordToChangeDelegate = null;
+            changeDelegateDate = null;
+            isAssigningForDelivery = false; 
         }
 
-    } catch (e) {
-        showToast("حدث خطأ أثناء تحديث المندوب", "error");
-    }
-}
-        
-function renderRecordsTable(isSilent = false) {
-    const date = document.getElementById('recordDate').value;
-    const tbody = document.getElementById('recordsTableBody');
-    const searchInput = document.getElementById('mainSearchInput');
-    const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    const selectedDelCode = document.getElementById('recordDelegate') ? document.getElementById('recordDelegate').value : '';
-    
-    if(!isSilent && tbody) tbody.innerHTML = '';
-    
-    let html = '';
-    let totalClicksToday = 0; 
-    let delegateTotal = 0;
-    let counter = 1;
+        async function saveDelegateChange() {
+            const newDelId = document.getElementById('newDelegateSelect').value;
+            if (!newDelId) return showToast("يجب اختيار مندوب أولاً", "error");
+            
+            const newDel = delegates[newDelId];
+            
+            try {
+                let payload = { 
+                    delegateId: newDelId, 
+                    delegateName: newDel.name, 
+                    delegateCode: newDel.code,
+                    sourceBranchId: newDel.branchId || 'admin'
+                };
 
-    const dayRecords = currentRecords[date] || {};
+                if (isAssigningForDelivery) {
+                    payload.status = 'out_for_delivery';
+                    payload.outForDeliveryTimestamp = Date.now();
+                }
 
-    let filteredKeys = Object.keys(dayRecords).filter(k => {
-        const r = dayRecords[k];
-        if(currentUser.role === 'admin') {
-            if (currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف بفرع' || currentUser.employeeType === 'موظف خدمة عملاء') {
-                return r.createdByUserId === currentUser.id || r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.assignedBranch);
+                await fetch(`${DB_URL}records/${changeDelegateDate}/${recordToChangeDelegate}.json`, { 
+                    method: 'PATCH', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                logActivity('edit', `تغيير المندوب لسجل بتاريخ ${changeDelegateDate} إلى المندوب (${newDel.name})`);
+                
+                if (isAssigningForDelivery) {
+                    showToast("تم تحديد المندوب وتحديث الحالة إلى 'خرج للتوصيل' بنجاح", "success");
+                } else {
+                    showToast("تم تبديل المندوب بنجاح", "success");
+                }
+                
+                closeChangeDelegateModal();
+                loadRecords(); 
+
+                if (isAssigningForDelivery) {
+                    openPendingOrdersModal(); 
+                    checkOverdueOrdersBackground(); 
+                    updateDelegatesOutStatus();
+                }
+
+            } catch (e) {
+                showToast("حدث خطأ أثناء تحديث المندوب", "error");
             }
-            return true; 
         }
-        return r.sourceBranchId === currentUser.id || r.branchId === currentUser.id || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.id) || r.createdByUserId === currentUser.id;
-    });
-
-    filteredKeys.sort((a,b) => (dayRecords[b].timestamp || 0) - (dayRecords[a].timestamp || 0));
-
-    filteredKeys.forEach(k => {
-        const r = dayRecords[k];
-        if (!r) return;
-        const rCount = parseInt(r.count || r.quantity || 1);
-
-        totalClicksToday += rCount;
-
-        if(selectedDelCode && r.delegateCode !== selectedDelCode && r.delegateId !== selectedDelCode) return;
-        if(selectedDelCode && (r.delegateCode === selectedDelCode || r.delegateId === selectedDelCode)) { delegateTotal += rCount; }
-
-        if(searchVal) {
-            const matchOrder = r.orderNumber && r.orderNumber.toLowerCase().includes(searchVal);
-            const matchItemCode = r.itemCode && r.itemCode.toLowerCase().includes(searchVal);
-            const matchDelCode = r.delegateCode && r.delegateCode.toLowerCase().includes(searchVal);
-            const matchDelName = r.delegateName && r.delegateName.toLowerCase().includes(searchVal);
-            const matchBranch = (r.branchName || r.toBranchName || '').toLowerCase().includes(searchVal);
-            if(!matchOrder && !matchDelCode && !matchDelName && !matchBranch && !matchItemCode) return;
-        }
-
-        let statusBadge = '';
-        if(r.status === 'confirmed' || r.status === 'completed' || r.status === 'delivered') {
-            statusBadge = `<span class="bg-green-100 text-green-700 border border-green-200 px-2 py-1 rounded text-xs font-bold block text-center shadow-sm"><i class="fa-solid fa-square-check mr-1"></i> مكتمل</span>`;
-        } else if (r.status === 'out_for_delivery') {
-            statusBadge = `<span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded text-xs font-bold block text-center shadow-sm animate-pulse"><i class="fa-solid fa-motorcycle mr-1"></i> توصيل</span>`;
-        } else {
-            statusBadge = `<span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded text-xs font-bold block text-center shadow-sm animate-pulse"><i class="fa-solid fa-clock mr-1"></i> معلق</span>`;
-        }
-
-        let canDelete = false;
-        if(currentUser.role === 'admin' && (currentUser.adminType === 'admin' || currentUser.adminType === 'branch_manager')) canDelete = true;
         
-        let canChangeDel = false;
-        if (currentUser.role === 'admin' || currentUser.id === r.branchId || currentUser.id === r.sourceBranchId) {
-            canChangeDel = true;
-        }
+        function renderRecordsTable(isSilent = false) {
+            const date = document.getElementById('recordDate').value;
+            const tbody = document.getElementById('recordsTableBody');
+            const searchInput = document.getElementById('mainSearchInput');
+            const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const selectedDelCode = document.getElementById('recordDelegate') ? document.getElementById('recordDelegate').value : '';
+            
+            if(!isSilent && tbody) tbody.innerHTML = '';
+            
+            let html = '';
+            let totalClicksToday = 0; 
+            let delegateTotal = 0;
+            let counter = 1;
 
-        let actionBtn = `<div class="flex flex-col gap-1.5 justify-center items-center">`;
-        if (canDelete) {
-            actionBtn += `<button onclick="deleteRecord('${date}', '${k}')" class="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-2 py-1 rounded-lg transition border border-red-200 shadow-sm text-xs font-bold flex items-center justify-center gap-1 w-full"><i class="fa-solid fa-trash-can"></i> حذف</button>`;
-        }
-        if (canChangeDel && (r.status !== 'completed' && r.status !== 'delivered')) {
-            actionBtn += `<button onclick="openChangeDelegateModal('${k}', '${date}', '${r.delegateId}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-2 py-1 rounded-lg transition border border-blue-200 shadow-sm text-[11px] font-bold flex items-center justify-center gap-1 w-full"><i class="fa-solid fa-exchange-alt"></i> تبديل المندوب</button>`;
-        }
-        if (!canDelete && !canChangeDel) {
-            actionBtn += `<span class="text-gray-400 text-xs font-semibold">—</span>`;
-        }
-        actionBtn += `</div>`;
+            const dayRecords = currentRecords[date] || {};
 
-        const targetBranchName = r.branchName || r.toBranchName || 'غير محدد';
-        const timeStr = r.timeString || r.time || '';
-        
-        let orderHtml = `<span class="text-gray-400 font-bold">—</span>`;
-        if(r.orderNumber) {
-            orderHtml = `
-                <div class="text-xs font-mono text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block shadow-sm"># ${r.orderNumber}</div>
-                <div class="mt-1">${statusBadge}</div>
-            `;
-        } else if (r.itemCode) {
-            orderHtml = `<div class="text-xs text-primary font-bold mb-1">صنف: ${r.itemCode}</div><div>${statusBadge}</div>`;
-        } else {
-            orderHtml = `<div class="mt-1">${statusBadge}</div>`;
-        }
+            let filteredKeys = Object.keys(dayRecords).filter(k => {
+                const r = dayRecords[k];
+                if(currentUser.role === 'admin') {
+                    if (currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف بفرع' || currentUser.employeeType === 'موظف خدمة عملاء') {
+                        return r.createdByUserId === currentUser.id || r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.assignedBranch);
+                    }
+                    return true; 
+                }
+                return r.sourceBranchId === currentUser.id || r.branchId === currentUser.id || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.id) || r.createdByUserId === currentUser.id;
+            });
 
-        html += `
-            <tr class="border-b text-sm font-semibold hover:bg-blue-50/30 transition-colors">
-                <td class="p-3 text-gray-500 text-xs">${counter++}</td>
-                <td class="p-3 text-xs text-gray-600" dir="ltr">${timeStr}</td>
-                <td class="p-3"><span class="text-gray-800 font-bold">${r.createdByUserName || 'غير محدد'}</span></td>
-                <td class="p-3"><span class="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-xs font-black shadow-sm ml-1">${r.delegateCode}</span><div class="text-xs text-gray-500 mt-1">${r.delegateName}</div></td>
-                <td class="p-3 text-primary font-black"><i class="fa-solid fa-store text-xs ml-1 text-secondary"></i>${targetBranchName}</td>
-                <td class="p-3 text-center"><span class="bg-accent text-white px-3 py-1 rounded-full shadow-sm font-bold text-sm">x${rCount}</span></td>
-                <td class="p-3">${orderHtml}</td>
-                <td class="p-3 text-center align-middle">${actionBtn}</td>
-            </tr>
-        `;
-    });
+            filteredKeys.sort((a,b) => (dayRecords[b].timestamp || 0) - (dayRecords[a].timestamp || 0));
 
-    const counterEl = document.getElementById('totalClicksCounter');
-    if (counterEl) counterEl.textContent = totalClicksToday;
+            filteredKeys.forEach(k => {
+                const r = dayRecords[k];
+                if (!r) return;
+                const rCount = parseInt(r.count || r.quantity || 1);
 
-    const delBox = document.getElementById('delegateTotalBox');
-    if(selectedDelCode) {
-        const delValEl = document.getElementById('delegateTotalValue');
-        if(delValEl) delValEl.textContent = delegateTotal;
-        if(delBox) delBox.classList.remove('hidden');
-    } else {
-        if(delBox) delBox.classList.add('hidden');
-    }
+                totalClicksToday += rCount;
 
-    if(tbody) {
-        if(html === '') {
-            tbody.innerHTML = '<tr><td colspan="8" class="p-12 text-center text-gray-400 font-bold bg-gray-50"><i class="fa-solid fa-folder-open text-4xl block mb-3 text-gray-300"></i> لا توجد حركات مسجلة تابعة لفرعك في هذا التاريخ</td></tr>';
-        } else {
-            tbody.innerHTML = html;
-        }
-    }
+                if(selectedDelCode && r.delegateCode !== selectedDelCode && r.delegateId !== selectedDelCode) return;
+                if(selectedDelCode && (r.delegateCode === selectedDelCode || r.delegateId === selectedDelCode)) { delegateTotal += rCount; }
+
+                if(searchVal) {
+                    const matchOrder = r.orderNumber && r.orderNumber.toLowerCase().includes(searchVal);
+                    const matchItemCode = r.itemCode && r.itemCode.toLowerCase().includes(searchVal);
+                    const matchDelCode = r.delegateCode && r.delegateCode.toLowerCase().includes(searchVal);
+                    const matchDelName = r.delegateName && r.delegateName.toLowerCase().includes(searchVal);
+                    const matchBranch = (r.branchName || r.toBranchName || '').toLowerCase().includes(searchVal);
+                    if(!matchOrder && !matchDelCode && !matchDelName && !matchBranch && !matchItemCode) return;
+                }
+
+                let statusBadge = '';
+                if(r.status === 'confirmed' || r.status === 'completed' || r.status === 'delivered') {
+                    statusBadge = `<span class="bg-green-100 text-green-700 border border-green-200 px-2 py-1 rounded text-xs font-bold block text-center shadow-sm"><i class="fa-solid fa-square-check mr-1"></i> مكتمل</span>`;
+                } else if (r.status === 'out_for_delivery') {
+                    statusBadge = `<span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded text-xs font-bold block text-center shadow-sm animate-pulse"><i class="fa-solid fa-motorcycle mr-1"></i> توصيل</span>`;
+                } else {
+                    statusBadge = `<span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded text-xs font-bold block text-center shadow-sm animate-pulse"><i class="fa-solid fa-clock mr-1"></i> معلق</span>`;
+                }
+
+                let canDelete = false;
+                if(currentUser.role === 'admin' && (currentUser.adminType === 'admin' || currentUser.adminType === 'branch_manager')) canDelete = true;
+                
+                let canChangeDel = false;
+                if (currentUser.role === 'admin' || currentUser.id === r.branchId || currentUser.id === r.sourceBranchId) {
+                    canChangeDel = true;
+                }
+
+                let actionBtn = `<div class="flex flex-col gap-1.5 justify-center items-center">`;
+                if (canDelete) {
+                    actionBtn += `<button onclick="deleteRecord('${date}', '${k}')" class="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-2 py-1 rounded-lg transition border border-red-200 shadow-sm text-xs font-bold flex items-center justify-center gap-1 w-full"><i class="fa-solid fa-trash-can"></i> حذف</button>`;
+                }
+                if (canChangeDel && (r.status !== 'completed' && r.status !== 'delivered')) {
+                    actionBtn += `<button onclick="openChangeDelegateModal('${k}', '${date}', '${r.delegateId}')" class="text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-2 py-1 rounded-lg transition border border-blue-200 shadow-sm text-[11px] font-bold flex items-center justify-center gap-1 w-full"><i class="fa-solid fa-exchange-alt"></i> تبديل</button>`;
+                }
+                if (!canDelete && !canChangeDel) {
+                    actionBtn += `<span class="text-gray-400 text-xs font-semibold">—</span>`;
+                }
+                actionBtn += `</div>`;
+
+                const targetBranchName = r.branchName || r.toBranchName || 'غير حدد';
+                const timeStr = r.timeString || r.time || '';
+                
+                let orderHtml = `<span class="text-gray-400 font-bold">—</span>`;
+                if(r.orderNumber) {
+                    orderHtml = `
+                        <div class="text-xs font-mono text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block shadow-sm"># ${r.orderNumber}</div>
+                        <div class="mt-1">${statusBadge}</div>
+                    `;
+                } else if (r.itemCode) {
+                    orderHtml = `<div class="text-xs text-primary font-bold mb-1">صنف: ${r.itemCode}</div><div>${statusBadge}</div>`;
+                } else {
+                    orderHtml = `<div class="mt-1">${statusBadge}</div>`;
+                }
+
+                html += `
+                    <tr class="border-b text-sm font-semibold hover:bg-blue-50/30 transition-colors">
+                        <td class="p-3 text-gray-500 text-xs">${counter++}</td>
+                        <td class="p-3 text-xs text-gray-600" dir="ltr">${timeStr}</td>
+                        <td class="p-3"><span class="text-gray-800 font-bold">${r.createdByUserName || 'غير محدد'}</span></td>
+                        <td class="p-3"><span class="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-xs font-black shadow-sm ml-1">${r.delegateCode}</span><div class="text-xs text-gray-500 mt-1">${r.delegateName}</div></td>
+                        <td class="p-3 text-primary font-black"><i class="fa-solid fa-store text-xs ml-1 text-secondary"></i>${targetBranchName}</td>
+                        <td class="p-3 text-center"><span class="bg-accent text-white px-3 py-1 rounded-full shadow-sm font-bold text-sm">x${rCount}</span></td>
+                        <td class="p-3">${orderHtml}</td>
+                        <td class="p-3 text-center align-middle">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            const counterEl = document.getElementById('totalClicksCounter');
+            if (counterEl) counterEl.textContent = totalClicksToday;
+
+            const delBox = document.getElementById('delegateTotalBox');
+            if(selectedDelCode) {
+                const delValEl = document.getElementById('delegateTotalValue');
+                if(delValEl) delValEl.textContent = delegateTotal;
+                if(delBox) delBox.classList.remove('hidden');
+            } else {
+                if(delBox) delBox.classList.add('hidden');
             }
+
+            if(tbody) {
+                if(html === '') {
+                    tbody.innerHTML = '<tr><td colspan="8" class="p-12 text-center text-gray-400 font-bold bg-gray-50"><i class="fa-solid fa-folder-open text-4xl block mb-3 text-gray-300"></i> لا توجد حركات مسجلة تابعة لفرعك في هذا التاريخ</td></tr>';
+                } else {
+                    tbody.innerHTML = html;
+                }
+            }
+        }
                     
         function openBranchDelegatesModal() {
             const list = document.getElementById('branchDelegatesList');
@@ -2862,7 +3268,7 @@ function renderRecordsTable(isSilent = false) {
             } catch(e) { showToast("حدث خطأ أثناء الحذف", "error"); }
         }
 
-        async function openPendingOrdersModal() {
+      async function openPendingOrdersModal() {
     document.getElementById('pendingOrdersModal').classList.add('active');
     const tbody = document.getElementById('pendingOrdersTableBody');
     
@@ -2965,9 +3371,7 @@ function renderRecordsTable(isSilent = false) {
     
     if(loadingIndicator) loadingIndicator.classList.add('hidden');
         }
-                    
-
-        function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
+              function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
 
         async function updateOrderStatus(date, recordId, newStatus) {
             let msg = newStatus === 'out_for_delivery' ? "هل خرج المندوب لتوصيل هذا الأوردر؟" : "تأكيد: هل تم تسليم هذا الأوردر للعميل بنجاح؟";
@@ -3090,8 +3494,7 @@ const offer = {
                 loadOffers();
             } catch(err) { showToast("حدث خطأ", "error"); }
         }
-
-        function editOffer(id) {
+function editOffer(id) {
             const o = windowCurrentOffers[id];
             if (!o) return;
             currentEditOfferId = id;
@@ -3402,7 +3805,7 @@ document.getElementById('offerMediaFile').value = '';
                 loadAllData();
             } catch(err) { showToast("حدث خطأ في تحديث البيانات", "error"); }
         }
-
+        
         function formatTimeDiff(ms) {
             if(!ms || ms < 0) return '-';
             const totalMinutes = Math.floor(ms / 60000); const hours = Math.floor(totalMinutes / 60); const minutes = totalMinutes % 60;
@@ -3695,145 +4098,8 @@ document.getElementById('offerMediaFile').value = '';
             });
         }
 
-        async function generateReport() {
-            const fromDT = document.getElementById('repFromDate').value;
-            const toDT = document.getElementById('repToDate').value;
-            const repDelCode = document.getElementById('repDelCode').value.trim().toLowerCase();
-            const repOrderNum = document.getElementById('repOrderNum').value.trim().toLowerCase();
-
-            if (!fromDT || !toDT) return showToast("يرجى تحديد وقت وتاريخ البداية والنهاية", "error");
-
-            const loadingIndicator = document.getElementById('reportLoading');
-            const tbody = document.getElementById('reportTableBody');
-            
-            loadingIndicator.classList.remove('hidden');
-            tbody.innerHTML = '';
-            currentReportData = []; 
-
-            const fromTimestamp = new Date(fromDT).getTime();
-            const toTimestamp = new Date(toDT).getTime();
-
-            let datesToFetch = [];
-            let curr = new Date(fromDT.split('T')[0]);
-            let endD = new Date(toDT.split('T')[0]);
-            
-            while(curr <= endD) {
-                datesToFetch.push(curr.toISOString().split('T')[0]);
-                curr.setDate(curr.getDate() + 1);
-            }
-
-            let totalMoves = 0; 
-
-            try {
-                const results = await Promise.all(datesToFetch.map(d => getDayData(d, true)));
-                
-                results.forEach((dayData, index) => {
-                    if(dayData) {
-                        const dateStr = datesToFetch[index];
-                        Object.keys(dayData).forEach(k => {
-                            const r = dayData[k];
-                            const rTime = r.timestamp;
-
-                            if (rTime >= fromTimestamp && rTime <= toTimestamp) {
-                                let matchDel = true;
-                                if (repDelCode && (!r.delegateCode || !r.delegateCode.toLowerCase().includes(repDelCode))) matchDel = false;
-                                
-                                let matchOrder = true;
-                                if (repOrderNum && (!r.orderNumber || !r.orderNumber.toLowerCase().includes(repOrderNum))) matchOrder = false;
-
-                                let hasAccess = false;
-                                if(currentUser.role === 'admin') {
-                                    if (currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف بفرع' || currentUser.employeeType === 'موظف خدمة عملاء') {
-                                        if (r.createdByUserId === currentUser.id || r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch) {
-                                            hasAccess = true;
-                                        }
-                                    } else {
-                                        hasAccess = true; 
-                                    }
-                                } else {
-                                    if(r.sourceBranchId === currentUser.id || r.branchId === currentUser.id || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.id)) {
-                                        hasAccess = true;
-                                    }
-                                }
-
-                                if (matchDel && matchOrder && hasAccess) {
-                                    r.id = k;
-                                    r.date = dateStr;
-                                    currentReportData.push(r);
-                                }
-                            }
-                        });
-                    }
-                });
-
-                currentReportData.sort((a,b) => b.timestamp - a.timestamp);
-
-                if (currentReportData.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-file-excel text-3xl mb-2 text-gray-300 block"></i> لا توجد بيانات مطابقة لهذه الفترة</td></tr>';
-                } else {
-                    currentReportData.forEach(r => {
-                        const rCount = Number(r.count) || 1;
-                        totalMoves += rCount;
-
-                        let statusBadge = '';
-                        if (r.orderNumber) {
-                            if (r.status === 'delivered') statusBadge = '<span class="text-xs bg-green-500 text-white px-2 py-1 rounded shadow-sm">مُسلم</span>';
-                            else if (r.status === 'out_for_delivery') statusBadge = '<span class="text-xs bg-blue-500 text-white px-2 py-1 rounded shadow-sm">خرج للتوصيل</span>';
-                            else statusBadge = '<span class="text-xs bg-amber-500 text-white px-2 py-1 rounded shadow-sm">تجهيز</span>';
-                        } else {
-                            statusBadge = '<span class="text-xs bg-gray-500 text-white px-2 py-1 rounded shadow-sm">مكتمل</span>';
-                        }
-                        
-                        const rTotalValue = (Number(r.orderValue) || 0) + (Number(r.changeAmount) || 0);
-                        
-                        let paymentMethodDisplay = r.paymentMethod ? `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm mx-1"><i class="fa-solid fa-wallet"></i> ${r.paymentMethod}</span>` : '';
-                        
-                        let contactInfo = '';
-                        if(r.customerContact) contactInfo += `<div class="mt-1 text-xs text-gray-600"><i class="fa-solid fa-phone"></i> تواصل: <span dir="ltr">${r.customerContact}</span></div>`;
-                        if(r.customerAddress) contactInfo += `<div class="mt-1 text-xs text-gray-600 truncate max-w-[200px]" title="${r.customerAddress}"><i class="fa-solid fa-location-dot"></i> ${r.customerAddress}</div>`;
-
-                        let dynamicMapUrl = '#';
-                        if (r.deliveryLocation) {
-                            if (typeof r.deliveryLocation === 'object' && r.deliveryLocation.lat && r.deliveryLocation.lng) {
-                                dynamicMapUrl = `https://www.google.com/maps?q=$${r.deliveryLocation.lat},${r.deliveryLocation.lng}`;
-                            } else if (typeof r.deliveryLocation === 'string') {
-                                dynamicMapUrl = r.deliveryLocation;
-                            }
-                        }
-
-                        let locationBtn = r.deliveryLocation ? 
-                            `<a href="${dynamicMapUrl}" target="_blank" class="mt-2 block w-max bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-xs font-bold border border-emerald-200 transition"><i class="fa-solid fa-map-location-dot animate-pulse"></i> موقع التسليم</a>` : 
-                            `<span class="mt-2 block w-max bg-gray-50 text-gray-400 px-2 py-1 rounded text-[10px] border border-gray-100"><i class="fa-solid fa-map-pin"></i> لم يسجل الموقع</span>`;
-                                        
-                        let orderDetails = r.orderNumber ? `<div class="text-sm font-bold text-gray-800"># ${r.orderNumber}</div><div class="text-xs font-bold text-emerald-600 mt-1">${rTotalValue} ج.م ${paymentMethodDisplay}</div> ${contactInfo} ${locationBtn}` : '<span class="text-gray-400">-</span>';
-
-                        tbody.innerHTML += `
-                            <tr class="border-b hover:bg-gray-50 transition">
-                                <td class="p-3 text-center"><input type="checkbox" value="${r.id}" data-date="${r.date}" class="w-4 h-4 report-row-checkbox cursor-pointer accent-red-600" onchange="updateBulkDeleteBtn()"></td>
-                                <td class="p-3 text-sm font-semibold">${r.date}<br><span class="text-xs text-gray-500" dir="ltr">${r.time}</span></td>
-                                <td class="p-3 text-sm font-bold text-primary">${r.createdByUserName || 'غير محدد'}</td>
-                                <td class="p-3 text-sm font-bold"><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 shadow-sm ml-1">${r.delegateCode}</span> ${r.delegateName}</td>
-                                <td class="p-3 font-bold text-gray-800">${r.branchName}</td>
-                                <td class="p-3 text-center"><span class="bg-accent px-2 py-1 text-white font-bold rounded shadow-sm text-xs">x${rCount}</span></td>
-                                <td class="p-3">${orderDetails}</td>
-                                <td class="p-3">${statusBadge}</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                const totalCashDue = totalMoves * 5;
-                document.getElementById('reportTotalClicks').innerHTML = `${totalCashDue} <span class="text-2xl font-semibold">ج.م</span> <div class="text-sm text-emerald-100 mt-2 font-semibold">إجمالي الحركات: ${totalMoves} حركة</div>`;
-
-            } catch (e) {
-                showToast("حدث خطأ في استخراج التقرير من قاعدة البيانات", "error");
-            } finally {
-                loadingIndicator.classList.add('hidden');
-                updateBulkDeleteBtn(); 
-            }
-        }
         
-        function exportReportToExcel() {
+     function exportReportToExcel() {
             if (!currentReportData || currentReportData.length === 0) {
                 return showToast("لا توجد بيانات متاحة لتصديرها، يرجى عرض التقرير أولاً", "error");
             }
@@ -3870,56 +4136,260 @@ document.getElementById('offerMediaFile').value = '';
             logActivity('edit', 'قام بتصدير تقرير الحركات إلى ملف Excel (XLSX)');
         }
 
-        function printThermalReport() {
-            if (currentReportData.length === 0) {
-                showToast("لا توجد بيانات لطباعتها، يرجى عرض التقرير أولاً", "error");
-                return;
+       // 1. الدالة المحدثة لملء وتحديث قوائم الفروع وضبط ظهورها بناءً على الصلاحيات
+function updateBranchesSelect() {
+    const selects = [document.getElementById('adminAssignedBranch'), document.getElementById('editAdminAssignedBranch')];
+    selects.forEach(select => {
+        if(!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">-- يرجى تحديد الفرع الخاص به --</option>';
+        Object.keys(branches).forEach(k => {
+            select.innerHTML += `<option value="${k}" ${currentVal===k?'selected':''}>${branches[k].name}</option>`;
+        });
+    });
+    
+    const chartSelect = document.getElementById('chartBranchSelect');
+    if(chartSelect) {
+        const currentVal = chartSelect.value;
+        chartSelect.innerHTML = '<option value="">الكل (مقارنة الفروع)</option>';
+        Object.keys(branches).forEach(k => {
+            chartSelect.innerHTML += `<option value="${k}" ${currentVal===k?'selected':''}>${branches[k].name}</option>`;
+        });
+    }
+
+    // الإضافة الجديدة الخاصة بفلتر التقارير للمدير العام
+    const repBranchSelect = document.getElementById('repBranchCode');
+    if(repBranchSelect) {
+        const currentVal = repBranchSelect.value;
+        repBranchSelect.innerHTML = '<option value="">جميع الفروع</option>';
+        Object.keys(branches).forEach(k => {
+            repBranchSelect.innerHTML += `<option value="${k}" ${currentVal===k?'selected':''}>${branches[k].name}</option>`;
+        });
+
+        // إظهار الفلتر وتوسعة الشبكة للمدير العام فقط
+        if(currentUser && currentUser.role === 'admin' && currentUser.adminType === 'admin') {
+            document.getElementById('adminReportBranchContainer').classList.remove('hidden');
+            document.getElementById('reportFiltersGrid').classList.replace('lg:grid-cols-5', 'lg:grid-cols-6');
+        } else {
+            document.getElementById('adminReportBranchContainer').classList.add('hidden');
+            document.getElementById('reportFiltersGrid').classList.replace('lg:grid-cols-6', 'lg:grid-cols-5');
+        }
+    }
+}
+
+// 2. الدالة المحدثة للتقارير المتقدمة للتحكم في عرض البيانات حسب الصلاحيات
+async function generateReport() {
+    const fromDT = document.getElementById('repFromDate').value;
+    const toDT = document.getElementById('repToDate').value;
+    const repDelCode = document.getElementById('repDelCode').value.trim().toLowerCase();
+    const repOrderNum = document.getElementById('repOrderNum').value.trim().toLowerCase();
+    
+    // سحب قيمة فلتر المدير العام إن وجدت
+    const adminBranchFilter = document.getElementById('repBranchCode') ? document.getElementById('repBranchCode').value : '';
+
+    if (!fromDT || !toDT) return showToast("يرجى تحديد وقت وتاريخ البداية والنهاية", "error");
+
+    const loadingIndicator = document.getElementById('reportLoading');
+    const tbody = document.getElementById('reportTableBody');
+    
+    loadingIndicator.classList.remove('hidden');
+    tbody.innerHTML = '';
+    currentReportData = []; 
+
+    const fromTimestamp = new Date(fromDT).getTime();
+    const toTimestamp = new Date(toDT).getTime();
+
+    let datesToFetch = [];
+    let curr = new Date(fromDT.split('T')[0]);
+    let endD = new Date(toDT.split('T')[0]);
+    
+    while(curr <= endD) {
+        datesToFetch.push(curr.toISOString().split('T')[0]);
+        curr.setDate(curr.getDate() + 1);
+    }
+
+    let totalMoves = 0; 
+    let grandTotalCashCalculated = 0; 
+
+    try {
+        const results = await Promise.all(datesToFetch.map(d => getDayData(d, true)));
+        
+        results.forEach((dayData, index) => {
+            if(dayData) {
+                const dateStr = datesToFetch[index];
+                Object.keys(dayData).forEach(k => {
+                    const r = dayData[k];
+                    const rTime = r.timestamp;
+
+                    if (rTime >= fromTimestamp && rTime <= toTimestamp) {
+                        // تطبيق فلاتر البحث العادية
+                        let matchDel = true;
+                        if (repDelCode && (!r.delegateCode || !r.delegateCode.toLowerCase().includes(repDelCode))) matchDel = false;
+                        
+                        let matchOrder = true;
+                        if (repOrderNum && (!r.orderNumber || !r.orderNumber.toLowerCase().includes(repOrderNum))) matchOrder = false;
+
+                        // === منطق الصلاحيات والفصل بين الفروع ===
+                        let hasAccess = false;
+                        
+                        if (currentUser.role === 'admin' && currentUser.adminType === 'admin') {
+                            // المدير العام: يرى كل شيء
+                            hasAccess = true;
+                            // تطبيق فلتر اختيار الفرع إذا قام المدير العام باختياره
+                            if (adminBranchFilter && r.sourceBranchId !== adminBranchFilter) {
+                                hasAccess = false; 
+                            }
+                        } else {
+                            // مدير فرع / موظف فرع / حساب فرع:
+                            let userBranchId = currentUser.role === 'branch' ? currentUser.id : currentUser.assignedBranch;
+                            
+                            // الشرط: أن يكون المُسجل من نفس الفرع (sourceBranchId) أو مندوب تابع لنفس الفرع
+                            if (r.sourceBranchId === userBranchId || (delegates[r.delegateId] && delegates[r.delegateId].branchId === userBranchId)) {
+                                hasAccess = true;
+                            }
+                        }
+
+                        if (matchDel && matchOrder && hasAccess) {
+                            r.id = k;
+                            r.date = dateStr;
+                            currentReportData.push(r);
+                        }
+                    }
+                });
             }
+        });
 
-            const startDT = document.getElementById('repFromDate').value.replace('T', ' ');
-            const endDT = document.getElementById('repToDate').value.replace('T', ' ');
-            const dateRangeStr = `من: ${startDT} إلى: ${endDT}`;
-            
-            document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'الإدارة العامة' : currentUser.name;
-            document.getElementById('printDateRange').textContent = dateRangeStr;
+        currentReportData.sort((a,b) => b.timestamp - a.timestamp);
 
-            const delegateStats = {};
-            let grandTotalMoves = 0;
-
+        if (currentReportData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-file-excel text-3xl mb-2 text-gray-300 block"></i> لا توجد بيانات مطابقة لهذه الفترة وصلاحياتك</td></tr>';
+        } else {
             currentReportData.forEach(r => {
                 const rCount = Number(r.count) || 1;
-                const dCode = r.delegateCode || 'بدون كود';
-                const dName = r.delegateName || 'غير معروف';
+                totalMoves += rCount;
+
+                // --- استخراج السعر الديناميكي من مصفوفة cashSettings ---
+                let movementPrice = 1; 
+                const srcBranchId = r.sourceBranchId;
+                const destBranchId = r.branchId;
                 
-                if (!delegateStats[dCode]) {
-                    delegateStats[dCode] = { name: dName, count: 0 };
+                if (cashSettings && cashSettings[srcBranchId] && cashSettings[srcBranchId][destBranchId] !== undefined) {
+                    movementPrice = parseFloat(cashSettings[srcBranchId][destBranchId]);
                 }
-                delegateStats[dCode].count += rCount;
-                grandTotalMoves += rCount;
-            });
+                
+                const currentRecordCost = rCount * movementPrice;
+                grandTotalCashCalculated += currentRecordCost;
+                // ---------------------------------------------------------
 
-            const tbody = document.getElementById('printTableBody');
-            tbody.innerHTML = '';
+                let statusBadge = '';
+                if (r.orderNumber) {
+                    if (r.status === 'delivered') statusBadge = '<span class="text-xs bg-green-500 text-white px-2 py-1 rounded shadow-sm">مُسلم</span>';
+                    else if (r.status === 'out_for_delivery') statusBadge = '<span class="text-xs bg-blue-500 text-white px-2 py-1 rounded shadow-sm">خرج للتوصيل</span>';
+                    else statusBadge = '<span class="text-xs bg-amber-500 text-white px-2 py-1 rounded shadow-sm">تجهيز</span>';
+                } else {
+                    statusBadge = '<span class="text-xs bg-gray-500 text-white px-2 py-1 rounded shadow-sm">مكتمل</span>';
+                }
+                
+                const rTotalValue = (Number(r.orderValue) || 0) + (Number(r.changeAmount) || 0);
+                
+                let paymentMethodDisplay = r.paymentMethod ? `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm mx-1"><i class="fa-solid fa-wallet"></i> ${r.paymentMethod}</span>` : '';
+                
+                let contactInfo = '';
+                if(r.customerContact) contactInfo += `<div class="mt-1 text-xs text-gray-600"><i class="fa-solid fa-phone"></i> تواصل: <span dir="ltr">${r.customerContact}</span></div>`;
+                if(r.customerAddress) contactInfo += `<div class="mt-1 text-xs text-gray-600 truncate max-w-[200px]" title="${r.customerAddress}"><i class="fa-solid fa-location-dot"></i> ${r.customerAddress}</div>`;
 
-            Object.keys(delegateStats).forEach(code => {
-                const stat = delegateStats[code];
-                const valueDue = stat.count * 5; 
+                let locationBtn = r.deliveryLocation ? 
+                    `<a href="${r.deliveryLocation}" target="_blank" class="mt-2 block w-max bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-xs font-bold border border-emerald-200 transition"><i class="fa-solid fa-map-location-dot animate-pulse"></i> موقع التسليم</a>` : 
+                    `<span class="mt-2 block w-max bg-gray-50 text-gray-400 px-2 py-1 rounded text-[10px] border border-gray-100"><i class="fa-solid fa-map-pin"></i> لم يسجل الموقع</span>`;
+                                
+                let orderDetails = r.orderNumber ? `<div class="text-sm font-bold text-gray-800"># ${r.orderNumber}</div><div class="text-xs font-bold text-emerald-600 mt-1">${rTotalValue} ج.م ${paymentMethodDisplay}</div> ${contactInfo} ${locationBtn}` : `<div class="text-xs font-bold text-teal-600">تسعيرة الحركة: ${movementPrice} ج.م</div>`;
+
                 tbody.innerHTML += `
-                    <tr>
-                        <td>${code}</td>
-                        <td style="text-align: right; font-weight:bold;">${stat.name}</td>
-                        <td>${stat.count}</td>
-                        <td>${valueDue}</td>
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="p-3 text-center"><input type="checkbox" value="${r.id}" data-date="${r.date}" class="w-4 h-4 report-row-checkbox cursor-pointer accent-red-600" onchange="updateBulkDeleteBtn()"></td>
+                        <td class="p-3 text-sm font-semibold">${r.date}<br><span class="text-xs text-gray-500" dir="ltr">${r.time}</span></td>
+                        <td class="p-3 text-sm font-bold text-primary">${r.createdByUserName || 'غير محدد'}</td>
+                        <td class="p-3 text-sm font-bold"><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 shadow-sm ml-1">${r.delegateCode}</span> ${r.delegateName}</td>
+                        <td class="p-3 font-bold text-gray-800">${r.branchName}</td>
+                        <td class="p-3 text-center"><span class="bg-accent px-2 py-1 text-white font-bold rounded shadow-sm text-xs">x${rCount}</span></td>
+                        <td class="p-3">${orderDetails}</td>
+                        <td class="p-3">${statusBadge}</td>
                     </tr>
                 `;
             });
+        }
 
-                        const grandTotalCash = grandTotalMoves * 5;
-            document.getElementById('printGrandTotal').textContent = grandTotalCash.toLocaleString('en-US');
+        document.getElementById('reportTotalClicks').innerHTML = `${grandTotalCashCalculated.toLocaleString('en-US', {minimumFractionDigits: 2})} <span class="text-2xl font-semibold">ج.م</span> <div class="text-sm text-emerald-100 mt-2 font-semibold">إجمالي الحركات: ${totalMoves} حركة</div>`;
 
-            window.print();
-        } // نهاية دالة printThermalReport
+    } catch (e) {
+        showToast("حدث خطأ في استخراج التقرير من قاعدة البيانات", "error");
+    } finally {
+        loadingIndicator.classList.add('hidden');
+        updateBulkDeleteBtn(); 
+    }
+}
+ 
 
+// 2. الدالة المحدثة لطباعة الريسيت الحراري بالتسعير الديناميكي
+function printThermalReport() {
+    if (currentReportData.length === 0) {
+        showToast("لا توجد بيانات لطباعتها، يرجى عرض التقرير أولاً", "error");
+        return;
+    }
+
+    const startDT = document.getElementById('repFromDate').value.replace('T', ' ');
+    const endDT = document.getElementById('repToDate').value.replace('T', ' ');
+    const dateRangeStr = `من: ${startDT} إلى: ${endDT}`;
+    
+    document.getElementById('printBranchName').textContent = currentUser.role === 'admin' ? 'الإدارة العامة' : currentUser.name;
+    document.getElementById('printDateRange').textContent = dateRangeStr;
+
+    const delegateStats = {};
+    let grandTotalCash = 0;
+
+    currentReportData.forEach(r => {
+        const rCount = Number(r.count) || 1;
+        const dCode = r.delegateCode || 'بدون كود';
+        const dName = r.delegateName || 'غير معروف';
+        
+        let movementPrice = 1; 
+        if (cashSettings && cashSettings[r.sourceBranchId] && cashSettings[r.sourceBranchId][r.branchId] !== undefined) {
+            movementPrice = parseFloat(cashSettings[r.sourceBranchId][r.branchId]);
+        }
+        
+        const recordCost = rCount * movementPrice;
+
+        if (!delegateStats[dCode]) {
+            delegateStats[dCode] = { name: dName, count: 0, cash: 0 };
+        }
+        delegateStats[dCode].count += rCount;
+        delegateStats[dCode].cash += recordCost;
+        grandTotalCash += recordCost;
+    });
+
+    const tbody = document.getElementById('printTableBody');
+    tbody.innerHTML = '';
+
+    Object.keys(delegateStats).forEach(code => {
+        const stat = delegateStats[code];
+        tbody.innerHTML += `
+            <tr>
+                <td>${code}</td>
+                <td style="text-align: right; font-weight:bold;">${stat.name}</td>
+                <td>${stat.count}</td>
+                <td>${stat.cash.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById('printGrandTotal').textContent = grandTotalCash.toLocaleString('en-US', {minimumFractionDigits: 2});
+    window.print();
+}
+
+         
+         
+         
+         
         async function triggerSystemReload(e) {
             e.preventDefault();
             const notes = document.getElementById('systemUpdateNotes').value.trim();
@@ -3936,14 +4406,12 @@ document.getElementById('offerMediaFile').value = '';
                 showToast("حدث خطأ أثناء الإرسال", "error");
             }
         }
-        
-async function sendSystemAlert(e) {
-    // 1. التحقق الآمن من وجود الحدث قبل منع السلوك الافتراضي لمنع انهيار الكود
+    
+    async function sendSystemAlert(e) {
     if (e && typeof e.preventDefault === 'function') {
         e.preventDefault();
     }
     
-    // التأكد من وجود العنصر في الواجهة أولاً
     const alertInput = document.getElementById('systemAlertText');
     if (!alertInput) {
         showToast("خطأ: حقل إدخال التنبيه غير موجود في الصفحة", "error");
@@ -3959,7 +4427,6 @@ async function sendSystemAlert(e) {
     if (!confirm("هل أنت متأكد من إطلاق هذا الإنذار العام للجميع؟")) return;
     
     try {
-        // 2. معالجة الرابط للتأكد من عدم وجود أخطاء في الشرطة المائلة
         const cleanBaseUrl = DB_URL.endsWith('/') ? DB_URL : DB_URL + '/';
         
         await fetch(`${cleanBaseUrl}system_alerts.json`, {
@@ -3972,26 +4439,24 @@ async function sendSystemAlert(e) {
         alertInput.value = '';
         showToast("تم إطلاق الإنذار بنجاح", "success");
         logActivity('edit', 'أرسل تنبيهاً عاماً للأجهزة: ' + text);
-    } catch (error) { // 3. تغيير اسم المتغير هنا إلى error لمنع التداخل
+    } catch (error) { 
         console.error("خطأ أثناء إرسال التنبيه:", error);
-        showToast("حدث خطأ أثناء الإرسال", "error"); // ✅ تم التعديل
+        showToast("حدث خطأ أثناء الإرسال", "error"); 
     }
-} // <--- هذا هو القوس الذي كان مفقوداً لإغلاق دالة sendSystemAlert بالكامل
+}
 
 function showSystemAlertModal(text) {
     const modal = document.getElementById('systemAlertModal');
     const content = document.getElementById('systemAlertContent');
-// ... باقي الكود كما هو
     
     if (modal && content) {
         content.textContent = text;
         modal.classList.add('active');
-        // تأكد من أن دالة تشغيل الصوت معرفة ولا تسبب كسرًا إذا فشلت سياسة التشغيل التلقائي للمتصفح
         if (typeof playAlertSound === 'function') {
             try {
                 playAlertSound('alert'); 
             } catch(audioError) {
-                console.log("تم حجب الصوت تلقائياً بواسطة المتصفح حتى يتفاعل المستخدم");
+                console.log("تم حجب الصوت تلقائياً");
             }
         }
     }
@@ -4005,4 +4470,4 @@ function closeSystemAlert() {
 }
     </script>
 </body>
-</html
+</html>
