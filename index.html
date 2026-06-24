@@ -2818,6 +2818,9 @@ function renderAdvancedReport(movementsList) {
             setTimeout(() => document.getElementById('orderNumberInput').focus(), 100);
         }
         
+        function closeOrderModal() {
+    document.getElementById('orderModal').classList.remove('active');
+        }
         
         function openWeightModal(id, name) {
             pendingBranchId = id; pendingBranchName = name;
