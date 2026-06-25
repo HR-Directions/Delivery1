@@ -861,9 +861,14 @@
         </div>
     </div>
 
-    <div id="orderModal" class="modal">
+     <div id="orderModal" class="modal">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform transition-all">
-            <h2 class="text-xl font-bold text-primary mb-4 border-b pb-3 flex items-center"><i class="fa-solid fa-box-open ml-2 text-2xl text-accent"></i> تسجيل بيانات الأوردر</h2>
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h2 class="text-xl font-bold text-primary flex items-center"><i class="fa-solid fa-box-open ml-2 text-2xl text-accent"></i> تسجيل بيانات الأوردر</h2>
+                <button onclick="closeOrderModal()" class="text-gray-400 hover:text-red-500 transition-colors bg-gray-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
             
             <div class="flex border-b mb-4">
                 <button onclick="switchOrderModalTab('basic')" id="btn-order-basic" class="flex-1 py-2 font-bold text-primary border-b-2 border-primary transition">الأساسي</button>
@@ -906,12 +911,13 @@
                         <input type="text" id="orderAddressInput" placeholder="أدخل العنوان بالتفصيل" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition font-bold text-right">
                     </div>
                      
-                    <div>
+                    <div class="relative">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">منطقة التوصيل (الفرعية)</label>
-                        <input type="text" list="orderSubRegionsList" id="orderRegionInput" placeholder="بحث باسم أو كود المنطقة..." class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition font-bold bg-white text-primary">
-                        <datalist id="orderSubRegionsList"></datalist>
+                        <input type="text" id="orderRegionInput" autocomplete="off" oninput="searchRegionsInstant(this.value)" onfocus="searchRegionsInstant(this.value)" placeholder="بحث باسم أو كود المنطقة..." class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition font-bold bg-white text-primary shadow-inner">
+                        <div id="regionCustomDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-48 overflow-y-auto mt-1 top-full left-0"></div>
                         <input type="hidden" id="orderCountInput" value="1">
                     </div>
+                     
                 </div> <div id="order-tab-advanced" class="space-y-4 hidden">
                    
                     <div>
@@ -2764,11 +2770,12 @@ function renderAdvancedReport(movementsList) {
         }
 
         function updateUIComponents() {
-            updateBranchesSelect(); 
-            updateBranchesUI(); 
-            updateDelegatesUI(); 
-            updateAdminsUI();
-        }
+    updateBranchesSelect(); 
+    updateBranchesUI(); 
+    updateDelegatesUI(); 
+    updateAdminsUI();
+    loadRegionsUI(); // تم إضافة هذا السطر لحقن بيانات المناطق لحظياً في شريط البحث عند بدء تشغيل النظام
+}
        // دالة رسم وجلب المسؤولين في جدول الإدارة
 function updateAdminsUI() {
     const tbody = document.getElementById('adminsTableBody');
@@ -5123,6 +5130,59 @@ function initRealTimeUpdateListener() {
         console.warn("فقد الاتصال المؤقت بالبث الحي، متصفح Edge سيعيد الاتصال تلقائياً خلال ثوانٍ...", error);
     };
 }
+// ---------------------------------------------------------
+// دوال البحث اللحظي الذكي لمناطق التوصيل في نافذة الأوردر
+// ---------------------------------------------------------
+function searchRegionsInstant(query) {
+    const dropdown = document.getElementById('regionCustomDropdown');
+    if (!dropdown) return;
+    
+    // إخفاء القائمة إذا كان الحقل فارغاً
+    if (!query.trim()) {
+        dropdown.classList.add('hidden');
+        return;
+    }
+    
+    const searchStr = query.toLowerCase().trim();
+    let results = [];
+    
+    // فلترة المناطق الفرعية بناءً على الكود أو الاسم
+    Object.keys(subRegions).forEach(k => {
+        const sr = subRegions[k];
+        if (sr.code.toLowerCase().includes(searchStr) || sr.name.toLowerCase().includes(searchStr)) {
+            const mainName = mainRegions[sr.mainId] ? mainRegions[sr.mainId].name : '';
+            results.push({ code: sr.code, name: sr.name, mainName: mainName });
+        }
+    });
+    
+    // رسم النتائج داخل القائمة المنسدلة
+    if (results.length > 0) {
+        dropdown.innerHTML = results.map(r => `
+            <div onclick="selectRegion('${r.code} - ${r.name}')" class="px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition text-sm text-right">
+                <div class="font-bold text-primary">${r.code} - ${r.name}</div>
+                <div class="text-[11px] text-gray-500 mt-1"><i class="fa-solid fa-map-location-dot ml-1"></i>${r.mainName}</div>
+            </div>
+        `).join('');
+        dropdown.classList.remove('hidden');
+    } else {
+        dropdown.innerHTML = '<div class="px-4 py-3 text-red-500 text-sm text-center font-bold">لا توجد مناطق مطابقة للبحث</div>';
+        dropdown.classList.remove('hidden');
+    }
+}
+
+// تعيين القيمة المحددة في الحقل وإخفاء القائمة
+function selectRegion(value) {
+    document.getElementById('orderRegionInput').value = value;
+    document.getElementById('regionCustomDropdown').classList.add('hidden');
+}
+
+// إخفاء القائمة تلقائياً عند النقر في أي مكان فارغ خارج الحقل
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('regionCustomDropdown');
+    if (e.target.id !== 'orderRegionInput' && dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
 
 async function executeForceReload() {
     // تغيير شكل الزر لإعلام المستخدم بأن العملية قيد التنفيذ
@@ -5136,6 +5196,7 @@ async function executeForceReload() {
     // استدعاء دالة المسح الشامل بعد ضغط المستخدم
     await clearAllApplicationData();
 }
+
     </script>
 </body>
 </html>
