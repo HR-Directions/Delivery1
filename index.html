@@ -207,9 +207,9 @@
                                     <i class="fa-solid fa-users-gear"></i> حالة المناديب
                                 </button>
                             </div>
-                            <select id="recordDelegate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition font-bold" onchange="handleDelegateChange()">
-                                <option value="">-- يرجى اختيار مندوب --</option>
-                            </select>
+                             <input type="text" list="delegatesDataList" id="recordDelegateInput" placeholder="بحث بكود أو اسم المندوب..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary outline-none transition font-bold text-primary bg-white shadow-inner" onchange="handleDelegateSearchChange()" onclick="this.value=''; handleDelegateSearchChange();">
+                            <datalist id="delegatesDataList"></datalist>
+                            <input type="hidden" id="recordDelegate" value="">
                             <div id="delegateTotalBox" class="mt-2 text-sm font-bold text-teal-700 hidden bg-teal-50 p-3 rounded-lg border border-teal-200 shadow-inner flex justify-between items-center">
                                 <span>إجمالي حركات المندوب:</span>
                                 <span id="delegateTotalValue" class="text-xl bg-white px-3 py-1 rounded-md shadow-sm">0</span>
@@ -288,10 +288,9 @@
                             <button onclick="switchAdminTab('reportsSubTab')" id="btn-reportsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 bg-gray-50 text-primary border-r-4 border-r-primary transition-colors"><i class="fa-solid fa-table-list ml-2 w-5 text-center"></i>التقارير المتقدمة</button>
                             <button onclick="switchAdminTab('analyticsSubTab')" id="btn-analyticsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-chart-line ml-2 w-5 text-center"></i>الإحصائيات والرسوم</button>
                             <button onclick="switchAdminTab('adminsSubTab')" id="btn-adminsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-user-shield ml-2 w-5 text-center"></i>المسؤولين</button>
-                                                       <button onclick="switchAdminTab('cashSubTab'); loadCashSettings();" id="btn-cashSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-money-bill-wave ml-2 w-5 text-center text-green-500"></i>إدارة النقدية (الفروع)</button>
-                            <button onclick="switchAdminTab('zonesSubTab'); updateZonesUI();" id="btn-zonesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-map-location text-teal-600 ml-2 w-5 text-center"></i>تسعير وإدارة المناطق</button>
+                            <button onclick="switchAdminTab('cashSubTab'); loadCashSettings();" id="btn-cashSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-money-bill-wave ml-2 w-5 text-center text-green-500"></i>إدارة النقدية</button>
+                            <button onclick="switchAdminTab('regionsSubTab'); loadRegionsUI();" id="btn-regionsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-map-location-dot ml-2 w-5 text-center text-purple-500"></i>تسعير المناطق</button>
                             <button onclick="switchAdminTab('branchesSubTab')" id="btn-branchesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-store ml-2 w-5 text-center"></i>الفروع</button>
-
                             <button onclick="switchAdminTab('delegatesSubTab')" id="btn-delegatesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-users ml-2 w-5 text-center"></i>المناديب</button>
                             <button onclick="switchAdminTab('devicesSubTab'); loadDevices();" id="btn-devicesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors flex justify-between items-center"><span class="flex items-center"><i class="fa-solid fa-laptop-medical ml-2 w-5 text-center"></i>أجهزة الانضمام</span><span id="pendingDevicesBadge" class="hidden bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">!</span></button>
                             <button onclick="switchAdminTab('notificationsSubTab')" id="btn-notificationsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-bell ml-2 w-5 text-center text-red-500"></i>الإعلامات والتحديثات</button>
@@ -332,82 +331,63 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="zonesSubTab" class="sub-tab-content">
+                         
+                         <div id="regionsSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-                                <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-map-location text-teal-600 ml-2"></i> إدارة مناطق التوصيل</h2>
+                                <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-map text-purple-500 ml-2"></i> إدارة وتسعير المناطق</h2>
                                 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-100 pb-6 mb-6">
-                                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                                        <h3 class="font-bold text-primary mb-3">1. إضافة منطقة رئيسية (مدينة / حي)</h3>
-                                        <form onsubmit="handleAddMainZone(event)" class="flex gap-2">
-                                            <input type="text" id="mainZoneName" required placeholder="اسم المنطقة الرئيسية..." class="flex-1 px-4 py-2 border rounded-lg focus:border-teal-500 outline-none font-bold">
-                                            <button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-teal-700 transition">حفظ</button>
-                                        </form>
-                                    </div>
-                                    
-                                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                                        <h3 class="font-bold text-secondary mb-3">2. إضافة منطقة فرعية (شارع / بلوك)</h3>
-                                        <form onsubmit="handleAddSubZone(event)" class="space-y-3">
-                                            <select id="subZoneParent" required class="w-full px-4 py-2 border rounded-lg focus:border-secondary outline-none font-bold bg-white">
-                                                <option value="">-- اختر المنطقة الرئيسية --</option>
-                                            </select>
-                                            <div class="flex gap-2">
-                                                <input type="text" id="subZoneCode" required placeholder="الكود" class="w-1/3 px-4 py-2 border rounded-lg focus:border-secondary outline-none font-bold text-center">
-                                                <input type="text" id="subZoneName" required placeholder="اسم المنطقة الفرعية" class="w-2/3 px-4 py-2 border rounded-lg focus:border-secondary outline-none font-bold">
-                                            </div>
-                                            <button type="submit" class="w-full bg-secondary text-white py-2 rounded-lg font-bold hover:bg-blue-600 transition">إضافة المنطقة الفرعية</button>
-                                        </form>
-                                    </div>
+                                <div class="flex border-b mb-6">
+                                    <button onclick="switchRegionTab('addMain')" id="btn-reg-main" class="flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600">منطقة رئيسية</button>
+                                    <button onclick="switchRegionTab('addSub')" id="btn-reg-sub" class="flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600">منطقة فرعية</button>
+                                    <button onclick="switchRegionTab('pricing')" id="btn-reg-price" class="flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600">التسعير</button>
+                                    <button onclick="switchRegionTab('viewAll'); renderRegionsTree();" id="btn-reg-view" class="flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600">عرض وتعديل</button>
                                 </div>
 
-                                <div>
-                                    <div class="flex justify-between items-center mb-3">
-                                        <h3 class="font-bold text-gray-800">قائمة المناطق المضافة</h3>
-                                        <button onclick="updateZonesUI()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg font-bold"><i class="fa-solid fa-sync"></i> تحديث</button>
-                                    </div>
-                                    <div class="overflow-x-auto max-h-60 border border-gray-200 rounded-xl">
-                                        <table class="w-full text-right border-collapse text-sm">
-                                            <thead class="bg-gray-50 sticky top-0">
-                                                <tr><th class="p-3 border-b">المنطقة الرئيسية</th><th class="p-3 border-b">المنطقة الفرعية</th><th class="p-3 border-b text-center">الكود</th><th class="p-3 border-b text-center">إجراء</th></tr>
-                                            </thead>
-                                            <tbody id="zonesTableBody"></tbody>
-                                        </table>
-                                    </div>
+                                <div id="reg-tab-addMain" class="space-y-4 block">
+                                    <form onsubmit="handleAddMainRegion(event)" class="flex gap-4">
+                                        <input type="text" id="mainRegionName" required placeholder="اسم المنطقة الرئيسية (مثال: القاهرة، الجيزة...)" class="flex-1 px-4 py-2 border rounded-lg focus:border-purple-500 outline-none font-bold">
+                                        <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-purple-700 transition shadow-sm">حفظ المنطقة</button>
+                                    </form>
                                 </div>
-                            </div>
 
-                            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                                <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center"><i class="fa-solid fa-tags text-accent ml-2 text-2xl"></i> تسعيرات المناطق للفروع</h2>
-                                <p class="text-sm font-semibold text-gray-500 mb-6">قم بتحديد قيمة التوصيل لكل فرع حسب المنطقة الفرعية الموجه إليها الأوردر.</p>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-orange-50 p-4 rounded-xl border border-orange-100 mb-4 items-end">
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-700 mb-2">اختر الفرع</label>
-                                        <select id="zonePricingBranch" onchange="renderZonePricingInputs()" class="w-full px-4 py-2 border rounded-lg outline-none font-bold text-primary bg-white focus:border-accent">
-                                            <option value="">-- حدد الفرع --</option>
+                                <div id="reg-tab-addSub" class="space-y-4 hidden">
+                                    <form onsubmit="handleAddSubRegion(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <select id="subRegionParent" required class="px-4 py-2 border rounded-lg focus:border-purple-500 outline-none font-bold bg-gray-50">
+                                            <option value="">-- اختر المنطقة الرئيسية --</option>
                                         </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-700 mb-2">بحث وتحديد المنطقة الفرعية</label>
-                                        <input list="pricingSubZonesList" id="zonePricingSubZone" onchange="showCurrentZonePrice()" placeholder="كود أو اسم المنطقة..." class="w-full px-4 py-2 border rounded-lg outline-none font-bold bg-white focus:border-accent">
-                                        <datalist id="pricingSubZonesList"></datalist>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-700 mb-2">قيمة التوصيل (ج.م)</label>
-                                        <div class="flex gap-2">
-                                            <input type="number" id="zonePricingValue" min="0" step="0.5" placeholder="0.0" class="flex-1 px-4 py-2 border rounded-lg outline-none font-black text-center text-accent focus:border-accent">
-                                            <button onclick="saveZonePriceSingle()" class="bg-accent hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold transition shadow-sm"><i class="fa-solid fa-floppy-disk"></i></button>
+                                        <input type="text" id="subRegionName" required placeholder="اسم المنطقة الفرعية (مثال: شارع المزرعة)" class="px-4 py-2 border rounded-lg focus:border-purple-500 outline-none font-bold">
+                                        <input type="text" id="subRegionCode" required placeholder="كود المنطقة (للبحث)" class="px-4 py-2 border rounded-lg focus:border-purple-500 outline-none font-bold">
+                                        <button type="submit" class="md:col-span-3 bg-purple-600 text-white py-2 rounded-lg font-bold hover:bg-purple-700 transition shadow-sm">حفظ المنطقة الفرعية</button>
+                                    </form>
+                                </div>
+
+                                <div id="reg-tab-pricing" class="space-y-4 hidden">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-purple-50 p-4 rounded-xl border border-purple-100 mb-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-2">الفرع المُرسِل</label>
+                                            <select id="priceRegionBranch" required class="w-full px-4 py-2 border rounded-lg focus:border-purple-500 outline-none font-bold text-primary">
+                                                <option value="">-- اختر الفرع --</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-700 mb-2">المنطقة الفرعية (بحث بالاسم أو الكود)</label>
+                                            <input type="text" list="subRegionsList" id="priceRegionSub" placeholder="اكتب للبحث..." class="w-full px-4 py-2 border rounded-lg focus:border-purple-500 outline-none font-bold">
+                                            <datalist id="subRegionsList"></datalist>
                                         </div>
                                     </div>
+                                    <div class="flex gap-4">
+                                        <input type="number" id="priceRegionValue" required min="0" step="0.5" placeholder="قيمة الحركة (ج.م)" class="flex-1 px-4 py-2 border border-purple-300 rounded-lg focus:border-purple-500 outline-none font-black text-center text-lg text-purple-700 bg-white">
+                                        <button onclick="saveRegionPrice()" class="bg-emerald-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-emerald-700 transition shadow-sm">حفظ التسعيرة</button>
+                                    </div>
                                 </div>
 
-                                <div id="zonePricingDisplayContainer" class="hidden">
-                                    <h3 class="font-bold text-gray-800 mb-2 text-sm">التسعيرات المحفوظة للفرع المحدد:</h3>
-                                    <div class="flex flex-wrap gap-2" id="savedZonePricesTags"></div>
+                                <div id="reg-tab-viewAll" class="hidden">
+                                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 max-h-96 overflow-y-auto" id="regionsTreeContainer">
+                                        </div>
                                 </div>
                             </div>
                         </div>
- 
+
                         <div id="offersSubTab" class="sub-tab-content">
                             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
                                 <h2 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-plus text-accent ml-2"></i>إضافة عرض جديد لصفحة التتبع</h2>
@@ -526,7 +506,7 @@
                                         <th class="p-3">المُسجل</th>
                                         <th class="p-3">المندوب</th>
                                         <th class="p-3">مُحول إلى</th>
-                                        <th class="p-3 text-center">المنطقة / الكمية</th>
+                                        <th class="p-3 text-center">الكمية</th>
                                         <th class="p-3">تفاصيل الأوردر</th>
                                         <th class="p-3">الحالة</th>
                                     </tr></thead>
@@ -925,15 +905,15 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-1">عنوان العميل</label>
                         <input type="text" id="orderAddressInput" placeholder="أدخل العنوان بالتفصيل" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition font-bold text-right">
                     </div>
-                                      <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">منطقة التوصيل (بحث بالاسم أو الكود)</label>
-                        <input list="orderSubZonesList" id="orderZoneInput" placeholder="اكتب للبحث واختيار المنطقة..." class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition font-bold text-center bg-gray-50 text-teal-700">
-                        <datalist id="orderSubZonesList"></datalist>
-                        <p class="text-[10px] text-gray-500 mt-1 text-center font-semibold">سيتم احتساب قيمة الحركة آلياً بناءً على تسعيرة الفرع لهذه المنطقة.</p>
+                     
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">منطقة التوصيل (الفرعية)</label>
+                        <input type="text" list="orderSubRegionsList" id="orderRegionInput" placeholder="بحث باسم أو كود المنطقة..." class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition font-bold bg-white text-primary">
+                        <datalist id="orderSubRegionsList"></datalist>
+                        <input type="hidden" id="orderCountInput" value="1">
                     </div>
-                    
-
-                <div id="order-tab-advanced" class="space-y-4 hidden">
+                </div> <div id="order-tab-advanced" class="space-y-4 hidden">
+                   
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1"><i class="fa-regular fa-clock text-primary"></i> موعد تسليم مخصص (اختياري)</label>
                         <input type="datetime-local" id="orderCustomTimeInput" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-secondary focus:ring-0 outline-none transition text-center font-bold text-primary bg-blue-50">
@@ -1077,20 +1057,25 @@
 
     
     <script>
-        /*
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-    .then(function(registration) {
-        console.log('Service Worker registered');
-    }).catch(function(err) {
-        console.log('Service Worker registration failed: ', err);
-    });
-}
-*/
-
+        let currentEditType = null;
+let isAssigningForDelivery = false;
+let delegatesOut = {};
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('تم تسجيل الـ Service Worker بنجاح!', reg.scope))
+                    .catch(err => console.error('فشل تسجيل الـ Service Worker:', err));
+            });
+        }
+       
         const DB_URL = 'https://story-64520-default-rtdb.firebaseio.com/';
         const TRACKING_URL = 'https://YOUR_WEBSITE_OR_HOSTING_LINK.com/track.html';
-        
+         document.addEventListener("DOMContentLoaded", () => {
+    window.onload = function() {
+    initRealTimeUpdateListener();
+    // ... باقي دوال التحميل
+};
+});
         var OFFLINE_QUEUE_KEY = 'dr_wael_queue';
         var originalFetch = window.fetch;
 
@@ -1141,6 +1126,7 @@ if ('serviceWorker' in navigator) {
         window.addEventListener('online', syncNow);
 
         let delegates = {}, branches = {}, admins = {}, currentRecords = {};
+        let mainRegions = {}, subRegions = {}, regionPrices = {};
         let currentLogs = [];
         let currentLogFilter = 'all';
         let allDevices = {};
@@ -1163,10 +1149,9 @@ if ('serviceWorker' in navigator) {
         let localTrackedRecordIds = new Set();
         let notifiedRecordsIds = new Set();
         let unreadNotifCount = 0;
-                let zones = {};      // المناطق الرئيسية
-        let subZones = {};   // المناطق الفرعية
-        let zonePrices = {}; // تسعيرات المناطق للفروع
-        
+        let cashSettings = {}; // مصفوفة أسعار الحركات المالية بين الفروع
+        let localSeenBranchNotifIds = new Set(); // سجل تتبع إشعارات الردود
+
         window.addEventListener('offline', updateOnlineStatus);
         window.addEventListener('online', updateOnlineStatus);
         function updateOnlineStatus() {
@@ -1310,25 +1295,28 @@ if ('serviceWorker' in navigator) {
             sessionStorage.removeItem('scissorsUser');
             window.location.reload();
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
             applySettingsOnLoad(); 
             setTimeout(fillSavedLoginData, 500); 
             
             const todayStr = new Date().toISOString().split('T')[0];
-            document.getElementById('recordDate').value = todayStr;
-            document.getElementById('notifDateFilter').value = todayStr;
+            
+            // استخدام المعامل ?. لتجنب الخطأ إذا كان العنصر غير موجود
+            document.getElementById('recordDate')?.setAttribute('value', todayStr);
+            document.getElementById('notifDateFilter')?.setAttribute('value', todayStr);
             
             const now = new Date();
             const dStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
             dStart.setMinutes(dStart.getMinutes() - dStart.getTimezoneOffset());
-            document.getElementById('repFromDate').value = dStart.toISOString().slice(0, 16);
-            document.getElementById('chartFromDate').value = dStart.toISOString().slice(0, 16);
+            
+            document.getElementById('repFromDate')?.setAttribute('value', dStart.toISOString().slice(0, 16));
+            document.getElementById('chartFromDate')?.setAttribute('value', dStart.toISOString().slice(0, 16));
             
             const dEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
             dEnd.setMinutes(dEnd.getMinutes() - dEnd.getTimezoneOffset());
-            document.getElementById('repToDate').value = dEnd.toISOString().slice(0, 16);
-            document.getElementById('chartToDate').value = dEnd.toISOString().slice(0, 16);
+            
+            document.getElementById('repToDate')?.setAttribute('value', dEnd.toISOString().slice(0, 16));
+            document.getElementById('chartToDate')?.setAttribute('value', dEnd.toISOString().slice(0, 16));
             
             const savedUser = sessionStorage.getItem('scissorsUser');
             if(savedUser) {
@@ -1336,6 +1324,7 @@ if ('serviceWorker' in navigator) {
                 startApp();
             }
         });
+       
 
         async function logActivity(actionType, details) {
             if (!currentUser) return;
@@ -1433,6 +1422,9 @@ if ('serviceWorker' in navigator) {
                 document.getElementById('btn-' + tabId).className = "nav-btn px-4 py-2 rounded-md font-bold transition-all duration-200 bg-white text-primary shadow-md scale-105";
             }
         }
+
+       
+
 
         function switchAdminTab(tabId) {
             document.querySelectorAll('.sub-tab-content').forEach(t => t.classList.remove('active'));
@@ -2001,6 +1993,7 @@ function renderAdvancedNotifs(notifsArray) {
 }
 
 // دالة الرد والتأكيد أو التعديل من داخل النافذة
+// دالة الرد والتأكيد أو التعديل من داخل النافذة (محدثة وخالية من الأخطاء)
 async function replyToAdvancedNotif(date, recordId, action) {
     try {
         const res = await fetch(`${DB_URL}records/${date}/${recordId}.json`);
@@ -2015,55 +2008,63 @@ async function replyToAdvancedNotif(date, recordId, action) {
             showToast("تم تأكيد الاستلام بنجاح", "success");
             
         } else if (action === 'edit') {
-            const oldQty = rec.count || rec.quantity || 1;
+            const oldQty = parseInt(rec.count || rec.quantity || 1);
             const newQtyStr = prompt(`جرد الصنف (${rec.itemCode || 'بدون كود'}):\nيرجى إدخال الكمية الفعلية التي وصلت للفرع (المرسل: ${oldQty}):`, oldQty);
             
             if (newQtyStr === null || newQtyStr.trim() === '') return; 
             
             const newQty = parseInt(newQtyStr);
             if (isNaN(newQty) || newQty <= 0) return showToast("خطأ: يرجى إدخال رقم صحيح", "error");
-            if (newQty === oldQty) return showToast("الكمية مطابقة! تم استخدام 'تأكيد كامل' بدلاً من التعديل", "warning");
-
-            if(!confirm(`تأكيد الجرد: استلام (${newQty}) بدلاً من (${oldQty}) للصنف؟`)) return;
             
-            await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
-                method: 'PATCH',
-                body: JSON.stringify({ 
-                    count: newQty, 
-                    quantity: newQty, 
-                    status: 'confirmed',
-                    originalCount: oldQty,
-                    quantityEdited: true,
-                    isAcceptedByReceiver: true
-                })
-            });
-            
-            showToast("تم حفظ العجز والكمية المستلمة بنجاح", "success");
-            
-            // إشعار الفرع المرسل بوجود تعديل
-            await fetch(`${DB_URL}branch_notifications.json`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    text: `تنبيه عجز: استلم الفرع الصنف (${rec.itemCode || ''}) بكمية (${newQty}) بدلاً من المكتوبة (${oldQty}).`,
-                    senderId: currentUser.id,
-                    targetId: rec.createdByUserId,
-                    timestamp: Date.now()
-                })
-            });
-            logActivity('edit', `تعديل استلام الصنف ${rec.itemCode}: من ${oldQty} إلى ${newQty}`);
+            if (newQty === oldQty) {
+                // إذا أدخل كمية مطابقة نعتبرها تأكيداً لتفادي الأخطاء
+                await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
+                });
+                showToast("الكمية مطابقة! تم الاستلام بالكامل", "success");
+            } else {
+                if(!confirm(`تأكيد الجرد: استلام (${newQty}) بدلاً من (${oldQty}) للصنف؟`)) return;
+                
+                await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ 
+                        count: newQty, 
+                        quantity: newQty, 
+                        status: 'confirmed',
+                        originalCount: oldQty,
+                        quantityEdited: true,
+                        isAcceptedByReceiver: true
+                    })
+                });
+                
+                showToast("تم حفظ العجز والكمية المستلمة بنجاح", "success");
+                
+                // إرسال الإشعار وتأمين المُرسل إليه
+                const validTargetId = rec.createdByUserId || 'admin';
+                await fetch(`${DB_URL}branch_notifications.json`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        text: `تنبيه عجز: استلم الفرع الصنف (${rec.itemCode || 'مجهول'}) بكمية (${newQty}) بدلاً من المكتوبة (${oldQty}).`,
+                        senderId: currentUser.id,
+                        targetId: validTargetId,
+                        timestamp: Date.now()
+                    })
+                });
+                if(typeof logActivity === 'function') logActivity('edit', `تعديل استلام الصنف ${rec.itemCode || 'بدون كود'}: من ${oldQty} إلى ${newQty}`);
+            }
         }
         
-        // تحديث النافذة تلقائياً بعد الإجراء
-        fetchFilteredNotifications();
+        // تحديث النافذة بشكل آمن ومزامنة البيانات
+        await fetchFilteredNotifications();
         if (typeof loadRecords === 'function') loadRecords();
         
     } catch(e) {
+        console.error("Database connection error:", e);
         showToast("خطأ أثناء الاتصال بقاعدة البيانات", "error");
     }
 }
 
-
-        
 
         async function checkPendingDevicesBackground() {
             try {
@@ -2202,33 +2203,197 @@ async function replyToAdvancedNotif(date, recordId, action) {
         }
         
         async function changeDeviceStatus(deviceId, newStatus) {
-            let msg = newStatus === 'approved' ? `هل أنت متأكد من الموافقة والسماح لهذا الجهاز بالدخول للنظام؟` : `هل أنت متأكد من حظر هذا الجهاز؟`;
-            if(!confirm(msg)) return;
-
-            let deviceName = "";
-            if (newStatus === 'approved') {
-                deviceName = prompt("يرجى إدخال اسم مميز لهذا الجهاز (مثال: جهاز الكاشير، موبايل أحمد):");
-                if (deviceName === null) return; 
-                if (deviceName.trim() === "") deviceName = "جهاز معتمد (بدون اسم)"; 
+            // أولاً: إذا كانت العملية حظر أو فك حظر عادي (ليست اعتماد جديد)
+            if (newStatus !== 'approved') {
+                let msg = newStatus === 'blocked' ? 'هل أنت متأكد من حظر هذا الجهاز ومنعه من الدخول؟' : 'هل تريد فك الحظر عن هذا الجهاز؟';
+                if(!confirm(msg)) return;
+                try {
+                    await fetch(`${DB_URL}devices/${deviceId}.json`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: newStatus, handledBy: currentUser.name, handledAt: Date.now() })
+                    });
+                    showToast(newStatus === 'blocked' ? "تم حظر الجهاز بنجاح" : "تم تفعيل الجهاز مجدداً", "success");
+                    logActivity('edit', `قام بتغيير حالة الجهاز [${deviceId}] إلى: ${newStatus}`);
+                    loadDevices();
+                } catch(e) { showToast("حدث خطأ في تعديل حالة الجهاز", "error"); }
+                return;
             }
 
-            try {
-                const payload = { status: newStatus, handledBy: currentUser.name, handledAt: Date.now() };
-                if (newStatus === 'approved') {
-                    payload.deviceName = deviceName;
+            // ثانياً: إذا كانت العملية اعتماد (Approval) - نبني النافذة المتقدمة الذكية
+            const oldModal = document.getElementById('customDeviceApprovalModal');
+            if(oldModal) oldModal.remove(); // إغلاق أي نافذة مفتوحة مسبقاً لمنع التكرار
+
+            // توليد قوائم الفروع المسجلة ديناميكياً
+            let branchOptionsHtml = '<option value="">-- اختر الفرع التابع له --</option>';
+            Object.keys(branches).sort((a,b) => branches[a].timestamp - branches[b].timestamp).forEach(k => {
+                branchOptionsHtml += `<option value="${k}">${branches[k].name}</option>`;
+            });
+
+            // هيكل النافذة بتصميم Tailwind مع مسارات أنيقة متطابقة مع واجهتك الأصلية
+            const modalHtml = `
+                <div id="customDeviceApprovalModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000] flex items-center justify-center p-4 font-sans animate-[fadeIn_0.2s_ease-out]">
+                    <div class="bg-white dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+                        
+                        <div class="bg-gradient-to-r from-primary to-secondary p-4 text-white flex justify-between items-center flex-row-reverse">
+                            <h3 class="font-bold text-base flex items-center gap-2">
+                                <i class="fa-solid fa-laptop-medical text-accent"></i> تخصيص واعتماد جهاز جديد
+                            </h3>
+                            <button onclick="document.getElementById('customDeviceApprovalModal').remove()" class="text-white/70 hover:text-white transition bg-white/10 hover:bg-white/20 rounded-full w-7 h-7 flex items-center justify-center">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="p-5 space-y-4 text-right" dir="rtl">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1.5">تصنيف الجهاز داخل المنظومة:</label>
+                                <select id="approveDeviceType" class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-secondary font-bold bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+                                    <option value="branch">🏢 جهاز كاشير / إدارة فرع</option>
+                                    <option value="delegate">🚴 جهاز محمول لمندوب توصيل</option>
+                                </select>
+                            </div>
+
+                            <div id="approveBranchSection" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1.5">اختر الفرع المستلم للجهاز:</label>
+                                    <select id="approveBranchSelect" class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-primary font-bold bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+                                        ${branchOptionsHtml}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1.5">مسمى أو وصف الجهاز (داخلي):</label>
+                                    <input type="text" id="approveBranchDeviceName" placeholder="مثال: كاشير 1، موبايل المدير مأمون" class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-primary font-bold bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-center">
+                                </div>
+                            </div>
+
+                            <div id="approveDelegateSection" class="space-y-4 hidden">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1.5">اختر الفرع التابع له المندوب:</label>
+                                    <select id="approveDelegateBranchSelect" class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-primary font-bold bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+                                        ${branchOptionsHtml}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1.5">كود واسم المندوب المسؤول:</label>
+                                    <select id="approveDelegateSelect" class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-primary font-bold bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+                                        <option value="">-- يرجى اختيار الفرع أولاً لتصفية المناديب --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 flex gap-3 flex-row-reverse">
+                            <button id="btnSubmitDeviceApproval" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-md flex items-center justify-center gap-2 text-sm flex-1">
+                                <i class="fa-solid fa-circle-check"></i> منح اعتماد الوصول الآن
+                            </button>
+                            <button onclick="document.getElementById('customDeviceApprovalModal').remove()" class="bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-200 font-bold py-2.5 px-4 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-700 transition text-sm">
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // التقاط عناصر الواجهة للتحكم البرمجي المتقدم
+            const typeSelect = document.getElementById('approveDeviceType');
+            const branchSection = document.getElementById('approveBranchSection');
+            const delegateSection = document.getElementById('approveDelegateSection');
+            const delBranchSelect = document.getElementById('approveDelegateBranchSelect');
+            const delSelect = document.getElementById('approveDelegateSelect');
+
+            // 1. التبديل المرئي بين قسم الفروع وقسم المناديب
+            typeSelect.addEventListener('change', () => {
+                if(typeSelect.value === 'branch') {
+                    branchSection.classList.remove('hidden');
+                    delegateSection.classList.add('hidden');
+                } else {
+                    branchSection.classList.add('hidden');
+                    delegateSection.classList.remove('hidden');
+                }
+            });
+
+            // 2. الفلترة التلقائية الذكية للمناديب: تفعيل واختيار المناديب التابعين للفرع المحدد فقط
+            delBranchSelect.addEventListener('change', () => {
+                const selectedBranchId = delBranchSelect.value;
+                delSelect.innerHTML = '<option value="">-- اختر المندوب من القائمة --</option>';
+                
+                if(!selectedBranchId) return;
+
+                Object.keys(delegates).forEach(k => {
+                    const d = delegates[k];
+                    if(d.branchId === selectedBranchId) {
+                        delSelect.innerHTML += `<option value="${k}" data-code="${d.code}" data-name="${d.name}">[كود: ${d.code}] - ${d.name}</option>`;
+                    }
+                });
+
+                if(delSelect.options.length === 1) {
+                    delSelect.innerHTML = '<option value="">⚠️ لا يوجد مناديب مسجلين في هذا الفرع حالياً</option>';
+                }
+            });
+
+            // 3. التحقق النهائي من البيانات وبث إشارة الاعتماد وحفظ الهوية المركبة في الـ Firebase
+            document.getElementById('btnSubmitDeviceApproval').addEventListener('click', async () => {
+                const mode = typeSelect.value;
+                let finalDeviceNameString = "";
+                let structuredMeta = {};
+
+                if(mode === 'branch') {
+                    const bId = document.getElementById('approveBranchSelect').value;
+                    const customName = document.getElementById('approveBranchDeviceName').value.trim();
+
+                    if(!bId) return alert("خطأ: يرجى تحديد الفرع المسؤول عن هذا الجهاز أولاً!");
+                    if(!customName) return alert("خطأ: يرجى كتابة مسمى وصفي واضح للجهاز (مثل: كاشير فرعي)!");
+
+                    const bName = branches[bId].name;
+                    finalDeviceNameString = `🏢 فرع: ${bName} | ${customName}`;
+                    structuredMeta = { type: 'branch', branchId: bId, branchName: bName, description: customName };
+                } else {
+                    const bId = delBranchSelect.value;
+                    const dId = delSelect.value;
+
+                    if(!bId) return alert("خطأ: يرجى تحديد فرع المندوب أولاً لتصفية الأسماء!");
+                    if(!dId) return alert("خطأ: يرجى تحديد اسم وكود المندوب الحامل لهذا الجهاز!");
+
+                    const selectedOption = delSelect.options[delSelect.selectedIndex];
+                    const dCode = selectedOption.getAttribute('data-code');
+                    const dName = selectedOption.getAttribute('data-name');
+                    const bName = branches[bId].name;
+
+                    finalDeviceNameString = `🚴 مندوب: ${dName} [كود: ${dCode}] - فرع ${bName}`;
+                    structuredMeta = { type: 'delegate', branchId: bId, branchName: bName, delegateId: dId, delegateCode: dCode, delegateName: dName };
                 }
 
-                await fetch(`${DB_URL}devices/${deviceId}.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify(payload)
-                });
-                
-                showToast(`تم ${newStatus === 'approved' ? 'الموافقة على' : 'حظر'} الجهاز بنجاح`);
-                logActivity('edit', `قام بتعديل حالة جهاز إلى: ${newStatus === 'approved' ? 'معتمد' : 'محظور'}`);
-                loadDevices();
-            } catch(e) {
-                showToast("حدث خطأ في تغيير حالة الجهاز", "error");
-            }
+                // قفل الزر وتغيير حالته البصرية لمنع التكرار (Debounce Protection)
+                const submitBtn = document.getElementById('btnSubmitDeviceApproval');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري ربط وتعميد بصمة الجهاز...';
+
+                try {
+                    const payload = {
+                        status: 'approved',
+                        deviceName: finalDeviceNameString,
+                        identityMeta: structuredMeta, // حفظ البيانات مقسمة ومفصلة في Firebase كأرشيف للمراجعة الأمنية
+                        handledBy: currentUser.name,
+                        handledAt: Date.now()
+                    };
+
+                    await fetch(`${DB_URL}devices/${deviceId}.json`, {
+                        method: 'PATCH',
+                        body: JSON.stringify(payload)
+                    });
+
+                    showToast("تم منح الجهاز اعتماد الصلاحية والوصول الفوري بنجاح! 🚀", "success");
+                    logActivity('edit', `منح موافقة لجهاز جديد وتخصيص هويته كـ (${finalDeviceNameString})`);
+                    
+                    document.getElementById('customDeviceApprovalModal').remove();
+                    loadDevices(); // تحديث الجدول المباشر للأجهزة المعتمدة في لوحة التحكم
+                } catch (e) {
+                    showToast("فشل ربط الجهاز بسبب مشكلة في اتصال السيرفر", "error");
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> تأكيد الاعتماد والدخول';
+                }
+            });
         }
 
         function openDelegatesOutModal() {
@@ -2239,7 +2404,8 @@ async function replyToAdvancedNotif(date, recordId, action) {
         function closeDelegatesOutModal() {
             document.getElementById('delegatesOutModal').classList.remove('active');
         }
-
+window.activeDelegatesOut = delegatesOut;
+if(typeof updateDelegatesDropdownUI === 'function') updateDelegatesDropdownUI();
         async function updateDelegatesOutStatus() {
             if(!currentUser) return;
             const datesToFetch = [];
@@ -2248,7 +2414,7 @@ async function replyToAdvancedNotif(date, recordId, action) {
                 datesToFetch.push(d.toISOString().split('T')[0]);
             }
             
-            let delegatesOut = {}; 
+           
             
             try {
                 const results = await Promise.all(datesToFetch.map(d => getDayData(d, d === new Date().toISOString().split('T')[0])));
@@ -2566,27 +2732,35 @@ function renderAdvancedReport(movementsList) {
                 delegates = await fetchWithCache(`${DB_URL}delegates.json`, 'local_delegates');
                 branches = await fetchWithCache(`${DB_URL}branches.json`, 'local_branches');
                 admins = await fetchWithCache(`${DB_URL}admins.json`, 'local_admins');
-                
-                // جلب مصفوفة إعدادات نقدية الحركات
+
+                // جلب بيانات المناطق بأمان تام
+                try {
+                    if (typeof fetchWithCache === 'function') {
+                        mainRegions = await fetchWithCache(`${DB_URL}regions/main.json`, 'local_main_regions') || {};
+                        subRegions = await fetchWithCache(`${DB_URL}regions/sub.json`, 'local_sub_regions') || {};
+                    } else {
+                        const mrRes = await fetch(`${DB_URL}regions/main.json`); mainRegions = await mrRes.json() || {};
+                        const srRes = await fetch(`${DB_URL}regions/sub.json`); subRegions = await srRes.json() || {};
+                    }
+                    const rpRes = await fetch(`${DB_URL}region_prices.json`);
+                    regionPrices = await rpRes.json() || {};
+                } catch(e) {
+                    console.warn("Region loading secured:", e);
+                }
+
+                // جلب مصفوفة إعدادات نقدية الحركات الأصلية
                 try {
                     const res = await fetch(`${DB_URL}cash_settings.json`);
                     cashSettings = await res.json() || {};
                 } catch(e) {
                     cashSettings = {};
                 }
-                                try {
-                    zones = await fetchWithCache(`${DB_URL}zones.json`, 'local_zones');
-                    subZones = await fetchWithCache(`${DB_URL}subZones.json`, 'local_subZones');
-                    
-                    const pRes = await fetch(`${DB_URL}zonePrices.json`);
-                    zonePrices = await pRes.json() || {};
-                } catch(e) {
-                    zonePrices = {};
-                }
-                
+
                 updateUIComponents();
                 await loadRecords();
-            } catch (e) { showToast("خطأ في الاتصال بالخادم", "error"); }
+            } catch (e) { 
+                showToast("خطأ في الاتصال بالخادم", "error"); 
+            }
         }
 
         function updateUIComponents() {
@@ -2595,7 +2769,62 @@ function renderAdvancedReport(movementsList) {
             updateDelegatesUI(); 
             updateAdminsUI();
         }
+       // دالة رسم وجلب المسؤولين في جدول الإدارة
+function updateAdminsUI() {
+    const tbody = document.getElementById('adminsTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
 
+    // التحقق من وجود مسؤولين
+    if (!admins || Object.keys(admins).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500 bg-gray-50 font-bold"><i class="fa-solid fa-user-shield text-3xl mb-2 text-gray-300 block"></i> لا يوجد مسؤولين أو موظفين مسجلين حالياً</td></tr>';
+        return;
+    }
+
+    // ترتيب المسؤولين الأحدث أولاً
+    const keys = Object.keys(admins).sort((a, b) => (admins[b].timestamp || 0) - (admins[a].timestamp || 0));
+
+    keys.forEach(k => {
+        const a = admins[k];
+        let roleDisplay = '';
+        let branchInfo = '';
+
+        // تحديد شكل الصلاحية (Badge)
+        if (a.type === 'admin') {
+            roleDisplay = '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-md text-xs font-bold shadow-sm border border-amber-200"><i class="fa-solid fa-crown mr-1"></i> مدير عام</span>';
+        } else if (a.type === 'branch_manager') {
+            roleDisplay = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-xs font-bold shadow-sm border border-blue-200"><i class="fa-solid fa-user-tie mr-1"></i> مدير فرع</span>';
+        } else if (a.type === 'employee') {
+            roleDisplay = `<span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs font-bold shadow-sm border border-gray-200"><i class="fa-solid fa-user mr-1"></i> ${a.employeeType || 'موظف'}</span>`;
+        }
+
+        // جلب اسم الفرع التابع له (للمديرين والموظفين في الفروع)
+        if ((a.type === 'branch_manager' || a.employeeType === 'موظف بفرع' || a.employeeType === 'موظف خدمة عملاء') && a.assignedBranch) {
+            const bName = branches[a.assignedBranch] ? branches[a.assignedBranch].name : 'فرع غير معروف/محذوف';
+            branchInfo = `<div class="text-[11px] text-gray-500 mt-1.5 font-bold"><i class="fa-solid fa-store text-secondary ml-1"></i>${bName}</div>`;
+        }
+
+        // رسم السطر داخل الجدول
+        tbody.innerHTML += `
+            <tr class="border-b hover:bg-gray-50 transition-colors">
+                <td class="p-3">
+                    <div class="font-bold text-gray-800 text-sm">${a.name}</div>
+                    ${branchInfo}
+                </td>
+                <td class="p-3">
+                    <span class="bg-gray-100 border border-gray-200 text-gray-700 px-2 py-0.5 rounded shadow-sm text-xs font-mono font-bold">${a.code}</span>
+                </td>
+                <td class="p-3 align-middle">${roleDisplay}</td>
+                <td class="p-3 text-center align-middle">
+                    <button onclick="openEditModal('admin', '${k}')" class="text-secondary hover:text-white bg-blue-50 hover:bg-secondary p-2 rounded-lg transition shadow-sm border border-blue-100">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
         
         function updateBranchesUI() {
             const tbody = document.getElementById('branchesTableBody');
@@ -2612,45 +2841,79 @@ function renderAdvancedReport(movementsList) {
             renderBranchButtons();
         }
 
+        window.activeDelegatesOut = {}; // متغير عام لمراقبة حالات المناديب
+
         function updateDelegatesUI() {
             const tbody = document.getElementById('delegatesTableBody');
-            const selectRecord = document.getElementById('recordDelegate');
             if(tbody) tbody.innerHTML = '';
-            if(selectRecord) selectRecord.innerHTML = '<option value="">-- يرجى اختيار مندوب --</option>';
 
             const keys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
-            
-            let availableDelegates = []; 
-
             keys.forEach(k => {
                 const d = delegates[k];
                 const branchName = d.branchId && branches[d.branchId] ? branches[d.branchId].name : 'غير محدد';
                 const phoneDisplay = d.phone ? `<a href="tel:${d.phone}" class="text-blue-600 font-semibold hover:underline" dir="ltr">${d.phone}</a>` : '<span class="text-gray-400">-</span>';
                 
                 if(tbody) tbody.innerHTML += `<tr class="border-b hover:bg-gray-50 transition-colors"><td class="p-3"><span class="bg-gray-100 text-gray-600 font-bold px-2 py-1 rounded border">${d.code}</span></td><td class="p-3 font-semibold text-gray-800">${d.name}</td><td class="p-3">${phoneDisplay}</td><td class="p-3 text-gray-500">${branchName}</td><td class="p-3 text-center"><button onclick="openEditModal('delegate', '${k}')" class="text-secondary hover:text-primary bg-blue-50 p-2 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`;
-                
-                if(selectRecord) {
-                    let hasAccess = false;
-                    if(currentUser.role === 'admin') {
-                        if((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف بفرع' || currentUser.employeeType === 'موظف خدمة عملاء') && d.branchId === currentUser.assignedBranch) hasAccess = true;
-                        if(currentUser.adminType === 'admin' || currentUser.employeeType === 'موظف رئيسية') hasAccess = true;
-                    } else if (currentUser.role === 'branch' && d.branchId === currentUser.id) {
-                        hasAccess = true;
-                    }
+            });
+            
+            updateDelegatesDropdownUI();
+        }
 
-                    if (hasAccess && d.status !== 'inactive') {
-                        selectRecord.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
-                        availableDelegates.push(k); 
-                    }
+        // دالة جديدة لبناء حقل البحث المتقدم وربطه بحالة المندوب
+        function updateDelegatesDropdownUI() {
+            const dataList = document.getElementById('delegatesDataList');
+            const hiddenInput = document.getElementById('recordDelegate');
+            const searchInput = document.getElementById('recordDelegateInput');
+            if(!dataList) return;
+            
+            const currentSelected = hiddenInput ? hiddenInput.value : '';
+            dataList.innerHTML = '';
+            let availableDelegates = []; 
+
+            Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp).forEach(k => {
+                const d = delegates[k];
+                let hasAccess = false;
+                if(currentUser.role === 'admin') {
+                    if((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف بفرع' || currentUser.employeeType === 'موظف خدمة عملاء') && d.branchId === currentUser.assignedBranch) hasAccess = true;
+                    if(currentUser.adminType === 'admin' || currentUser.employeeType === 'موظف رئيسية') hasAccess = true;
+                } else if (currentUser.role === 'branch' && d.branchId === currentUser.id) {
+                    hasAccess = true;
+                }
+
+                if (hasAccess && d.status !== 'inactive') {
+                    // تحديد الحالة (في الخارج أم بالانتظار)
+                    const isOut = window.activeDelegatesOut && window.activeDelegatesOut[k] && window.activeDelegatesOut[k].count > 0;
+                    const statusText = isOut ? '🚴 في الخارج' : '⏳ بالانتظار';
+                    
+                    dataList.innerHTML += `<option value="${d.code} - ${d.name}">${statusText}</option>`;
+                    availableDelegates.push(k); 
                 }
             });
 
-            if (selectRecord && availableDelegates.length === 1) {
-                selectRecord.value = availableDelegates[0]; 
+            if (availableDelegates.length === 1 && !currentSelected) {
+                const singleId = availableDelegates[0];
+                const singleDel = delegates[singleId];
+                if(hiddenInput) hiddenInput.value = singleId;
+                if(searchInput) searchInput.value = `${singleDel.code} - ${singleDel.name}`;
                 handleDelegateChange(); 
             }
         }
-
+        
+        // دالة جديدة لمعالجة البحث بكود المندوب واختياره
+        function handleDelegateSearchChange() {
+            const inputVal = document.getElementById('recordDelegateInput').value;
+            let selectedId = '';
+            if(inputVal) {
+                const parts = inputVal.split(' - ');
+                const searchCode = parts[0].trim();
+                selectedId = Object.keys(delegates).find(k => delegates[k].code === searchCode) || '';
+                if (!selectedId) {
+                    selectedId = Object.keys(delegates).find(k => delegates[k].name === inputVal.trim()) || '';
+                }
+            }
+            document.getElementById('recordDelegate').value = selectedId;
+            handleDelegateChange();
+        }
         function renderBranchButtons() {
             const grid = document.getElementById('branchButtonsGrid');
             grid.innerHTML = '';
@@ -2789,39 +3052,106 @@ function renderAdvancedReport(movementsList) {
             }
         }
 
-        function openOrderModal(id, name) {
-            pendingBranchId = id; pendingBranchName = name;
-            document.getElementById('orderNumberInput').value = '';
-            document.getElementById('orderCustomTimeInput').value = ''; 
-            document.getElementById('orderValueInput').value = '';
-            document.getElementById('orderPaymentMethodInput').value = 'نقدي';
-            document.getElementById('orderWhatsappInput').value = '';
-            document.getElementById('orderContactInput').value = '';
-            document.getElementById('orderAddressInput').value = '';
-            document.getElementById('orderZoneInput').value = '';
+function openOrderModal(id, name) {
+            pendingBranchId = id; 
+            pendingBranchName = name;
+
+            // دالة مصغرة لتفريغ الحقول بآمان دون كسر الكود
+            const safeReset = (elId, defaultVal = '') => {
+                const el = document.getElementById(elId);
+                if(el) el.value = defaultVal;
+            };
+
+            safeReset('orderNumberInput');
+            safeReset('orderCustomTimeInput');
+            safeReset('orderValueInput');
+            safeReset('orderPaymentMethodInput', 'نقدي');
+            safeReset('orderWhatsappInput');
+            safeReset('orderContactInput');
+            safeReset('orderAddressInput');
+            safeReset('orderCountInput', '1'); // الحقل المخفي
+            safeReset('orderRegionInput'); // حقل المنطقة الجديد
+
+            const checkbox = document.getElementById('hasChangeCheckbox');
+            if(checkbox) checkbox.checked = false;
+
+            safeReset('orderChangeInput');
             
-            // تعبئة قائمة المناطق في الداتاليست
-            const dl = document.getElementById('orderSubZonesList');
-            dl.innerHTML = '';
-            Object.keys(subZones).forEach(k => {
-                const sz = subZones[k];
-                const mainName = zones[sz.parentId] ? zones[sz.parentId].name : '';
-                dl.innerHTML += `<option value="${sz.code} - ${sz.name}" data-id="${k}">${mainName} - ${sz.name}</option>`;
-            });
-            
-            document.getElementById('hasChangeCheckbox').checked = false;
-            document.getElementById('orderChangeInput').value = '';
-            document.getElementById('changeAmountContainer').classList.add('hidden');
-            
+            const changeContainer = document.getElementById('changeAmountContainer');
+            if(changeContainer) changeContainer.classList.add('hidden');
+
             switchOrderModalTab('basic');
-            document.getElementById('orderModal').classList.add('active');
-            setTimeout(() => document.getElementById('orderNumberInput').focus(), 100);
+
+            const modal = document.getElementById('orderModal');
+            if(modal) modal.classList.add('active');
+
+            setTimeout(() => {
+                const focusEl = document.getElementById('orderNumberInput');
+                if(focusEl) focusEl.focus();
+            }, 100);
         }
-        
-        function closeOrderModal() {
-    document.getElementById('orderModal').classList.remove('active');
+        function closeOrderModal() { document.getElementById('orderModal').classList.remove('active'); }
+
+        function saveOrderData(sendWhatsapp) {
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value.trim() : '';
+            };
+
+            const orderNum = getVal('orderNumberInput');
+            const orderVal = getVal('orderValueInput');
+            const paymentMethod = getVal('orderPaymentMethodInput') || 'نقدي';
+            const orderWhatsapp = getVal('orderWhatsappInput');
+            const orderContact = getVal('orderContactInput');
+            const orderAddress = getVal('orderAddressInput');
+
+            const customTimeRaw = getVal('orderCustomTimeInput');
+            const customTimeMs = customTimeRaw ? new Date(customTimeRaw).getTime() : null;
+
+            const checkbox = document.getElementById('hasChangeCheckbox');
+            const hasChange = checkbox ? checkbox.checked : false;
+            const changeAmount = hasChange ? (parseInt(getVal('orderChangeInput')) || 0) : 0;
+
+             // استخراج بيانات المنطقة الفرعية الجديدة (يدعم البحث الذكي بالكود أو بالاسم)
+            const regionInputValue = getVal('orderRegionInput');
+            let selectedSubRegionId = '';
+            let selectedSubRegionName = '';
+            let selectedSubRegionCode = '';
+
+            if(regionInputValue) {
+                const parts = regionInputValue.split(' - ');
+                let foundKey = '';
+                
+                if(parts.length > 1) {
+                    // في حال تم الاختيار المباشر من الداتا ليست المنسدلة (كود - اسم)
+                    const subCode = parts[0].trim();
+                    foundKey = Object.keys(subRegions).find(k => subRegions[k].code === subCode);
+                } else {
+                    // في حال قام المستخدم بكتابة الكود فقط أو الاسم فقط بشكل يدوي
+                    const searchStr = regionInputValue.trim().toLowerCase();
+                    foundKey = Object.keys(subRegions).find(k => subRegions[k].code.toLowerCase() === searchStr) || 
+                               Object.keys(subRegions).find(k => subRegions[k].name.toLowerCase() === searchStr);
+                }
+
+                if(foundKey) {
+                    selectedSubRegionId = foundKey;
+                    selectedSubRegionName = subRegions[foundKey].name;
+                    selectedSubRegionCode = subRegions[foundKey].code;
+                } else {
+                    selectedSubRegionName = regionInputValue; // نص احتياطي في حال عدم مطابقة الكود
+                }
+            }
+
+            if(!orderNum) return showToast("يرجى إدخال رقم الأوردر لتسجيله", "error");
+            if(hasChange && changeAmount <= 0) return showToast("يرجى إدخال قيمة الباقي بشكل صحيح", "error");
+            if(sendWhatsapp && !orderWhatsapp) return showToast("يرجى إدخال رقم الواتساب للعميل للإرسال", "error");
+
+            closeOrderModal();
+            
+            // إرسال البيانات لدالة recordClick (لاحظ أنه تم تمرير 1 ككمية افتراضية للأوردرات)
+            recordClick(pendingBranchId, pendingBranchName, 1, orderNum, orderVal, orderWhatsapp, sendWhatsapp, changeAmount, customTimeMs, paymentMethod, orderContact, orderAddress, '', selectedSubRegionId, selectedSubRegionName);
         }
-        
+        // فتح نافذة الأصناف المتعددة المطورة وإعادة بنائها بصفوف ديناميكية
         function openWeightModal(id, name) {
             pendingBranchId = id; pendingBranchName = name;
             document.getElementById('weightBranchTitle').innerHTML = `إلى: <span class="font-extrabold text-lg">${name}</span>`;
@@ -2855,65 +3185,6 @@ function renderAdvancedReport(movementsList) {
             `;
             container.insertAdjacentHTML('beforeend', rowHtml);
         }
-
-        function saveOrderData(sendWhatsapp) {
-            const orderNum = document.getElementById('orderNumberInput').value.trim();
-            const orderVal = document.getElementById('orderValueInput').value.trim();
-            const paymentMethod = document.getElementById('orderPaymentMethodInput').value;
-            const orderWhatsapp = document.getElementById('orderWhatsappInput').value.trim();
-            const orderContact = document.getElementById('orderContactInput').value.trim();
-            const orderAddress = document.getElementById('orderAddressInput').value.trim();
-            
-            // جلب المنطقة الفرعية المحددة من الـ datalist الذكي 
-            const zoneInputVal = document.getElementById('orderZoneInput').value;
-            let finalSubZoneId = null;
-            let finalSubZoneName = '';
-            
-            if (zoneInputVal) {
-                const dl = document.getElementById('orderSubZonesList');
-                const options = dl.options;
-                for (let i = 0; i < options.length; i++) {
-                    if (options[i].value === zoneInputVal) {
-                        finalSubZoneId = options[i].getAttribute('data-id');
-                        finalSubZoneName = zoneInputVal;
-                        break;
-                    }
-                }
-            }
-            
-            const customTimeRaw = document.getElementById('orderCustomTimeInput').value;
-            const customTimeMs = customTimeRaw ? new Date(customTimeRaw).getTime() : null;
-            
-            const hasChange = document.getElementById('hasChangeCheckbox').checked;
-            const changeAmount = hasChange ? (parseInt(document.getElementById('orderChangeInput').value) || 0) : 0;
-            
-            if(!orderNum) return showToast("يرجى إدخال رقم الأوردر لتسجيله", "error");
-            if(hasChange && changeAmount <= 0) return showToast("يرجى إدخال قيمة الباقي بشكل صحيح", "error");
-            if(sendWhatsapp && !orderWhatsapp) return showToast("يرجى إدخال رقم الواتساب للعميل للإرسال", "error");
-
-            closeOrderModal();
-            
-            // إلغاء count وتمرير 1 كقيمة ثابتة للأوردر، وإرسال معرف واسم المنطقة الجديدين للـ Firebase
-            recordClick(
-                pendingBranchId, 
-                pendingBranchName, 
-                1, 
-                orderNum, 
-                orderVal, 
-                orderWhatsapp, 
-                sendWhatsapp, 
-                changeAmount, 
-                customTimeMs, 
-                paymentMethod, 
-                orderContact, 
-                orderAddress, 
-                '', 
-                finalSubZoneId, 
-                finalSubZoneName
-            );
-        }
-        
-
 
         // دالة حذف سطر صنف من القائمة
         function deleteWeightRow(rowId) {
@@ -2958,7 +3229,7 @@ function renderAdvancedReport(movementsList) {
             loadRecords();
         }
 
-               async function recordClick(toBranchId, toBranchName, count = 1, orderNum = '', orderVal = '', customerWhatsapp = '', sendWhatsapp = false, changeAmount = 0, customDeliveryTime = null, paymentMethod = 'نقدي', customerContact = '', customerAddress = '', itemCode = '', subZoneId = null, subZoneName = '') {
+            async function recordClick(toBranchId, toBranchName, count = 1, orderNum = '', orderVal = '', customerWhatsapp = '', sendWhatsapp = false, changeAmount = 0, customDeliveryTime = null, paymentMethod = 'نقدي', customerContact = '', customerAddress = '', itemCode = '', subRegionId = '', subRegionName = '') {
             const date = document.getElementById('recordDate').value;
             const todayStr = new Date().toISOString().split('T')[0];
             const delId = document.getElementById('recordDelegate').value;
@@ -2979,34 +3250,42 @@ function renderAdvancedReport(movementsList) {
                 createdByUserId: currentUser.id,
                 createdByUserName: currentUser.name,
                 time: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit', second:'2-digit'}),
-                timestamp: Date.now(), 
-                count: isOrder ? 1 : count, // الأوردر حركته 1، التحويلات كميتها كما هي
-                orderNumber: orderNum, 
-                orderValue: orderVal,
+                timestamp: Date.now(), count: count, orderNumber: orderNum, orderValue: orderVal,
                 changeAmount: changeAmount, 
                 customerWhatsapp: customerWhatsapp,
                 customerContact: customerContact,
                 customerAddress: customerAddress,
-                paymentMethod: paymentMethod,
+                 paymentMethod: paymentMethod,
                 itemCode: itemCode,
-                subZoneId: subZoneId,      // إضافة معرف المنطقة
-                subZoneName: subZoneName,  // إضافة اسم المنطقة
+                subRegionId: subRegionId,
+                subRegionName: subRegionName,
                 status: isOrder ? 'preparing' : 'completed' 
             };
 
-            if (customDeliveryTime) rec.customDeliveryTime = customDeliveryTime;
+            if (customDeliveryTime) {
+                rec.customDeliveryTime = customDeliveryTime;
+            }
 
             try {
-                const res = await fetch(`${DB_URL}records/${date}.json`, { method: 'POST', body: JSON.stringify(rec) });
+                const res = await fetch(`${DB_URL}records/${date}.json`, { 
+                    method: 'POST', 
+                    body: JSON.stringify(rec) 
+                });
+                
                 if(res && res.ok) {
-                    showToast(`تم التسجيل بنجاح لـ ${toBranchName} ${isOrder ? '' : '(كمية: '+count+')'}`);
-                    if (date !== todayStr) logActivity('past_add', `تم تسجيل حركة بأثر رجعي للمندوب (${delegateName}) موجهة لـ (${toBranchName}) بتاریخ ${date}`);
+                    showToast(`تم التسجيل بنجاح لـ ${toBranchName} (كمية: ${count})`);
+                    
+                    if (date !== todayStr) {
+                        logActivity('past_add', `تم تسجيل حركة بأثر رجعي للمندوب (${delegateName}) موجهة لـ (${toBranchName}) بتاریخ ${date}، الكمية: ${count}`);
+                    }
+
                     if(sendWhatsapp) sendWhatsappMessage(customerWhatsapp, orderNum, orderVal, delegates[delId]);
                     updateDelegatesOutStatus();
                 }
-            } catch (e) { console.error("فشل الاتصال", e); }
+            } catch (e) { 
+                console.error("فشل الاتصال، تم تحويل الطلب للمزامنة الخلفية", e);
+            }
         }
-         
 
         function sendWhatsappMessage(phone, orderNum, orderVal, delegate) {
             const TRACKING_URL = "https://2u.pw/oOFaRj"; 
@@ -3060,7 +3339,7 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
             document.getElementById('changeDelegateModal').classList.add('active');
         }
 
-        let isAssigningForDelivery = false;
+        
 
         function assignDelegateForDelivery(date, recordId) {
             isAssigningForDelivery = true;
@@ -3779,7 +4058,7 @@ document.getElementById('offerMediaFile').value = '';
             e.target.reset(); loadAllData(); showToast("تم إضافة المندوب الجديد بنجاح");
         }
 
-        let currentEditType = '', currentEditId = '';
+        
         function openEditModal(type, id) {
             currentEditType = type;
             currentEditId = id;
@@ -4303,157 +4582,143 @@ function updateBranchesSelect() {
     }
 }
 
-// دالة إعادة ضبط النظام بالكامل
-async function resetSystemCompletely() {
-    console.log("جاري إعادة ضبط النظام...");
+// 2. الدالة المحدثة للتقارير المتقدمة للتحكم في عرض البيانات حسب الصلاحيات
+async function generateReport() {
+    const fromDT = document.getElementById('repFromDate').value;
+    const toDT = document.getElementById('repToDate').value;
+    const repDelCode = document.getElementById('repDelCode').value.trim().toLowerCase();
+    const repOrderNum = document.getElementById('repOrderNum').value.trim().toLowerCase();
+    
+    // سحب قيمة فلتر المدير العام إن وجدت
+    const adminBranchFilter = document.getElementById('repBranchCode') ? document.getElementById('repBranchCode').value : '';
 
-    // 1. مسح كافة البيانات المخزنة
-    localStorage.clear();
-    sessionStorage.clear();
+    if (!fromDT || !toDT) return showToast("يرجى تحديد وقت وتاريخ البداية والنهاية", "error");
 
-    // 2. مسح كافة أنواع الكاش المسجلة في المتصفح
-    if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(cache => caches.delete(cache)));
+    const loadingIndicator = document.getElementById('reportLoading');
+    const tbody = document.getElementById('reportTableBody');
+    
+    loadingIndicator.classList.remove('hidden');
+    tbody.innerHTML = '';
+    currentReportData = []; 
+
+    const fromTimestamp = new Date(fromDT).getTime();
+    const toTimestamp = new Date(toDT).getTime();
+
+    let datesToFetch = [];
+    let curr = new Date(fromDT.split('T')[0]);
+    let endD = new Date(toDT.split('T')[0]);
+    
+    while(curr <= endD) {
+        datesToFetch.push(curr.toISOString().split('T')[0]);
+        curr.setDate(curr.getDate() + 1);
     }
 
-    // 3. إلغاء تسجيل الـ Service Workers الحالية
-    if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-            await registration.unregister();
-        }
-    }
+    let totalMoves = 0; 
+    let grandTotalCashCalculated = 0; 
 
-    // 4. إعادة تحميل الصفحة كأنها المرة الأولى
-    window.location.reload(true);
-}
+    try {
+        const results = await Promise.all(datesToFetch.map(d => getDayData(d, true)));
+        
+        results.forEach((dayData, index) => {
+            if(dayData) {
+                const dateStr = datesToFetch[index];
+                Object.keys(dayData).forEach(k => {
+                    const r = dayData[k];
+                    const rTime = r.timestamp;
 
-        async function generateReport() {
-            const fromDate = document.getElementById('reportFromDate').value;
-            const toDate = document.getElementById('reportToDate').value;
-            const branchFilter = document.getElementById('reportBranchFilter').value;
-            const delegateFilter = document.getElementById('reportDelegateFilter').value;
-            const searchFilter = document.getElementById('reportSearchInput').value.trim();
-            const activeTab = currentReportTab; 
+                    if (rTime >= fromTimestamp && rTime <= toTimestamp) {
+                        // تطبيق فلاتر البحث العادية
+                        let matchDel = true;
+                        if (repDelCode && (!r.delegateCode || !r.delegateCode.toLowerCase().includes(repDelCode))) matchDel = false;
+                        
+                        let matchOrder = true;
+                        if (repOrderNum && (!r.orderNumber || !r.orderNumber.toLowerCase().includes(repOrderNum))) matchOrder = false;
 
-            if(!fromDate || !toDate) return showToast("يرجى تحديد الفترة الزمنية للتقرير", "error");
+                        // === منطق الصلاحيات والفصل بين الفروع ===
+                        let hasAccess = false;
+                        
+                        if (currentUser.role === 'admin' && currentUser.adminType === 'admin') {
+                            // المدير العام: يرى كل شيء
+                            hasAccess = true;
+                            // تطبيق فلتر اختيار الفرع إذا قام المدير العام باختياره
+                            if (adminBranchFilter && r.sourceBranchId !== adminBranchFilter) {
+                                hasAccess = false; 
+                            }
+                        } else {
+                            // مدير فرع / موظف فرع / حساب فرع:
+                            let userBranchId = currentUser.role === 'branch' ? currentUser.id : currentUser.assignedBranch;
+                            
+                            // الشرط: أن يكون المُسجل من نفس الفرع (sourceBranchId) أو مندوب تابع لنفس الفرع
+                            if (r.sourceBranchId === userBranchId || (delegates[r.delegateId] && delegates[r.delegateId].branchId === userBranchId)) {
+                                hasAccess = true;
+                            }
+                        }
 
-            const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center font-bold text-gray-500"><i class="fa-solid fa-spinner fa-spin ml-2"></i>جاري تحميل وتجهيز التقارير المتقدمة...</td></tr>';
-
-            const datesArray = [];
-            let start = new Date(fromDate);
-            const end = new Date(toDate);
-            while(start <= end) {
-                datesArray.push(start.toISOString().split('T')[0]);
-                start.setDate(start.getDate() + 1);
-            }
-
-            let allRecords = [];
-            reportDataForExport = []; 
-
-            for(const d of datesArray) {
-                try {
-                    const res = await fetch(`${DB_URL}records/${d}.json`);
-                    const data = await res.json();
-                    if(data) {
-                        Object.keys(data).forEach(id => {
-                            allRecords.push({ id: id, date: d, ...data[id] });
-                        });
+                        if (matchDel && matchOrder && hasAccess) {
+                            r.id = k;
+                            r.date = dateStr;
+                            currentReportData.push(r);
+                        }
                     }
-                } catch(e) { console.error("خطأ في جلب بيانات يوم " + d, e); }
+                });
             }
+        });
 
-            allRecords.sort((a,b) => b.timestamp - a.timestamp);
+        currentReportData.sort((a,b) => b.timestamp - a.timestamp);
 
-            let totalMovementsCount = 0;
-            let totalFinancialValue = 0;
-            let visibleRowsCount = 0;
+        if (currentReportData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-file-excel text-3xl mb-2 text-gray-300 block"></i> لا توجد بيانات مطابقة لهذه الفترة وصلاحياتك</td></tr>';
+        } else {
+            currentReportData.forEach(r => {
+                const rCount = Number(r.count) || 1;
+                totalMoves += rCount;
 
-            tbody.innerHTML = '';
-
-            for(const r of allRecords) {
-                if(branchFilter && r.branchId !== branchFilter && r.sourceBranchId !== branchFilter) continue;
-                if(delegateFilter && r.delegateId !== delegateFilter) continue;
-                if(activeTab !== 'all' && r.status !== activeTab) continue;
-                if(searchFilter) {
-                    const searchLower = searchFilter.toLowerCase();
-                    const matchNum = r.orderNumber ? r.orderNumber.toLowerCase().includes(searchLower) : false;
-                    const matchDel = r.delegateName ? r.delegateName.toLowerCase().includes(searchLower) : false;
-                    const matchUser = r.createdByUserName ? r.createdByUserName.toLowerCase().includes(searchLower) : false;
-                    const matchAddr = r.customerAddress ? r.customerAddress.toLowerCase().includes(searchLower) : false;
-                    if(!matchNum && !matchDel && !matchUser && !matchAddr) continue;
-                }
-
-                visibleRowsCount++;
-                const rCount = parseInt(r.count) || 1;
-
-                // --- آلية احتساب السعر المتقدمة وحساب التكلفة الديناميكية للمناطق والفروع ---
-                let movementPrice = 1; 
+                  // --- حساب التسعيرة المتقدمة بناءً على المنطقة الفرعية ومصفوفة الفروع ---
+                let movementPrice = 5; // القيمة الافتراضية للأوردرات تساوي 5 ج.م بناءً على طلبك
                 const srcBranchId = r.sourceBranchId;
-                const destBranchId = r.branchId;
+                const subRegId = r.subRegionId;
                 
-                if (r.orderNumber) {
-                    // إذا كان السجل أوردر: يتم البحث في مصفوفة تسعيرات المناطق المخصصة للفرع الذي تحرك منه المندوب
-                    if (zonePrices && zonePrices[srcBranchId] && zonePrices[srcBranchId][r.subZoneId] !== undefined) {
-                        movementPrice = parseFloat(zonePrices[srcBranchId][r.subZoneId]);
+                if (subRegId && regionPrices && regionPrices[srcBranchId] && regionPrices[srcBranchId][subRegId] !== undefined) {
+                    // إذا تم تحديد منطقة فرعية ولها تسعيرة مخصصة مسجلة من قبل الفرع
+                    movementPrice = parseFloat(regionPrices[srcBranchId][subRegId]);
+                } else if (!r.orderNumber) {
+                    // إذا لم يكن أوردر (حركة عادية بين الفروع) ولم تحدد له منطقة، يعتمد على مصفوفة أسعار الفروع
+                    if (cashSettings && cashSettings[srcBranchId] && cashSettings[srcBranchId][r.branchId] !== undefined) {
+                        movementPrice = parseFloat(cashSettings[srcBranchId][r.branchId]);
                     } else {
-                        movementPrice = 0; // القيمة الافتراضية إذا لم تسعر المنطقة لهذا الفرع بعد
+                        movementPrice = 1; // السعر الافتراضي للحركات البسيطة بين الفروع
                     }
                 } else {
-                    // إذا كان تحويل عادي بين الفروع: يعتمد على نقدية إعدادات الفروع الكلاسيكية
-                    if (cashSettings && cashSettings[srcBranchId] && cashSettings[srcBranchId][destBranchId] !== undefined) {
-                        movementPrice = parseFloat(cashSettings[srcBranchId][destBranchId]);
-                    }
+                    // أوردر ولم يحدد له منطقة فرعية أو منطقته غير مسعرة = 5 ج.م تلقائياً ثابتة
+                    movementPrice = 5;
                 }
-
-                // حساب التكلفة الكلية للسطر
-                const rowCost = r.orderNumber ? movementPrice : (rCount * movementPrice);
                 
-                if(r.status !== 'cancelled') {
-                    totalMovementsCount += (r.orderNumber ? 1 : rCount);
-                    totalFinancialValue += rowCost;
-                }
-
-                let orderDetails = '';
-                if(r.orderNumber) {
-                    orderDetails = `
-                        <div class="text-xs space-y-1 bg-blue-50/50 p-2 rounded border border-blue-100 font-semibold text-gray-700">
-                            <div><span class="text-primary">رقم الأوردر:</span> ${r.orderNumber}</div>
-                            ${r.orderValue ? `<div><span class="text-emerald-600">قيمة الأوردر:</span> ${r.orderValue} ج.م</div>` : ''}
-                            ${r.paymentMethod ? `<div><span class="text-purple-600">الدفع:</span> ${r.paymentMethod}</div>` : ''}
-                            ${r.customerAddress ? `<div class="truncate"><span class="text-amber-600">العنوان:</span> ${r.customerAddress}</div>` : ''}
-                            <div class="text-[11px] text-gray-500 font-bold border-t pt-1 mt-1 flex justify-between">
-                                <span>سعر توصيل الفرع للمنطقة:</span>
-                                <span class="text-accent">${movementPrice} ج.م</span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    orderDetails = `
-                        <div class="text-xs font-bold text-gray-600 bg-gray-50 p-2 rounded border">
-                            تحويل بضائع وحركات بين الفروع
-                            <div class="text-[11px] text-gray-500 font-bold border-t pt-1 mt-1 flex justify-between">
-                                <span>سعر الحركة:</span>
-                                <span>${movementPrice} ج.م (الإجمالي: ${rowCost} ج.م)</span>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // رسم عمود المنطقة للأوردرات أو كمية التحويلات للفروع
-                let qtyOrZoneDisplay = '';
-                if(r.orderNumber) {
-                    qtyOrZoneDisplay = r.subZoneName ? `<span class="text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded border border-teal-100 block text-center shadow-sm"><i class="fa-solid fa-location-dot ml-1 text-teal-500"></i> ${r.subZoneName.split(' - ')[1] || r.subZoneName}</span>` : '<span class="text-xs text-gray-400 block text-center">بدون منطقة</span>';
-                } else {
-                    qtyOrZoneDisplay = `<div class="text-center"><span class="bg-accent px-2 py-1 text-white font-black rounded shadow-sm text-xs">x${rCount}</span></div>`;
-                }
+                const currentRecordCost = (r.orderNumber ? 1 : rCount) * movementPrice; // الأوردر حركة واحدة بتسعيرة المنطقة
+                grandTotalCashCalculated += currentRecordCost;
+                // ---------------------------------------------------------
 
                 let statusBadge = '';
-                if(r.status === 'preparing') statusBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-bold border border-amber-200 shadow-sm"><i class="fa-solid fa-clock fa-spin ml-1 text-amber-500"></i>قيد التحضير</span>';
-                else if(r.status === 'completed') statusBadge = '<span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-bold border border-emerald-200 shadow-sm"><i class="fa-solid fa-check ml-1 text-emerald-500"></i>تم التوصيل</span>';
-                else if(r.status === 'cancelled') statusBadge = '<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold border border-red-200 shadow-sm"><i class="fa-solid fa-xmark ml-1 text-red-500"></i>ملغي</span>';
+                if (r.orderNumber) {
+                    if (r.status === 'delivered') statusBadge = '<span class="text-xs bg-green-500 text-white px-2 py-1 rounded shadow-sm">مُسلم</span>';
+                    else if (r.status === 'out_for_delivery') statusBadge = '<span class="text-xs bg-blue-500 text-white px-2 py-1 rounded shadow-sm">خرج للتوصيل</span>';
+                    else statusBadge = '<span class="text-xs bg-amber-500 text-white px-2 py-1 rounded shadow-sm">تجهيز</span>';
+                } else {
+                    statusBadge = '<span class="text-xs bg-gray-500 text-white px-2 py-1 rounded shadow-sm">مكتمل</span>';
+                }
+                
+                const rTotalValue = (Number(r.orderValue) || 0) + (Number(r.changeAmount) || 0);
+                
+                let paymentMethodDisplay = r.paymentMethod ? `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm mx-1"><i class="fa-solid fa-wallet"></i> ${r.paymentMethod}</span>` : '';
+                
+                let contactInfo = '';
+                if(r.customerContact) contactInfo += `<div class="mt-1 text-xs text-gray-600"><i class="fa-solid fa-phone"></i> تواصل: <span dir="ltr">${r.customerContact}</span></div>`;
+                if(r.customerAddress) contactInfo += `<div class="mt-1 text-xs text-gray-600 truncate max-w-[200px]" title="${r.customerAddress}"><i class="fa-solid fa-location-dot"></i> ${r.customerAddress}</div>`;
+
+                let locationBtn = r.deliveryLocation ? 
+                    `<a href="${r.deliveryLocation}" target="_blank" class="mt-2 block w-max bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-xs font-bold border border-emerald-200 transition"><i class="fa-solid fa-map-location-dot animate-pulse"></i> موقع التسليم</a>` : 
+                    `<span class="mt-2 block w-max bg-gray-50 text-gray-400 px-2 py-1 rounded text-[10px] border border-gray-100"><i class="fa-solid fa-map-pin"></i> لم يسجل الموقع</span>`;
+                                
+                let orderDetails = r.orderNumber ? `<div class="text-sm font-bold text-gray-800"># ${r.orderNumber}</div><div class="text-xs font-bold text-emerald-600 mt-1">${rTotalValue} ج.م ${paymentMethodDisplay}</div> ${contactInfo} ${locationBtn}` : `<div class="text-xs font-bold text-teal-600">تسعيرة الحركة: ${movementPrice} ج.م</div>`;
 
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-gray-50 transition">
@@ -4461,42 +4726,25 @@ async function resetSystemCompletely() {
                         <td class="p-3 text-sm font-semibold">${r.date}<br><span class="text-xs text-gray-500" dir="ltr">${r.time}</span></td>
                         <td class="p-3 text-sm font-bold text-primary">${r.createdByUserName || 'غير محدد'}</td>
                         <td class="p-3 text-sm font-bold"><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 shadow-sm ml-1">${r.delegateCode}</span> ${r.delegateName}</td>
-                        <td class="p-3 font-bold text-gray-800">${r.branchName}</td>
-                        <td class="p-3">${qtyOrZoneDisplay}</td>
+                        <td class="p-3 font-bold text-gray-800">${r.branchName} ${r.subRegionName ? `<br><span class="text-xs text-purple-600 bg-purple-50 px-1 rounded">${r.subRegionName}</span>` : ''}</td>
+                        <td class="p-3 text-center"><span class="bg-accent px-2 py-1 text-white font-bold rounded shadow-sm text-xs">${r.orderNumber ? '-' : 'x'+rCount}</span></td>
                         <td class="p-3">${orderDetails}</td>
-                        <td class="p-3 text-center">${statusBadge}</td>
+                        <td class="p-3">${statusBadge}</td>
                     </tr>
                 `;
-
-                // حفظ البيانات بدقة متناهية لتصدير ملفات Excel بنجاح طبقاً لأحدث الفلاتر
-                reportDataForExport.push({
-                    "التاريخ": r.date,
-                    "الوقت": r.time,
-                    "الموظف المسؤول": r.createdByUserName || 'غير محدد',
-                    "كود المندوب": r.delegateCode,
-                    "اسم المندوب": r.delegateName,
-                    "الفرع الموجه له": r.branchName,
-                    "النوع": r.orderNumber ? "أوردر عميل" : "تحويل فروع",
-                    "المنطقة / الكمية": r.orderNumber ? (r.subZoneName || "بدون منطقة") : rCount,
-                    "رقم الأوردر": r.orderNumber || "---",
-                    "قيمة الأوردر": r.orderValue || "---",
-                    "طريقة الدفع": r.paymentMethod || "---",
-                    "عنوان العميل": r.customerAddress || "---",
-                    "القيمة المالية للحركة": rowCost,
-                    "الحالة": r.status === 'preparing' ? 'قيد التحضير' : r.status === 'completed' ? 'تم التوصيل' : 'ملغي'
-                });
-            }
-
-            if(visibleRowsCount === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="p-8 text-center font-bold text-gray-400">لا توجد سجلات مطابقة للفلاتر المحددة خلال هذه الفترة.</td></tr>';
-            }
-
-            const totalCountElem = document.getElementById('reportTotalCount');
-            const totalValueElem = document.getElementById('reportTotalValue');
-            if(totalCountElem) totalCountElem.textContent = totalMovementsCount;
-            if(totalValueElem) totalValueElem.textContent = totalFinancialValue.toFixed(2) + " ج.م";
+            });
         }
-        
+
+        document.getElementById('reportTotalClicks').innerHTML = `${grandTotalCashCalculated.toLocaleString('en-US', {minimumFractionDigits: 2})} <span class="text-2xl font-semibold">ج.م</span> <div class="text-sm text-emerald-100 mt-2 font-semibold">إجمالي الحركات: ${totalMoves} حركة</div>`;
+
+    } catch (e) {
+        showToast("حدث خطأ في استخراج التقرير من قاعدة البيانات", "error");
+    } finally {
+        loadingIndicator.classList.add('hidden');
+        updateBulkDeleteBtn(); 
+    }
+}
+ 
 
 // 2. الدالة المحدثة لطباعة الريسيت الحراري بالتسعير الديناميكي
 function printThermalReport() {
@@ -4555,261 +4803,49 @@ function printThermalReport() {
 }
 
          
-          // ==========================================
-        // محرك إدارة وتسعير المناطق (Zone Management)
-        // ==========================================
-
-        async function handleAddMainZone(e) {
-            e.preventDefault();
-            const name = document.getElementById('mainZoneName').value.trim();
-            if(!name) return;
-            try {
-                await fetch(`${DB_URL}zones.json`, { method: 'POST', body: JSON.stringify({ name, timestamp: Date.now() }) });
-                document.getElementById('mainZoneName').value = '';
-                showToast("تمت إضافة المنطقة الرئيسية بنجاح");
-                zones = await fetchWithCache(`${DB_URL}zones.json`, 'local_zones');
-                updateZonesUI();
-            } catch(e) { showToast("حدث خطأ", "error"); }
-        }
-
-        async function handleAddSubZone(e) {
-            e.preventDefault();
-            const parentId = document.getElementById('subZoneParent').value;
-            const code = document.getElementById('subZoneCode').value.trim();
-            const name = document.getElementById('subZoneName').value.trim();
-            
-            if(!parentId || !code || !name) return;
-            try {
-                await fetch(`${DB_URL}subZones.json`, { method: 'POST', body: JSON.stringify({ parentId, code, name, timestamp: Date.now() }) });
-                document.getElementById('subZoneCode').value = '';
-                document.getElementById('subZoneName').value = '';
-                showToast("تمت إضافة المنطقة الفرعية بنجاح");
-                subZones = await fetchWithCache(`${DB_URL}subZones.json`, 'local_subZones');
-                updateZonesUI();
-            } catch(e) { showToast("حدث خطأ", "error"); }
-        }
-
-        function updateZonesUI() {
-            // تحديث دروب داون إضافة منطقة فرعية
-            const parentSelect = document.getElementById('subZoneParent');
-            if(parentSelect) {
-                parentSelect.innerHTML = '<option value="">-- اختر المنطقة الرئيسية --</option>';
-                Object.keys(zones).forEach(k => parentSelect.innerHTML += `<option value="${k}">${zones[k].name}</option>`);
-            }
-
-            // تحديث دروب داون الفروع في التسعير
-            const branchSelect = document.getElementById('zonePricingBranch');
-            if(branchSelect) {
-                const currentBr = branchSelect.value;
-                branchSelect.innerHTML = '<option value="">-- حدد الفرع --</option>';
-                Object.keys(branches).forEach(k => branchSelect.innerHTML += `<option value="${k}">${branches[k].name}</option>`);
-                branchSelect.value = currentBr;
-            }
-
-            // تحديث داتاليست تسعير المناطق
-            const pricingList = document.getElementById('pricingSubZonesList');
-            if(pricingList) {
-                pricingList.innerHTML = '';
-                Object.keys(subZones).forEach(k => {
-                    const sz = subZones[k];
-                    const mainName = zones[sz.parentId] ? zones[sz.parentId].name : '';
-                    pricingList.innerHTML += `<option value="${sz.code} - ${sz.name}" data-id="${k}">${mainName} - ${sz.name}</option>`;
-                });
-            }
-
-            // رسم جدول المناطق المضافة
-            const tbody = document.getElementById('zonesTableBody');
-            if(tbody) {
-                tbody.innerHTML = '';
-                if(Object.keys(subZones).length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">لا توجد مناطق فرعية مضافة</td></tr>';
-                } else {
-                    Object.keys(subZones).forEach(k => {
-                        const sz = subZones[k];
-                        const mainName = zones[sz.parentId] ? zones[sz.parentId].name : '<span class="text-red-500">محذوفة</span>';
-                        tbody.innerHTML += `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="p-3 font-bold text-gray-700">${mainName}</td>
-                                <td class="p-3 font-bold text-primary">${sz.name}</td>
-                                <td class="p-3 text-center"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold border">${sz.code}</span></td>
-                                <td class="p-3 text-center">
-                                    <button onclick="editSubZoneName('${k}', '${sz.name}')" class="text-secondary hover:text-primary mx-1"><i class="fa-solid fa-pen"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-            }
-            renderZonePricingInputs();
-        }
-
-        async function editSubZoneName(id, currentName) {
-            const newName = prompt('تعديل اسم المنطقة الفرعية:', currentName);
-            if (!newName || newName.trim() === '') return;
-            try {
-                await fetch(`${DB_URL}subZones/${id}.json`, { method: 'PATCH', body: JSON.stringify({ name: newName.trim() }) });
-                showToast("تم تعديل الاسم بنجاح");
-                subZones = await fetchWithCache(`${DB_URL}subZones.json`, 'local_subZones');
-                updateZonesUI();
-            } catch(e) { showToast("حدث خطأ", "error"); }
-        }
-
-        function renderZonePricingInputs() {
-            const branchId = document.getElementById('zonePricingBranch').value;
-            const displayContainer = document.getElementById('zonePricingDisplayContainer');
-            const tagsContainer = document.getElementById('savedZonePricesTags');
-            
-            document.getElementById('zonePricingSubZone').value = '';
-            document.getElementById('zonePricingValue').value = '';
-
-            if(!branchId) {
-                displayContainer.classList.add('hidden');
-                return;
-            }
-
-            displayContainer.classList.remove('hidden');
-            tagsContainer.innerHTML = '';
-            
-            const branchPrices = zonePrices[branchId] || {};
-            if(Object.keys(branchPrices).length === 0) {
-                tagsContainer.innerHTML = '<span class="text-xs text-gray-400">لا توجد تسعيرات محفوظة لهذا الفرع.</span>';
-                return;
-            }
-
-            Object.keys(branchPrices).forEach(subId => {
-                if(!subZones[subId]) return;
-                const sz = subZones[subId];
-                tagsContainer.innerHTML += `
-                    <div class="bg-white border border-accent rounded-full px-3 py-1 text-sm font-bold shadow-sm flex items-center gap-2">
-                        <span class="text-gray-600">${sz.name}</span>
-                        <span class="text-accent bg-orange-50 px-2 rounded-full border border-orange-100">${branchPrices[subId]} ج.م</span>
-                    </div>
-                `;
-            });
-        }
-
-        function showCurrentZonePrice() {
-            const branchId = document.getElementById('zonePricingBranch').value;
-            const inputVal = document.getElementById('zonePricingSubZone').value;
-            if(!branchId || !inputVal) return;
-
-            const dl = document.getElementById('pricingSubZonesList');
-            const options = dl.options;
-            let subId = null;
-            for (let i = 0; i < options.length; i++) {
-                if (options[i].value === inputVal) {
-                    subId = options[i].getAttribute('data-id'); break;
-                }
-            }
-
-            if(subId && zonePrices[branchId] && zonePrices[branchId][subId] !== undefined) {
-                document.getElementById('zonePricingValue').value = zonePrices[branchId][subId];
-            } else {
-                document.getElementById('zonePricingValue').value = '';
-            }
-        }
-
-        async function saveZonePriceSingle() {
-            const branchId = document.getElementById('zonePricingBranch').value;
-            const inputVal = document.getElementById('zonePricingSubZone').value;
-            const price = parseFloat(document.getElementById('zonePricingValue').value);
-
-            if(!branchId) return showToast("يرجى تحديد الفرع أولاً", "error");
-            if(!inputVal) return showToast("يرجى اختيار المنطقة", "error");
-            if(isNaN(price) || price < 0) return showToast("يرجى إدخال سعر صحيح", "error");
-
-            const dl = document.getElementById('pricingSubZonesList');
-            const options = dl.options;
-            let subId = null;
-            for (let i = 0; i < options.length; i++) {
-                if (options[i].value === inputVal) {
-                    subId = options[i].getAttribute('data-id'); break;
-                }
-            }
-
-            if(!subId) return showToast("المنطقة غير مسجلة بشكل صحيح", "error");
-
-            if (!zonePrices[branchId]) zonePrices[branchId] = {};
-            zonePrices[branchId][subId] = price;
-
-            try {
-                await fetch(`${DB_URL}zonePrices/${branchId}.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(zonePrices[branchId])
-                });
-                showToast("تم حفظ التسعيرة بنجاح", "success");
-                renderZonePricingInputs();
-            } catch(e) {
-                showToast("حدث خطأ أثناء الحفظ", "error");
-            }
-        }
-               
-         
-         
-        async function triggerSystemReload(e) {
-            e.preventDefault();
-            const notes = document.getElementById('systemUpdateNotes').value.trim();
-            if(!confirm("تحذير: هذا سيجبر جميع الأجهزة على مستوى النظام على إعادة تحميل الصفحة فوراً. هل أنت متأكد؟")) return;
-            try {
-                await fetch(`${DB_URL}system_alerts.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ lastReloadSignal: Date.now(), reloadNotes: notes })
-                });
-                document.getElementById('systemUpdateNotes').value = '';
-                showToast("تم إرسال أمر التحديث الإجباري بنجاح لجميع الأجهزة", "success");
-                logActivity('edit', 'أرسل أمر تحديث إجباري للنظام لجميع الأجهزة');
-            } catch(e) {
-                showToast("حدث خطأ أثناء الإرسال", "error");
-            }
-        }
+       async function triggerSystemReload(event) {
+    event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
     
-    async function sendSystemAlert(e) {
-    if (e && typeof e.preventDefault === 'function') {
-        e.preventDefault();
-    }
+    if(!confirm("⚠️ تحذير إداري: هل أنت متأكد من رغبتك في إجبار جميع الأجهزة النشطة (فروع ومناديب) على مسح بياناتها وإعادة التحميل الآن فوراً؟")) return;
     
-    const alertInput = document.getElementById('systemAlertText');
-    if (!alertInput) {
-        showToast("خطأ: حقل إدخال التنبيه غير موجود في الصفحة", "error");
-        return;
-    }
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري بث إشارة التحديث الجبري...';
+    btn.disabled = true;
 
-    const text = alertInput.value.trim();
-    if (!text) {
-        showToast("يرجى كتابة نص الإنذار أولاً", "error");
-        return;
-    }
-    
-    if (!confirm("هل أنت متأكد من إطلاق هذا الإنذار العام للجميع؟")) return;
+    // استخدام الوقت الحالي كإشارة فريدة تلتقطها كل المتصفحات
+    const timestampSignal = Date.now(); 
     
     try {
-        const cleanBaseUrl = DB_URL.endsWith('/') ? DB_URL : DB_URL + '/';
-        
-        await fetch(`${cleanBaseUrl}system_alerts.json`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                latestMessage: { text: text, timestamp: Date.now() }
-            })
+        // نرسل الإشارة للمسار المخصص الذي تستمع إليه الأجهزة عبر الـ EventSource
+        await fetch(`${DB_URL}system_control/update_signal.json`, {
+            method: 'PUT',
+            body: JSON.stringify(timestampSignal)
         });
         
-        alertInput.value = '';
-        showToast("تم إطلاق الإنذار بنجاح", "success");
-        logActivity('edit', 'أرسل تنبيهاً عاماً للأجهزة: ' + text);
-    } catch (error) { 
-        console.error("خطأ أثناء إرسال التنبيه:", error);
-        showToast("حدث خطأ أثناء الإرسال", "error"); 
+        showToast("تم بث إشارة التحديث لجميع الأجهزة بنجاح! يتم الآن تدمير بياناتهم.", "success");
+        
+        // تفريغ حقل الملاحظات إن وجد
+        const notesField = document.getElementById('systemUpdateNotes');
+        if(notesField) notesField.value = '';
+        
+        // تسجيل العملية في سجل النشاط (Tracking)
+        if (typeof logActivity === 'function') {
+            logActivity('edit', 'قام بإرسال أمر تحديث ومسح بيانات إجباري لجميع الأجهزة النشطة في نفس اللحظة.');
+        }
+        
+    } catch (e) {
+        showToast("فشل إرسال إشارة البث، يرجى التحقق من اتصال الإنترنت.", "error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
-}
+}  
+         
+         
+
 
 function showSystemAlertModal(text) {
-    // كود الاستماع الذكي: فحص النص قبل العرض
-    if (text === "REFRESH_ALL_DEVICES") {
-        console.log("تم استلام أمر التحديث الإجباري!");
-        resetSystemCompletely();
-        return; // نخرج من الدالة ولا نعرض المودال
-    }
-
-    // العرض العادي إذا لم يكن كود تحديث
     const modal = document.getElementById('systemAlertModal');
     const content = document.getElementById('systemAlertContent');
     
@@ -4826,40 +4862,280 @@ function showSystemAlertModal(text) {
     }
 }
 
-
 function closeSystemAlert() {
     const modal = document.getElementById('systemAlertModal');
     if (modal) {
         modal.classList.remove('active');
     }
 }
+// ==========================================
+        // دوال إدارة وتسعير المناطق
+        // ==========================================
+        
+        function switchRegionTab(tab) {
+            document.getElementById('reg-tab-addMain').classList.add('hidden');
+            document.getElementById('reg-tab-addSub').classList.add('hidden');
+            document.getElementById('reg-tab-pricing').classList.add('hidden');
+            document.getElementById('reg-tab-viewAll').classList.add('hidden');
+            
+            document.getElementById('btn-reg-main').className = "flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600";
+            document.getElementById('btn-reg-sub').className = "flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600";
+            document.getElementById('btn-reg-price').className = "flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600";
+            document.getElementById('btn-reg-view').className = "flex-1 py-2 font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600";
+            
+            document.getElementById(`reg-tab-${tab}`).classList.remove('hidden');
+            
+            if(tab === 'addMain') document.getElementById('btn-reg-main').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
+            if(tab === 'addSub') document.getElementById('btn-reg-sub').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
+            if(tab === 'pricing') document.getElementById('btn-reg-price').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
+            if(tab === 'viewAll') document.getElementById('btn-reg-view').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
+        }
 
-async function resetSystemCompletely() {
-    console.log("جاري إعادة ضبط المصنع للنظام...");
-    
-    // 1. مسح البيانات المحلية
+        function loadRegionsUI() {
+            // تحديث قوائم المناطق الرئيسية
+            const parentSelect = document.getElementById('subRegionParent');
+            parentSelect.innerHTML = '<option value="">-- اختر المنطقة الرئيسية --</option>';
+            Object.keys(mainRegions).forEach(k => {
+                parentSelect.innerHTML += `<option value="${k}">${mainRegions[k].name}</option>`;
+            });
+
+            // تحديث قوائم الفروع في التسعير
+            const branchSelect = document.getElementById('priceRegionBranch');
+            branchSelect.innerHTML = '<option value="">-- اختر الفرع --</option>';
+            Object.keys(branches).forEach(k => {
+                branchSelect.innerHTML += `<option value="${k}">${branches[k].name}</option>`;
+            });
+
+            // تحديث datalist للمناطق الفرعية
+            const dLists = [document.getElementById('subRegionsList'), document.getElementById('orderSubRegionsList')];
+            dLists.forEach(dl => {
+                if(!dl) return;
+                dl.innerHTML = '';
+                Object.keys(subRegions).forEach(k => {
+                    const sr = subRegions[k];
+                    const mainName = mainRegions[sr.mainId] ? mainRegions[sr.mainId].name : '';
+                    dl.innerHTML += `<option value="${sr.code} - ${sr.name}">${mainName}</option>`;
+                });
+            });
+        }
+
+        async function handleAddMainRegion(e) {
+            e.preventDefault();
+            const name = document.getElementById('mainRegionName').value.trim();
+            try {
+                await fetch(`${DB_URL}regions/main.json`, { method: 'POST', body: JSON.stringify({ name, timestamp: Date.now() }) });
+                document.getElementById('mainRegionName').value = '';
+                showToast("تمت إضافة المنطقة الرئيسية بنجاح");
+                mainRegions = await fetchWithCache(`${DB_URL}regions/main.json`, 'local_main_regions') || {};
+                loadRegionsUI();
+            } catch(err) { showToast("خطأ في الحفظ", "error"); }
+        }
+
+        async function handleAddSubRegion(e) {
+            e.preventDefault();
+            const mainId = document.getElementById('subRegionParent').value;
+            const name = document.getElementById('subRegionName').value.trim();
+            const code = document.getElementById('subRegionCode').value.trim();
+            try {
+                await fetch(`${DB_URL}regions/sub.json`, { method: 'POST', body: JSON.stringify({ mainId, name, code, timestamp: Date.now() }) });
+             document.getElementById('subRegionName').value = '';
+            document.getElementById('subRegionCode').value = '';
+            showToast("تمت إضافة المنطقة الفرعية بنجاح");
+            subRegions = await fetchWithCache(`${DB_URL}regions/sub.json`, 'local_sub_regions') || {};
+            loadRegionsUI();
+            
+            // الكود الجديد لتثبيت خيار المنطقة الرئيسية المحددة مسبقاً
+            document.getElementById('subRegionParent').value = mainId;
+        } catch(err) { showToast("خطأ في الحفظ", "error"); }   
+        }
+
+        async function saveRegionPrice() {
+            const branchId = document.getElementById('priceRegionBranch').value;
+            const subInput = document.getElementById('priceRegionSub').value;
+            const price = parseFloat(document.getElementById('priceRegionValue').value);
+            
+            if(!branchId || !subInput || isNaN(price)) return showToast("يرجى إكمال كافة البيانات بشكل صحيح", "error");
+
+            const parts = subInput.split(' - ');
+            const subCode = parts[0];
+            const subId = Object.keys(subRegions).find(k => subRegions[k].code === subCode || subRegions[k].name === subInput);
+            
+            if(!subId) return showToast("المنطقة الفرعية غير موجودة", "error");
+
+            if(!regionPrices[branchId]) regionPrices[branchId] = {};
+            regionPrices[branchId][subId] = price;
+
+            try {
+                await fetch(`${DB_URL}region_prices/${branchId}.json`, { method: 'PUT', body: JSON.stringify(regionPrices[branchId]) });
+                document.getElementById('priceRegionValue').value = '';
+                document.getElementById('priceRegionSub').value = '';
+                showToast("تم حفظ التسعيرة للمنطقة بنجاح");
+            } catch(e) { showToast("حدث خطأ", "error"); }
+        }
+
+        function renderRegionsTree() {
+            const container = document.getElementById('regionsTreeContainer');
+            container.innerHTML = '';
+            
+            Object.keys(mainRegions).forEach(mId => {
+                const m = mainRegions[mId];
+                let subHtml = '';
+                
+                Object.keys(subRegions).filter(sId => subRegions[sId].mainId === mId).forEach(sId => {
+                    const s = subRegions[sId];
+                    subHtml += `
+                        <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-100 ml-4 mb-1">
+                            <div class="text-sm font-bold text-gray-700"><span class="text-xs bg-gray-200 px-1 rounded mr-1">${s.code}</span> ${s.name}</div>
+                            <button onclick="editSubRegion('${sId}', '${s.name}', '${s.code}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML += `
+                    <div class="mb-3">
+                        <div class="flex justify-between items-center bg-purple-100 p-3 rounded-lg border border-purple-200 mb-2">
+                            <div class="font-bold text-purple-800"><i class="fa-solid fa-location-dot mr-2"></i>${m.name}</div>
+                            <button onclick="editMainRegion('${mId}', '${m.name}')" class="text-purple-600 hover:text-purple-800"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+                        ${subHtml}
+                    </div>
+                `;
+            });
+        }
+    async function clearAllApplicationData() {
+    console.warn("بدء عملية التطهير الشامل ومسح كافة بيانات النظام (مع الاحتفاظ بمعرفات الجهاز)...");
+
+    // الاحتفاظ بالبيانات الحرجة قبل المسح
+    const savedDeviceId = localStorage.getItem('scissors_device_id_v2');
+    const savedLoginCode = localStorage.getItem('remember_login_code');
+    const savedTheme = localStorage.getItem('scissors_theme');
+
+    // 1. مسح التخزين المحلي والمؤقت للبيانات
     localStorage.clear();
     sessionStorage.clear();
 
-    // 2. مسح الكاش
-    if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(cache => caches.delete(cache)));
+    // إعادة البيانات الحرجة فوراً
+    if (savedDeviceId) localStorage.setItem('scissors_device_id_v2', savedDeviceId);
+    if (savedLoginCode) localStorage.setItem('remember_login_code', savedLoginCode);
+    if (savedTheme) localStorage.setItem('scissors_theme', savedTheme);
+
+    // 2. مسح ملفات تعريف الارتباط (Cookies) بالكامل لجميع النطاقات والمصارات
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
     }
 
-    // 3. إلغاء تسجيل السيرفس وركر
+    // 3. إلغاء تسجيل كافة السيرفس وركر (Service Workers) النشطة
     if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-            await registration.unregister();
+        try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+            }
+        } catch (e) {
+            console.error("خطأ أثناء مسح السيرفس وركر:", e);
         }
     }
 
-    // 4. إعادة تحميل النظام
-    window.location.reload(true);
+    // 4. تدمير وإفراغ ذاكرة الكاش بالكامل (Cache Storage)
+    if ('caches' in window) {
+        try {
+            const cacheNames = await caches.keys();
+            for (let name of cacheNames) {
+                await caches.delete(name);
+            }
+        } catch (e) {
+            console.error("خطأ أثناء مسح ذاكرة الكاش:", e);
+        }
+    }
+
+    // 5. تدمير قواعد البيانات المحلية (IndexedDB) بالكامل
+    if ('indexedDB' in window) {
+        try {
+            if (typeof indexedDB.databases === 'function') {
+                const dbs = await indexedDB.databases();
+                for (let db of dbs) {
+                    if (db.name) {
+                        indexedDB.deleteDatabase(db.name);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("خطأ أثناء تدمير IndexedDB:", e);
+        }
+    }
+
+    // 6. إعادة تحميل الصفحة بشكل جبري
+    window.location.href = window.location.origin + window.location.pathname + '?hardReset=' + Date.now();
+}
+      
+
+function initRealTimeUpdateListener() {
+    // التأكد من وجود المتغير العام لرابط قاعدة البيانات DB_URL في ملفك
+    if (typeof DB_URL === 'undefined' || !DB_URL) {
+        console.error("لم يتم العثور على متغير DB_URL الخاص بقاعدة البيانات.");
+        return;
+    }
+    
+    // إنشاء مسار خاص داخل الفايربيز لبث التحديثات الفورية
+    const streamUrl = `${DB_URL}system_control/update_signal.json`;
+    
+    const eventSource = new EventSource(streamUrl);
+    let isInitialLoad = true;
+    let currentSignalValue = null;
+
+    // Firebase يرسل الحدث 'put' عند أول اتصال وعند حدوث أي تغيير
+    eventSource.addEventListener('put', (event) => {
+        try {
+            const resData = JSON.parse(event.data);
+            const remoteValue = resData.data;
+
+            if (isInitialLoad) {
+                // عند فتح المتصفح لأول مرة: نقوم فقط بحفظ القيمة الحالية للإشارة لتجنب المسح التلقائي
+                currentSignalValue = remoteValue;
+                isInitialLoad = false;
+                console.log("تم تفعيل نظام الاستماع الحي بنجاح. الإشارة الحالية الفعالة:", currentSignalValue);
+             } else {
+                // إذا تغيرت القيمة في قاعدة البيانات أثناء عمل التطبيق لدى المستخدمين
+                if (remoteValue !== currentSignalValue && remoteValue !== null) {
+                    console.log("🚨 تم رصد تحديث للنظام من الإدارة! جاري إظهار إشعار التحديث للأجهزة...");
+                    // التعديل هنا: إظهار النافذة المنبثقة بدلاً من المسح الفوري
+                    const reloadModal = document.getElementById('forceReloadModal');
+                    if (reloadModal) {
+                        reloadModal.classList.add('active');
+                        // تشغيل صوت تنبيه إذا كانت الدالة متوفرة
+                        if (typeof playAlertSound === 'function') {
+                            try { playAlertSound('delay'); } catch(e) {}
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("خطأ في معالجة بيانات البث الحي المباشر:", error);
+        }
+    });
+
+    eventSource.onerror = (error) => {
+        console.warn("فقد الاتصال المؤقت بالبث الحي، متصفح Edge سيعيد الاتصال تلقائياً خلال ثوانٍ...", error);
+    };
 }
 
-
+async function executeForceReload() {
+    // تغيير شكل الزر لإعلام المستخدم بأن العملية قيد التنفيذ
+    const btn = document.querySelector('#forceReloadModal button');
+    if(btn) {
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحديث ومسح النظام...';
+        btn.disabled = true;
+    }
+    
+    // استدعاء دالة المسح الشامل بعد ضغط المستخدم
+    await clearAllApplicationData();
+}
     </script>
 </body>
 </html>
