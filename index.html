@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics system-2.2</title>
+    <title>Logistics system-2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -99,7 +99,7 @@
 
     <div id="printReceiptContainer" style="display: none;">
         <div class="print-header">
-            <h2 style="font-size: 16px; font-weight: bold; margin: 0;" id="printBranchName">صيدليات دكتور وائل حافظ</h2>
+            <h2 style="font-size: 16px; font-weight: bold; margin: 0;" id="printBranchName">logistics-system</h2>
             <p style="margin: 5px 0 0 0; font-size: 12px;" id="printDateRange"></p>
         </div>
         <table class="print-table">
@@ -1076,11 +1076,8 @@ let delegatesOut = {};
        
         const DB_URL = 'https://story-64520-default-rtdb.firebaseio.com/';
         const TRACKING_URL = 'https://YOUR_WEBSITE_OR_HOSTING_LINK.com/track.html';
-         document.addEventListener("DOMContentLoaded", () => {
-    window.onload = function() {
+          document.addEventListener("DOMContentLoaded", () => {
     initRealTimeUpdateListener();
-    // ... باقي دوال التحميل
-};
 });
         var OFFLINE_QUEUE_KEY = 'dr_wael_queue';
         var originalFetch = window.fetch;
@@ -1869,11 +1866,16 @@ async function fetchFilteredNotifications() {
                         if (branchFilter && r.sourceBranchId !== branchFilter) return;
 
                         // تطبيق فلتر البحث
-                        if (searchFilter) {
-                            const matchItem = r.itemCode && r.itemCode.toLowerCase().includes(searchFilter);
-                            const matchDel = r.delegateName && r.delegateName.toLowerCase().includes(searchFilter);
-                            if (!matchItem && !matchDel) return;
-                        }
+                        if(searchVal) {
+    const cleanSearch = searchVal.replace(/\s+/g, '');
+    const matchOrder = r.orderNumber && r.orderNumber.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchItemCode = r.itemCode && r.itemCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchDelCode = r.delegateCode && r.delegateCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchDelName = r.delegateName && r.delegateName.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchBranch = (r.branchName || r.toBranchName || '').toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    
+    if(!matchOrder && !matchDelCode && !matchDelName && !matchBranch && !matchItemCode) return;
+}
 
                         r.id = k;
                         r.date = dateStr;
@@ -1938,14 +1940,14 @@ function renderAdvancedNotifs(notifsArray) {
             const reqQty = r.quantityEdited ? r.originalCount : (r.count || r.quantity || 1);
             const currentQty = r.count || r.quantity || 1;
 
-            let itemActions = '';
-            if (!r.isAcceptedByReceiver) {
-                itemActions = `
+          let itemActions = '';
+if (!r.isAcceptedByReceiver) {
+    itemActions = `
     <div class="flex flex-wrap gap-2 justify-end mt-2 w-full">
-        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', 'confirm')" class="bg-[#10b981] hover:bg-[#059669] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-check-double"></i> تأكيد كامل</button>
-        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', 'edit')" class="bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-pen"></i> تعديل عجز</button>
-    </div>
-`;
+        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', '${r.sourceBranchId || 'admin'}', 'confirm')" class="bg-[#10b981] hover:bg-[#059669] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-check-double"></i> تأكيد كامل</button>
+        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', '${r.sourceBranchId || 'admin'}', 'edit')" class="bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-pen"></i> تعديل عجز</button>
+    </div>`;
+ 
 
               
             } else {
@@ -2000,77 +2002,58 @@ function renderAdvancedNotifs(notifsArray) {
 
 // دالة الرد والتأكيد أو التعديل من داخل النافذة
 // دالة الرد والتأكيد أو التعديل من داخل النافذة (محدثة وخالية من الأخطاء)
-async function replyToAdvancedNotif(date, recordId, action) {
+// تمت إضافة branchId كمتغير جديد في الدالة
+async function replyToAdvancedNotif(date, recordId, branchId, action) {
     try {
-        const res = await fetch(`${DB_URL}records/${date}/${recordId}.json`);
+        const res = await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`);
         const rec = await res.json();
         if(!rec) return showToast("عذراً، هذه الحركة لم تعد متوفرة في النظام", "error");
 
         if (action === 'confirm') {
-            await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
+            await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`, {
+                method: 'PATCH', body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
             });
             showToast("تم تأكيد الاستلام بنجاح", "success");
             
         } else if (action === 'edit') {
             const oldQty = parseInt(rec.count || rec.quantity || 1);
             const newQtyStr = prompt(`جرد الصنف (${rec.itemCode || 'بدون كود'}):\nيرجى إدخال الكمية الفعلية التي وصلت للفرع (المرسل: ${oldQty}):`, oldQty);
-            
             if (newQtyStr === null || newQtyStr.trim() === '') return; 
             
             const newQty = parseInt(newQtyStr);
             if (isNaN(newQty) || newQty <= 0) return showToast("خطأ: يرجى إدخال رقم صحيح", "error");
             
             if (newQty === oldQty) {
-                // إذا أدخل كمية مطابقة نعتبرها تأكيداً لتفادي الأخطاء
-                await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
+                await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`, {
+                    method: 'PATCH', body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
                 });
                 showToast("الكمية مطابقة! تم الاستلام بالكامل", "success");
             } else {
                 if(!confirm(`تأكيد الجرد: استلام (${newQty}) بدلاً من (${oldQty}) للصنف؟`)) return;
                 
-                await fetch(`${DB_URL}records/${date}/${recordId}.json`, {
+                await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`, {
                     method: 'PATCH',
                     body: JSON.stringify({ 
-                        count: newQty, 
-                        quantity: newQty, 
-                        status: 'confirmed',
-                        originalCount: oldQty,
-                        quantityEdited: true,
-                        isAcceptedByReceiver: true
+                        count: newQty, quantity: newQty, status: 'confirmed',
+                        originalCount: oldQty, quantityEdited: true, isAcceptedByReceiver: true
                     })
                 });
                 
                 showToast("تم حفظ العجز والكمية المستلمة بنجاح", "success");
-                
-                // إرسال الإشعار وتأمين المُرسل إليه
                 const validTargetId = rec.createdByUserId || 'admin';
                 await fetch(`${DB_URL}branch_notifications.json`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        text: `تنبيه عجز: استلم الفرع الصنف (${rec.itemCode || 'مجهول'}) بكمية (${newQty}) بدلاً من المكتوبة (${oldQty}).`,
-                        senderId: currentUser.id,
-                        targetId: validTargetId,
-                        timestamp: Date.now()
+                        text: `تنبيه عجز: استلم الفرع الصنف (${rec.itemCode || 'مجهول'}) بكمية (${newQty}) بدلاً من (${oldQty}).`,
+                        senderId: currentUser.id, targetId: validTargetId, timestamp: Date.now()
                     })
                 });
                 if(typeof logActivity === 'function') logActivity('edit', `تعديل استلام الصنف ${rec.itemCode || 'بدون كود'}: من ${oldQty} إلى ${newQty}`);
             }
         }
-        
-        // تحديث النافذة بشكل آمن ومزامنة البيانات
-        await fetchFilteredNotifications();
-        if (typeof loadRecords === 'function') loadRecords();
-        
-    } catch(e) {
-        console.error("Database connection error:", e);
-        showToast("خطأ أثناء الاتصال بقاعدة البيانات", "error");
-    }
+        await fetchFilteredNotifications(); if (typeof loadRecords === 'function') loadRecords();
+    } catch(e) { showToast("خطأ أثناء الاتصال بقاعدة البيانات", "error"); }
 }
-
 
         async function checkPendingDevicesBackground() {
             try {
@@ -2712,26 +2695,44 @@ function renderAdvancedReport(movementsList) {
         
      
 
+       async function getDayData(dateStr, forceFetch = false) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const cacheKey = `local_records_v2_${dateStr}`; // تم تغيير اسم الكاش لمنع التداخل مع الداتا القديمة
+    
+    if(!forceFetch && dateStr !== todayStr && recordsCache[dateStr]) { return recordsCache[dateStr]; }
+    
+    try {
+        let finalData = {};
+        const isGeneralAdmin = (currentUser.role === 'admin' && currentUser.adminType === 'admin');
 
-        async function getDayData(dateStr, forceFetch = false) {
-            const todayStr = new Date().toISOString().split('T')[0];
-            const cacheKey = `local_records_${dateStr}`;
+        if (isGeneralAdmin) {
+            // 1. المدير العام: يقرأ مجلد اليوم كاملاً (يحتوي على مجلدات كل الفروع)
+            const res = await fetch(`${DB_URL}daily_records/${dateStr}.json`);
+            const allBranchesData = await res.json() || {};
             
-            if(!forceFetch && dateStr !== todayStr && recordsCache[dateStr]) { return recordsCache[dateStr]; }
-            
-            try {
-                const res = await fetch(`${DB_URL}records/${dateStr}.json`);
-                const data = await res.json() || null;
-                if(data) {
-                    if(dateStr !== todayStr) recordsCache[dateStr] = data;
-                    localStorage.setItem(cacheKey, JSON.stringify(data));
-                }
-                return data;
-            } catch (e) {
-                const cached = localStorage.getItem(cacheKey);
-                return cached ? JSON.parse(cached) : null;
-            }
+            // دمج الداتا في كائن واحد لتعمل مع الجداول والتقارير القديمة بسلاسة
+            Object.keys(allBranchesData).forEach(bId => {
+                Object.assign(finalData, allBranchesData[bId]);
+            });
+        } else {
+            // 2. الفروع: تقرأ المجلد الخاص بها فقط (سرعة فائقة وأمان)
+            const myBranchId = (currentUser.role === 'branch') ? currentUser.id : currentUser.assignedBranch;
+            const res = await fetch(`${DB_URL}daily_records/${dateStr}/${myBranchId}.json`);
+            finalData = await res.json() || {};
         }
+
+        if(Object.keys(finalData).length > 0) {
+            if(dateStr !== todayStr) recordsCache[dateStr] = finalData;
+            localStorage.setItem(cacheKey, JSON.stringify(finalData));
+            return finalData;
+        }
+        return null;
+    } catch (e) {
+        const cached = localStorage.getItem(cacheKey);
+        return cached ? JSON.parse(cached) : null;
+    }
+}
+       
 
         async function loadAllData() {
             try {
@@ -2839,7 +2840,7 @@ function updateAdminsUI() {
             if(tbody) tbody.innerHTML = '';
             if(selectDel) selectDel.innerHTML = '<option value="">-- اختر الفرع التابع له --</option>';
 
-            const keys = Object.keys(branches).sort((a,b) => branches[a].timestamp - branches[b].timestamp);
+           const keys = Object.keys(branches).filter(k => branches[k]).sort((a,b) => (branches[a].timestamp || 0) - (branches[b].timestamp || 0));
             keys.forEach(k => {
                 const b = branches[k];
                 if(tbody) tbody.innerHTML += `<tr class="border-b hover:bg-gray-50 transition-colors"><td class="p-3 font-bold text-primary">${b.name} <span class="text-xs text-gray-400 bg-gray-100 rounded px-1">${b.type === 'has_cs' || b.branchType === 'has_cs' ? 'خدمة عملاء' : 'عادي'}</span></td><td class="p-3 text-gray-600">${b.code || '-'}</td><td class="p-3 text-center"><button onclick="openEditModal('branch', '${k}')" class="text-secondary hover:text-primary bg-blue-50 p-2 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`;
@@ -2854,7 +2855,7 @@ function updateAdminsUI() {
             const tbody = document.getElementById('delegatesTableBody');
             if(tbody) tbody.innerHTML = '';
 
-            const keys = Object.keys(delegates).sort((a,b) => delegates[b].timestamp - delegates[a].timestamp);
+            const keys = Object.keys(delegates).filter(k => delegates[k]).sort((a,b) => (delegates[b].timestamp || 0) - (delegates[a].timestamp || 0));
             keys.forEach(k => {
                 const d = delegates[k];
                 const branchName = d.branchId && branches[d.branchId] ? branches[d.branchId].name : 'غير محدد';
@@ -2953,11 +2954,12 @@ function updateAdminsUI() {
             else warningMsg.classList.add('hidden');
 
             let visibleCount = 0;
-            const sortedKeys = Object.keys(branches).sort((a, b) => {
-                const countA = branchStats[a] || 0; const countB = branchStats[b] || 0;
-                if (countB !== countA) return countB - countA;
-                return branches[b].timestamp - branches[a].timestamp; 
-            });
+           const sortedKeys = Object.keys(branches).filter(k => branches[k]).sort((a, b) => {
+    const countA = branchStats[a] || 0; 
+    const countB = branchStats[b] || 0;
+    if (countB !== countA) return countB - countA;
+    return (branches[b].timestamp || 0) - (branches[a].timestamp || 0); 
+});
 
             sortedKeys.forEach(k => {
                 if (currentUser.role === 'branch' && k === currentUser.id) return;
@@ -3100,64 +3102,90 @@ function openOrderModal(id, name) {
         function closeOrderModal() { document.getElementById('orderModal').classList.remove('active'); }
 
         function saveOrderData(sendWhatsapp) {
-            const getVal = (id) => {
-                const el = document.getElementById(id);
-                return el ? el.value.trim() : '';
-            };
+    // دالة مساعدة لجلب قيم الحقول بأمان
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    };
 
-            const orderNum = getVal('orderNumberInput');
-            const orderVal = getVal('orderValueInput');
-            const paymentMethod = getVal('orderPaymentMethodInput') || 'نقدي';
-            const orderWhatsapp = getVal('orderWhatsappInput');
-            const orderContact = getVal('orderContactInput');
-            const orderAddress = getVal('orderAddressInput');
+    const orderNum = getVal('orderNumberInput');
+    const orderVal = getVal('orderValueInput');
+    const paymentMethod = getVal('orderPaymentMethodInput') || 'نقدي';
+    const orderWhatsapp = getVal('orderWhatsappInput');
+    const orderContact = getVal('orderContactInput');
+    const orderAddress = getVal('orderAddressInput');
 
-            const customTimeRaw = getVal('orderCustomTimeInput');
-            const customTimeMs = customTimeRaw ? new Date(customTimeRaw).getTime() : null;
+    const customTimeRaw = getVal('orderCustomTimeInput');
+    const customTimeMs = customTimeRaw ? new Date(customTimeRaw).getTime() : null;
 
-            const checkbox = document.getElementById('hasChangeCheckbox');
-            const hasChange = checkbox ? checkbox.checked : false;
-            const changeAmount = hasChange ? (parseInt(getVal('orderChangeInput')) || 0) : 0;
+    const checkbox = document.getElementById('hasChangeCheckbox');
+    const hasChange = checkbox ? checkbox.checked : false;
+    const changeAmount = hasChange ? (parseInt(getVal('orderChangeInput')) || 0) : 0;
 
-             // استخراج بيانات المنطقة الفرعية الجديدة (يدعم البحث الذكي بالكود أو بالاسم)
-            const regionInputValue = getVal('orderRegionInput');
-            let selectedSubRegionId = '';
-            let selectedSubRegionName = '';
-            let selectedSubRegionCode = '';
+    // استخراج بيانات المنطقة الفرعية (يدعم البحث الذكي بالكود أو بالاسم)
+    const regionInputValue = getVal('orderRegionInput');
+    let selectedSubRegionId = '';
+    let selectedSubRegionName = '';
+    let selectedSubRegionCode = '';
 
-            if(regionInputValue) {
-                const parts = regionInputValue.split(' - ');
-                let foundKey = '';
-                
-                if(parts.length > 1) {
-                    // في حال تم الاختيار المباشر من الداتا ليست المنسدلة (كود - اسم)
-                    const subCode = parts[0].trim();
-                    foundKey = Object.keys(subRegions).find(k => subRegions[k].code === subCode);
-                } else {
-                    // في حال قام المستخدم بكتابة الكود فقط أو الاسم فقط بشكل يدوي
-                    const searchStr = regionInputValue.trim().toLowerCase();
-                    foundKey = Object.keys(subRegions).find(k => subRegions[k].code.toLowerCase() === searchStr) || 
-                               Object.keys(subRegions).find(k => subRegions[k].name.toLowerCase() === searchStr);
-                }
-
-                if(foundKey) {
-                    selectedSubRegionId = foundKey;
-                    selectedSubRegionName = subRegions[foundKey].name;
-                    selectedSubRegionCode = subRegions[foundKey].code;
-                } else {
-                    selectedSubRegionName = regionInputValue; // نص احتياطي في حال عدم مطابقة الكود
-                }
-            }
-
-            if(!orderNum) return showToast("يرجى إدخال رقم الأوردر لتسجيله", "error");
-            if(hasChange && changeAmount <= 0) return showToast("يرجى إدخال قيمة الباقي بشكل صحيح", "error");
-            if(sendWhatsapp && !orderWhatsapp) return showToast("يرجى إدخال رقم الواتساب للعميل للإرسال", "error");
-
-            closeOrderModal();
-            
-            // إرسال البيانات لدالة recordClick (لاحظ أنه تم تمرير 1 ككمية افتراضية للأوردرات)
-            recordClick(pendingBranchId, pendingBranchName, 1, orderNum, orderVal, orderWhatsapp, sendWhatsapp, changeAmount, customTimeMs, paymentMethod, orderContact, orderAddress, '', selectedSubRegionId, selectedSubRegionName);
+    if(regionInputValue) {
+        const parts = regionInputValue.split(' - ');
+        let foundKey = '';
+        
+        if(parts.length > 1) {
+            // الاختيار المباشر من القائمة (كود - اسم)
+            const subCode = parts[0].trim();
+            foundKey = Object.keys(subRegions).find(k => subRegions[k].code === subCode);
+        } else {
+            // البحث اليدوي
+            const searchStr = regionInputValue.trim().toLowerCase();
+            foundKey = Object.keys(subRegions).find(k => subRegions[k].code.toLowerCase() === searchStr) || 
+                       Object.keys(subRegions).find(k => subRegions[k].name.toLowerCase() === searchStr);
         }
+
+        if(foundKey) {
+            selectedSubRegionId = foundKey;
+            selectedSubRegionName = subRegions[foundKey].name;
+            selectedSubRegionCode = subRegions[foundKey].code;
+        } else {
+            selectedSubRegionName = regionInputValue; // نص احتياطي
+        }
+    }
+
+    // ==========================================
+    // 🌟 شروط التحقق الإجبارية (Validation) 🌟
+    // ==========================================
+    if(!orderNum) {
+        document.getElementById('orderNumberInput').focus();
+        return showToast("يرجى إدخال رقم الأوردر لتسجيله", "error");
+    }
+    
+    if(!orderVal || parseFloat(orderVal) <= 0) {
+        document.getElementById('orderValueInput').focus();
+        return showToast("يرجى إدخال قيمة الأوردر بشكل صحيح", "error");
+    }
+    
+    if(!selectedSubRegionName) {
+        document.getElementById('orderRegionInput').focus();
+        return showToast("يرجى تحديد منطقة التوصيل أولاً", "error");
+    }
+
+    if(hasChange && changeAmount <= 0) {
+        document.getElementById('orderChangeInput').focus();
+        return showToast("يرجى إدخال قيمة الباقي بشكل صحيح", "error");
+    }
+    
+    if(sendWhatsapp && !orderWhatsapp) {
+        document.getElementById('orderWhatsappInput').focus();
+        return showToast("يرجى إدخال رقم الواتساب للعميل للإرسال", "error");
+    }
+
+    // إغلاق النافذة فقط إذا اجتازت جميع الشروط بنجاح
+    closeOrderModal();
+    
+    // إرسال البيانات لدالة الحفظ النهائية
+    recordClick(pendingBranchId, pendingBranchName, 1, orderNum, orderVal, orderWhatsapp, sendWhatsapp, changeAmount, customTimeMs, paymentMethod, orderContact, orderAddress, '', selectedSubRegionId, selectedSubRegionName);
+}
         // فتح نافذة الأصناف المتعددة المطورة وإعادة بنائها بصفوف ديناميكية
         function openWeightModal(id, name) {
             pendingBranchId = id; pendingBranchName = name;
@@ -3273,8 +3301,9 @@ function openOrderModal(id, name) {
                 rec.customDeliveryTime = customDeliveryTime;
             }
 
-            try {
-                const res = await fetch(`${DB_URL}records/${date}.json`, { 
+           try {
+                // التوجيه الذكي: الحفظ داخل مجلد daily_records ثم التاريخ ثم كود الفرع
+                const res = await fetch(`${DB_URL}daily_records/${date}/${sBranchId}.json`, { 
                     method: 'POST', 
                     body: JSON.stringify(rec) 
                 });
@@ -3292,7 +3321,7 @@ function openOrderModal(id, name) {
             } catch (e) { 
                 console.error("فشل الاتصال، تم تحويل الطلب للمزامنة الخلفية", e);
             }
-        }
+        } // <--- هذا هو القوس السحري الذي كان مفقوداً وأعاد الحياة للكود!
 
         function sendWhatsappMessage(phone, orderNum, orderVal, delegate) {
             const TRACKING_URL = "https://2u.pw/oOFaRj"; 
@@ -3361,50 +3390,28 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
         }
 
         async function saveDelegateChange() {
-            const newDelId = document.getElementById('newDelegateSelect').value;
-            if (!newDelId) return showToast("يجب اختيار مندوب أولاً", "error");
-            
-            const newDel = delegates[newDelId];
-            
-            try {
-                let payload = { 
-                    delegateId: newDelId, 
-                    delegateName: newDel.name, 
-                    delegateCode: newDel.code,
-                    sourceBranchId: newDel.branchId || 'admin'
-                };
+    const newDelId = document.getElementById('newDelegateSelect').value;
+    if (!newDelId) return showToast("يجب اختيار مندوب أولاً", "error");
+    
+    const newDel = delegates[newDelId];
+    const branchNode = currentRecords[changeDelegateDate][recordToChangeDelegate].sourceBranchId || 'admin';
+    
+    try {
+        let payload = { delegateId: newDelId, delegateName: newDel.name, delegateCode: newDel.code, sourceBranchId: newDel.branchId || 'admin' };
+        if (isAssigningForDelivery) { payload.status = 'out_for_delivery'; payload.outForDeliveryTimestamp = Date.now(); }
 
-                if (isAssigningForDelivery) {
-                    payload.status = 'out_for_delivery';
-                    payload.outForDeliveryTimestamp = Date.now();
-                }
-
-                await fetch(`${DB_URL}records/${changeDelegateDate}/${recordToChangeDelegate}.json`, { 
-                    method: 'PATCH', 
-                    body: JSON.stringify(payload) 
-                });
-                
-                logActivity('edit', `تغيير المندوب لسجل بتاريخ ${changeDelegateDate} إلى المندوب (${newDel.name})`);
-                
-                if (isAssigningForDelivery) {
-                    showToast("تم تحديد المندوب وتحديث الحالة إلى 'خرج للتوصيل' بنجاح", "success");
-                } else {
-                    showToast("تم تبديل المندوب بنجاح", "success");
-                }
-                
-                closeChangeDelegateModal();
-                loadRecords(); 
-
-                if (isAssigningForDelivery) {
-                    openPendingOrdersModal(); 
-                    checkOverdueOrdersBackground(); 
-                    updateDelegatesOutStatus();
-                }
-
-            } catch (e) {
-                showToast("حدث خطأ أثناء تحديث المندوب", "error");
-            }
-        }
+        await fetch(`${DB_URL}daily_records/${changeDelegateDate}/${branchNode}/${recordToChangeDelegate}.json`, { 
+            method: 'PATCH', body: JSON.stringify(payload) 
+        });
+        
+        logActivity('edit', `تغيير المندوب لسجل بتاريخ ${changeDelegateDate} إلى المندوب (${newDel.name})`);
+        if (isAssigningForDelivery) showToast("تم تحديد المندوب وتحديث الحالة بنجاح", "success");
+        else showToast("تم تبديل المندوب بنجاح", "success");
+        
+        closeChangeDelegateModal(); loadRecords(); 
+        if (isAssigningForDelivery) { openPendingOrdersModal(); checkOverdueOrdersBackground(); updateDelegatesOutStatus(); }
+    } catch (e) { showToast("حدث خطأ أثناء تحديث المندوب", "error"); }
+}
         
         function renderRecordsTable(isSilent = false) {
             const date = document.getElementById('recordDate').value;
@@ -3445,14 +3452,16 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
                 if(selectedDelCode && r.delegateCode !== selectedDelCode && r.delegateId !== selectedDelCode) return;
                 if(selectedDelCode && (r.delegateCode === selectedDelCode || r.delegateId === selectedDelCode)) { delegateTotal += rCount; }
 
-                if(searchVal) {
-                    const matchOrder = r.orderNumber && r.orderNumber.toLowerCase().includes(searchVal);
-                    const matchItemCode = r.itemCode && r.itemCode.toLowerCase().includes(searchVal);
-                    const matchDelCode = r.delegateCode && r.delegateCode.toLowerCase().includes(searchVal);
-                    const matchDelName = r.delegateName && r.delegateName.toLowerCase().includes(searchVal);
-                    const matchBranch = (r.branchName || r.toBranchName || '').toLowerCase().includes(searchVal);
-                    if(!matchOrder && !matchDelCode && !matchDelName && !matchBranch && !matchItemCode) return;
-                }
+              if(searchVal) {
+    const cleanSearch = searchVal.replace(/\s+/g, '');
+    const matchOrder = r.orderNumber && r.orderNumber.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchItemCode = r.itemCode && r.itemCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchDelCode = r.delegateCode && r.delegateCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchDelName = r.delegateName && r.delegateName.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    const matchBranch = (r.branchName || r.toBranchName || '').toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+    
+    if(!matchOrder && !matchDelCode && !matchDelName && !matchBranch && !matchItemCode) return;
+}
 
                 let statusBadge = '';
                 if(r.status === 'confirmed' || r.status === 'completed' || r.status === 'delivered') {
@@ -3655,30 +3664,26 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
         }
         
         async function deleteRecord(date, recordId) {
-            if(!confirm("⚠️ تحذير: هل أنت متأكد من حذف هذا السجل نهائياً؟")) return;
-            
-            const recToDelete = currentRecords[date][recordId];
-            
-            try {
-                await fetch(`${DB_URL}records/${date}/${recordId}.json`, { method: 'DELETE' });
-                
-                if(currentRecords[date]) delete currentRecords[date][recordId];
-                if(recordsCache[date]) delete recordsCache[date][recordId];
+    if(!confirm("⚠️ تحذير: هل أنت متأكد من حذف هذا السجل نهائياً؟")) return;
+    const recToDelete = currentRecords[date][recordId];
+    const branchNode = recToDelete.sourceBranchId || 'admin'; // تحديد الفرع
+    
+    try {
+        await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { method: 'DELETE' });
+        
+        if(currentRecords[date]) delete currentRecords[date][recordId];
+        if(recordsCache[date]) delete recordsCache[date][recordId];
 
-                const isOrd = recToDelete.orderNumber ? `(أوردر رقم: ${recToDelete.orderNumber})` : '';
-                logActivity('delete', `تم حذف حركة بتاريخ ${date} للمندوب (${recToDelete.delegateName}) موجهة لفرع (${recToDelete.branchName}) الكمية: ${recToDelete.count || 1} ${isOrd}`);
+        const isOrd = recToDelete.orderNumber ? `(أوردر رقم: ${recToDelete.orderNumber})` : '';
+        logActivity('delete', `تم حذف حركة بتاريخ ${date} للمندوب (${recToDelete.delegateName}) موجهة لفرع (${recToDelete.branchName}) الكمية: ${recToDelete.count || 1} ${isOrd}`);
 
-                showToast("تم حذف السجل بنجاح");
-                
-                if(document.getElementById('reportsSubTab').classList.contains('active')) {
-                    generateReport();
-                } else {
-                    renderRecordsTable(date);
-                    renderBranchButtons();
-                }
-                updateDelegatesOutStatus();
-            } catch(e) { showToast("حدث خطأ أثناء الحذف", "error"); }
-        }
+        showToast("تم حذف السجل بنجاح");
+        
+        if(document.getElementById('reportsSubTab').classList.contains('active')) generateReport();
+        else { renderRecordsTable(date); renderBranchButtons(); }
+        updateDelegatesOutStatus();
+    } catch(e) { showToast("حدث خطأ أثناء الحذف", "error"); }
+}
 
       async function openPendingOrdersModal() {
     document.getElementById('pendingOrdersModal').classList.add('active');
@@ -3786,49 +3791,45 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
               function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
 
         async function updateOrderStatus(date, recordId, newStatus) {
-            let msg = newStatus === 'out_for_delivery' ? "هل خرج المندوب لتوصيل هذا الأوردر؟" : "تأكيد: هل تم تسليم هذا الأوردر للعميل بنجاح؟";
-            if(!confirm(msg)) return;
-            try {
-                let payload = { status: newStatus };
-                if (newStatus === 'delivered') payload.deliveryTimestamp = Date.now();
-                else payload.outForDeliveryTimestamp = Date.now();
+    let msg = newStatus === 'out_for_delivery' ? "هل خرج المندوب لتوصيل هذا الأوردر؟" : "تأكيد: هل تم تسليم هذا الأوردر للعميل بنجاح؟";
+    if(!confirm(msg)) return;
+    const branchNode = currentRecords[date][recordId].sourceBranchId || 'admin';
 
-                await fetch(`${DB_URL}records/${date}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
-                showToast("تم تحديث حالة الأوردر بنجاح!");
-                checkOverdueOrdersBackground(); 
-                updateDelegatesOutStatus();
-                openPendingOrdersModal();
-            } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
+    try {
+        let payload = { status: newStatus };
+        if (newStatus === 'delivered') payload.deliveryTimestamp = Date.now();
+        else payload.outForDeliveryTimestamp = Date.now();
+
+        await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
+        showToast("تم تحديث حالة الأوردر بنجاح!");
+        checkOverdueOrdersBackground(); 
+        updateDelegatesOutStatus();
+        openPendingOrdersModal();
+    } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
+}
+
+       async function addExtraTime(date, recordId) {
+    if(!confirm("هل تود إضافة 30 دقيقة إضافية لوقت هذا الأوردر للحد من التأخير؟")) return;
+    try {
+        const data = currentRecords[date][recordId];
+        if(data) {
+            const branchNode = data.sourceBranchId || 'admin';
+            const currentExtra = data.extraTime || 0;
+            const newExtra = currentExtra + (30 * 60 * 1000); 
+            
+            await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { 
+                method: 'PATCH', 
+                body: JSON.stringify({ extraTime: newExtra }) 
+            });
+            
+            if(currentRecords[date] && currentRecords[date][recordId]) currentRecords[date][recordId].extraTime = newExtra;
+            if(recordsCache[date] && recordsCache[date][recordId]) recordsCache[date][recordId].extraTime = newExtra;
+            
+            showToast("تم تمديد الوقت 30 دقيقة بنجاح", "success");
+            checkOverdueOrdersBackground(); openPendingOrdersModal();
         }
-
-        async function addExtraTime(date, recordId) {
-            if(!confirm("هل تود إضافة 30 دقيقة إضافية لوقت هذا الأوردر للحد من التأخير؟")) return;
-            try {
-                const res = await fetch(`${DB_URL}records/${date}/${recordId}.json`);
-                const data = await res.json();
-                if(data) {
-                    const currentExtra = data.extraTime || 0;
-                    const newExtra = currentExtra + (30 * 60 * 1000); 
-                    
-                    await fetch(`${DB_URL}records/${date}/${recordId}.json`, { 
-                        method: 'PATCH', 
-                        body: JSON.stringify({ extraTime: newExtra }) 
-                    });
-                    
-                    if(currentRecords[date] && currentRecords[date][recordId]) {
-                        currentRecords[date][recordId].extraTime = newExtra;
-                    }
-                    if(recordsCache[date] && recordsCache[date][recordId]) {
-                        recordsCache[date][recordId].extraTime = newExtra;
-                    }
-                    
-                    showToast("تم تمديد الوقت 30 دقيقة بنجاح", "success");
-                    checkOverdueOrdersBackground();
-                    openPendingOrdersModal();
-                }
-            } catch(e) { showToast("حدث خطأ في تمديد الوقت", "error"); }
-        }
-
+    } catch(e) { showToast("حدث خطأ في تمديد الوقت", "error"); }
+}
         function processOfferImage(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -4247,45 +4248,39 @@ document.getElementById('offerMediaFile').value = '';
             }
         }
 
-        async function executeBulkDelete() {
-            const checkboxes = document.querySelectorAll('.report-row-checkbox:checked');
-            if (checkboxes.length === 0) return;
-            if (!confirm(`⚠️ تحذير خطير: هل أنت متأكد من الحذف النهائي لعدد ${checkboxes.length} سجلات؟ لا يمكن التراجع عن هذه العملية.`)) return;
+       async function executeBulkDelete() {
+    const checkboxes = document.querySelectorAll('.report-row-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    if (!confirm(`⚠️ تحذير خطير: هل أنت متأكد من الحذف النهائي لعدد ${checkboxes.length} سجلات؟ لا يمكن التراجع عن هذه العملية.`)) return;
+    
+    const btn = document.querySelector('#bulkDeleteContainer button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin ml-2"></i> جاري الحذف...';
+    btn.disabled = true;
+
+    let successCount = 0;
+
+    try {
+        const deletePromises = Array.from(checkboxes).map(async (cb) => {
+            const id = cb.value;
+            const date = cb.getAttribute('data-date');
+            const branchNode = cb.getAttribute('data-branch'); // جلب الفرع من الـ Checkbox
+
+            await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${id}.json`, { method: 'DELETE' });
             
-            const btn = document.querySelector('#bulkDeleteContainer button');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin ml-2"></i> جاري الحذف...';
-            btn.disabled = true;
+            if(currentRecords[date]) delete currentRecords[date][id];
+            if(recordsCache[date]) delete recordsCache[date][id];
+            successCount++;
+        });
 
-            let successCount = 0;
-
-            try {
-                const deletePromises = Array.from(checkboxes).map(async (cb) => {
-                    const id = cb.value;
-                    const date = cb.getAttribute('data-date');
-                    await fetch(`${DB_URL}records/${date}/${id}.json`, { method: 'DELETE' });
-                    
-                    if(currentRecords[date]) delete currentRecords[date][id];
-                    if(recordsCache[date]) delete recordsCache[date][id];
-                    
-                    successCount++;
-                });
-
-                await Promise.all(deletePromises);
-                
-                logActivity('delete', `قام المستخدم بحذف جماعي لعدد ${successCount} سجل من التقارير.`);
-                showToast(`تم حذف ${successCount} سجل بنجاح`);
-                generateReport(); 
-                updateDelegatesOutStatus();
-            } catch(e) {
-                showToast("حدث خطأ أثناء الحذف الجماعي", "error");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                updateBulkDeleteBtn(); 
-            }
-        }
-
+        await Promise.all(deletePromises);
+        
+        logActivity('delete', `قام المستخدم بحذف جماعي لعدد ${successCount} سجل من التقارير.`);
+        showToast(`تم حذف ${successCount} سجل بنجاح`);
+        generateReport(); updateDelegatesOutStatus();
+    } catch(e) { showToast("حدث خطأ أثناء الحذف الجماعي", "error"); } 
+    finally { btn.innerHTML = originalText; btn.disabled = false; updateBulkDeleteBtn(); }
+}
         async function generateChart() {
             const startDT = document.getElementById('chartFromDate').value;
             const endDT = document.getElementById('chartToDate').value;
@@ -4729,7 +4724,7 @@ async function generateReport() {
 
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-gray-50 transition">
-                        <td class="p-3 text-center"><input type="checkbox" value="${r.id}" data-date="${r.date}" class="w-4 h-4 report-row-checkbox cursor-pointer accent-red-600" onchange="updateBulkDeleteBtn()"></td>
+                        <td class="p-3 text-center"><input type="checkbox" value="${r.id}" data-date="${r.date}" data-branch="${r.sourceBranchId || 'admin'}" class="w-4 h-4 report-row-checkbox cursor-pointer accent-red-600" onchange="updateBulkDeleteBtn()"></td> 
                         <td class="p-3 text-sm font-semibold">${r.date}<br><span class="text-xs text-gray-500" dir="ltr">${r.time}</span></td>
                         <td class="p-3 text-sm font-bold text-primary">${r.createdByUserName || 'غير محدد'}</td>
                         <td class="p-3 text-sm font-bold"><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 shadow-sm ml-1">${r.delegateCode}</span> ${r.delegateName}</td>
@@ -5196,6 +5191,7 @@ async function executeForceReload() {
     // استدعاء دالة المسح الشامل بعد ضغط المستخدم
     await clearAllApplicationData();
 }
+
 
     </script>
 </body>
