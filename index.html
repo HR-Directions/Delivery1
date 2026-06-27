@@ -2395,78 +2395,89 @@ async function replyToAdvancedNotif(date, recordId, branchId, action) {
         }
 window.activeDelegatesOut = delegatesOut;
 if(typeof updateDelegatesDropdownUI === 'function') updateDelegatesDropdownUI();
-        async function updateDelegatesOutStatus() {
-            if(!currentUser) return;
-            const datesToFetch = [];
-            for(let i=0; i<3; i++) { 
-                let d = new Date(); d.setDate(d.getDate() - i);
-                datesToFetch.push(d.toISOString().split('T')[0]);
-            }
-            
-           
-            
-            try {
-                const results = await Promise.all(datesToFetch.map(d => getDayData(d, d === new Date().toISOString().split('T')[0])));
-                results.forEach((dayData) => {
-                    if(dayData) {
-                        Object.values(dayData).forEach(r => {
-                            if(r.orderNumber && (r.status === 'pending' || r.status === 'preparing' || r.status === 'out_for_delivery')) {
-                                let hasAccess = false;
-                                if(currentUser.role === 'admin') {
-                                    if(currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') {
-                                        if(r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.assignedBranch) || r.createdByUserId === currentUser.id) hasAccess = true;
-                                    } else {
-                                        hasAccess = true;
-                                    }
-                                } else {
-                                    if(r.sourceBranchId === currentUser.id || r.branchId === currentUser.id || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.id) || r.createdByUserId === currentUser.id) hasAccess = true;
-                                }
-
-                                if (hasAccess) {
-                                    if (!delegatesOut[r.delegateId]) {
-                                        delegatesOut[r.delegateId] = { name: r.delegateName, code: r.delegateCode, count: 0, orderVal: 0, changeVal: 0 };
-                                    }
-                                    delegatesOut[r.delegateId].count++;
-                                    delegatesOut[r.delegateId].orderVal += (Number(r.orderValue) || 0);
-                                    delegatesOut[r.delegateId].changeVal += (Number(r.changeAmount) || 0);
-                                }
+       async function updateDelegatesOutStatus() {
+    if(!currentUser) return;
+    
+    // 🌟 الحل الجذري 1: تصفير كائن العهدة تماماً قبل بدء الحساب الجديد لمنع التضاعف الوهمي
+    delegatesOut = {}; 
+    
+    const datesToFetch = [];
+    for(let i=0; i<3; i++) { 
+        let d = new Date(); d.setDate(d.getDate() - i);
+        datesToFetch.push(d.toISOString().split('T')[0]);
+    }
+    
+    try {
+        const results = await Promise.all(datesToFetch.map(d => getDayData(d, d === new Date().toISOString().split('T')[0])));
+        results.forEach((dayData) => {
+            if(dayData) {
+                Object.values(dayData).forEach(r => {
+                    
+                    // 🌟 الحل الجذري 2: حساب العهدة للأوردرات التي "خرجت للتوصيل" فقط، 
+                    // أو الأوردرات قيد التجهيز ولكن تم تعيينها لمندوب محدد (ليست pending بدون مندوب).
+                    // وتجاهل الأوردرات التي تم تسليمها (delivered أو completed).
+                    if(r.orderNumber && (r.status === 'out_for_delivery' || ((r.status === 'pending' || r.status === 'preparing') && r.delegateId && r.delegateId !== 'pending'))) {
+                        
+                        let hasAccess = false;
+                        if(currentUser.role === 'admin') {
+                            if(currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') {
+                                if(r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.assignedBranch) || r.createdByUserId === currentUser.id) hasAccess = true;
+                            } else {
+                                hasAccess = true; // المدير العام يرى الكل
                             }
-                        });
+                        } else {
+                            if(r.sourceBranchId === currentUser.id || r.branchId === currentUser.id || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.id) || r.createdByUserId === currentUser.id) hasAccess = true;
+                        }
+
+                        if (hasAccess) {
+                            if (!delegatesOut[r.delegateId]) {
+                                delegatesOut[r.delegateId] = { name: r.delegateName, code: r.delegateCode, count: 0, orderVal: 0, changeVal: 0 };
+                            }
+                            delegatesOut[r.delegateId].count++;
+                            delegatesOut[r.delegateId].orderVal += (Number(r.orderValue) || 0);
+                            delegatesOut[r.delegateId].changeVal += (Number(r.changeAmount) || 0);
+                        }
                     }
                 });
-                
-                const grid = document.getElementById('delegatesOutGrid');
-                if(!grid) return; 
-                
-                grid.innerHTML = '';
-                const keys = Object.keys(delegatesOut);
-                
-                if (keys.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center text-gray-500 font-semibold py-8"><i class="fa-solid fa-mug-hot text-4xl mb-3 text-gray-300 block"></i> جميع المناديب متواجدين، لا توجد عهد بالخارج حالياً</div>';
-                } else {
-                    keys.forEach(k => {
-                        const d = delegatesOut[k];
-                        const totalCash = d.orderVal + d.changeVal;
-                        grid.innerHTML += `
-                            <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-                                <div class="absolute -left-4 -bottom-4 opacity-[0.03] text-8xl text-primary"><i class="fa-solid fa-motorcycle"></i></div>
-                                <div class="flex justify-between items-start mb-4 z-10 border-b border-blue-100 pb-3">
-                                    <div class="font-bold text-gray-800 text-lg"><span class="bg-white border shadow-sm text-xs px-2 py-0.5 rounded mr-1">${d.code}</span> ${d.name}</div>
-                                    <div class="bg-amber-100 text-amber-700 text-sm font-bold px-3 py-1 rounded-full shadow-sm animate-pulse">${d.count} أوردر</div>
-                                </div>
-                                <div class="z-10 mt-1">
-                                    <div class="text-xs text-gray-500 font-bold mb-1">إجمالي العهدة المطلوبة:</div>
-                                    <div class="text-2xl font-extrabold text-primary drop-shadow-sm">${totalCash > 0 ? totalCash.toLocaleString('en-US') : 'غير محدد'} <span class="text-sm font-bold text-gray-600">ج.م</span></div>
-                                    ${d.changeVal > 0 ? `<div class="text-xs text-teal-600 font-bold mt-2 bg-teal-50 inline-block px-2.5 py-1 rounded border border-teal-100"><i class="fa-solid fa-coins"></i> من ضمنها باقي: ${d.changeVal.toLocaleString('en-US')} ج.م</div>` : '<div class="text-xs text-gray-400 mt-2 px-2 py-1">بدون سحب بواقي</div>'}
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-            } catch (e) {
-                console.error("Error updating delegates out status", e);
             }
+        });
+        
+        // تحديث المتغير العام لتعمل القوائم المنسدلة للمناديب بشكل صحيح
+        window.activeDelegatesOut = delegatesOut;
+        if(typeof updateDelegatesDropdownUI === 'function') updateDelegatesDropdownUI();
+        
+        const grid = document.getElementById('delegatesOutGrid');
+        if(!grid) return; 
+        
+        grid.innerHTML = '';
+        const keys = Object.keys(delegatesOut);
+        
+        if (keys.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center text-gray-500 font-semibold py-8"><i class="fa-solid fa-mug-hot text-4xl mb-3 text-gray-300 block"></i> جميع المناديب متواجدين، لا توجد عهد بالخارج حالياً</div>';
+        } else {
+            keys.forEach(k => {
+                const d = delegatesOut[k];
+                const totalCash = d.orderVal + d.changeVal;
+                grid.innerHTML += `
+                    <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-5 flex flex-col justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+                        <div class="absolute -left-4 -bottom-4 opacity-[0.03] text-8xl text-primary"><i class="fa-solid fa-motorcycle"></i></div>
+                        <div class="flex justify-between items-start mb-4 z-10 border-b border-blue-100 pb-3">
+                            <div class="font-bold text-gray-800 text-lg"><span class="bg-white border shadow-sm text-xs px-2 py-0.5 rounded mr-1">${d.code}</span> ${d.name}</div>
+                            <div class="bg-amber-100 text-amber-700 text-sm font-bold px-3 py-1 rounded-full shadow-sm animate-pulse">${d.count} أوردر</div>
+                        </div>
+                        <div class="z-10 mt-1">
+                            <div class="text-xs text-gray-500 font-bold mb-1">إجمالي العهدة المطلوبة:</div>
+                            <div class="text-2xl font-extrabold text-primary drop-shadow-sm">${totalCash > 0 ? totalCash.toLocaleString('en-US') : '0'} <span class="text-sm font-bold text-gray-600">ج.م</span></div>
+                            ${d.changeVal > 0 ? `<div class="text-xs text-teal-600 font-bold mt-2 bg-teal-50 inline-block px-2.5 py-1 rounded border border-teal-100"><i class="fa-solid fa-coins"></i> من ضمنها باقي: ${d.changeVal.toLocaleString('en-US')} ج.م</div>` : '<div class="text-xs text-gray-400 mt-2 px-2 py-1">بدون سحب بواقي</div>'}
+                        </div>
+                    </div>
+                `;
+            });
         }
+    } catch (e) {
+        console.error("Error updating delegates out status", e);
+    }
+}
 
         async function checkOverdueOrdersBackground() {
             if(!currentUser) return;
