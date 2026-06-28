@@ -6235,49 +6235,64 @@ function verifySystemVersion(latestVersionFromDB, releaseNotes) {
     return true; // يعني أن الإصدار متطابق ويمكنه إكمال الدخول
 }
 
-// الدالة الاحترافية المعدلة لمسح الكاش مع الحفاظ على الإصدار الجديد وبيانات الدخول
+// دالة التحديث الذكي: تمسح كاش النظام والملفات وتُبقي على بصمة المتصفح ومعرفات الأجهزة الآمنة
 async function hardClearCacheAndReload(nextVersion) {
-    // 1. الاحتفاظ بالبيانات الهامة مؤقتاً في الذاكرة قبل مسح الـ LocalStorage
-    const userToken = localStorage.getItem('userToken'); 
-    const deviceId = localStorage.getItem('deviceId');
-    const userRole = localStorage.getItem('userRole'); // إذا كان لديك أدوار مستخدمين
+    console.log("🔄 جاري تحديث النظام ومسح الكاش مع حماية بصمة الجهاز ومعرفات الأمان...");
 
-    // 2. مسح الـ Service Workers لضمان جلب ملفات الـ HTML الجديدة
-    if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-            await registration.unregister();
+    // 1. مصفوفة الكلمات المفتاحية الحساسة التي تخص بصمة المتصفح أو التحقق والأمان
+    const securityKeywords = ['fingerprint', 'device', 'token', 'uuid', 'signature', 'auth', 'uid', 'identity', 'user'];
+    const preservedData = {};
+
+    // 2. الفحص التلقائي والحفاظ على أي مفتاح أمان مضاف حالياً أو مستقبلاً
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+            const isSensitive = securityKeywords.some(keyword => key.toLowerCase().includes(keyword));
+            if (isSensitive) {
+                preservedData[key] = localStorage.getItem(key);
+            }
         }
     }
-    
-    // 3. مسح كاش الملفات (Caches API)
-    if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        for (let cacheName of cacheNames) {
-            await caches.delete(cacheName);
+
+    try {
+        // 3. تدمير ومسح ملفات الـ Cache Storage الخاصة بالمتصفح لضمان جلب ملفات الأكواد الجديدة
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            console.log("🧹 تم مسح ملفات الـ Cache Storage بنجاح.");
         }
+    } catch (e) {
+        console.error("فشل مسح كاش الملفات:", e);
     }
-    
-    // 4. مسح ملفات تعريف الارتباط (Cookies)
-    document.cookie.split(";").forEach(function(c) {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    
-    // 5. مسح التخزين المحلي بالكامل لتنظيف النظام
+
+    try {
+        // 4. إلغاء تسجيل الـ Service Workers لإجبار المتصفح على قراءة ملف التحديث فوراً
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+            }
+            console.log("🤖 تم إلغاء الـ Service Workers القديمة بنجاح.");
+        }
+    } catch (e) {
+        console.error("فشل إلغاء الـ Service Worker:", e);
+    }
+
+    // 5. مسح الـ localStorage بالكامل لتنظيف كاش البيانات والعمليات القديمة
     localStorage.clear();
-    sessionStorage.clear();
-    
-    // 6. [الحل السحري] إعادة زرع البيانات الأساسية والإصدار الجديد في الـ LocalStorage بعد المسح
-    if (userToken) localStorage.setItem('userToken', userToken);
-    if (deviceId) localStorage.setItem('deviceId', deviceId);
-    if (userRole) localStorage.setItem('userRole', userRole);
-    if (nextVersion) localStorage.setItem('app_version', nextVersion); // تثبيت الإصدار الجديد لمنع تكرار النافذة
 
-    // 7. إعادة تحميل الصفحة بشكل إجباري ومباشر من السيرفر وبدون كاش
+    // 6. إعادة زرع بصمة الجهاز والمعرفات الحساسة المحفوظة فوراً لضمان عدم طلب إعادة التحقق
+    for (const [key, value] of Object.entries(preservedData)) {
+        localStorage.setItem(key, value);
+    }
+
+    // 7. تعيين رقم الإصدار الجديد الذي تم التحديث إليه
+    localStorage.setItem('app_version', nextVersion);
+    console.log("✅ تم استعادة بصمة الأمان بنجاح وتثبيت الإصدار الجديد:", nextVersion);
+
+    // 8. إعادة تحميل الصفحة بشكل صارم لتفعيل التحديث فوراً
     window.location.reload(true);
 }
-let latestServerVersion = ""; // متغير عالمي لحفظ رقم إصدار السيرفر المكتشف حالياً
-
 // دالة الفحص المستمر والتحقق عند الدخول وظهور النافذة
 function checkSystemVersion() {
     // الاستماع لبيانات الإصدار من الفايربيز
@@ -6362,9 +6377,10 @@ async function executeForceReload() {
         if (typeof hardClearCacheAndReload === 'function') {
             await hardClearCacheAndReload(nextVersion);
         } else {
-            // حل احتياطي في حال كانت دالة مسح الكاش غير مقروءة في هذا النطاق
-            localStorage.setItem('app_version', nextVersion);
-            window.location.reload(true);
+    // حل احتياطي آمن يحافظ على البصمة دون عمل مسح شامل للـ localStorage
+    localStorage.setItem('app_version', nextVersion);
+    window.location.reload(true);
+
         }
     } catch (error) {
         console.error("حدث خطأ أثناء عملية التحديث الإجباري:", error);
