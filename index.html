@@ -1068,9 +1068,27 @@
 
     <div id="pendingOrdersModal" class="modal">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-5xl max-h-[85vh] flex flex-col transform transition-all">
-            <div class="flex justify-between items-center mb-5 border-b pb-4">
+            
+            <div class="flex justify-between items-center mb-4 border-b pb-4 shrink-0">
                 <h2 class="text-2xl font-bold text-amber-600 flex items-center"><i class="fa-solid fa-clock-rotate-left ml-3 text-3xl"></i> الأوردرات المعلقة (قيد التوصيل)</h2>
-                <button onclick="closePendingOrdersModal()" class="text-gray-400 hover:text-red-500 transition-colors bg-gray-100 hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="closePendingOrdersModal()" class="text-gray-400 hover:text-red-500 transition-colors bg-gray-100 hover:bg-red-50 rounded-full w-10 h-10 flex items-center justify-center shadow-sm transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="mb-4 space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200 shrink-0 shadow-sm">
+                
+                <div id="pendingBranchFilterContainer" class="hidden flex items-center gap-3 border-b border-gray-200 pb-3">
+                    <label class="text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fa-solid fa-store text-blue-500 ml-1"></i> تصفية بالفرع:</label>
+                    <select id="pendingBranchSelect" onchange="loadPendingOrders()" class="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-amber-500 focus:ring-1 font-bold text-primary bg-white shadow-sm transition">
+                        <option value="all">جميع الفروع</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-2"><i class="fa-solid fa-motorcycle ml-1"></i> المناديب الذين لديهم أوردرات معلقة حالياً:</label>
+                    <div id="activeDelegatesBar" class="flex flex-wrap gap-2">
+                        </div>
+                </div>
+                
             </div>
             <div class="overflow-auto flex-grow rounded-lg border border-gray-100 shadow-inner relative">
                 <div id="pendingLoading" class="hidden absolute inset-0 bg-white/80 z-20 flex flex-col items-center justify-center backdrop-blur-sm">
@@ -3930,9 +3948,36 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
 
                 let orderHtml = `<span class="text-gray-400 font-bold">—</span>`;
                 if(r.orderNumber) {
+                    // تحديد الألوان والنصوص بناءً على حالة الأوردر لدمجها في مربع واحد
+                    let badgeBg = 'bg-amber-50 border-amber-200';
+                    let textColor = 'text-amber-700';
+                    let icon = '<i class="fa-solid fa-clock text-amber-500"></i>';
+                    let statusText = 'معلق';
+                    let numBg = 'bg-amber-500';
+                    let pulse = 'animate-pulse';
+
+                    if(r.status === 'confirmed' || r.status === 'completed' || r.status === 'delivered') {
+                        badgeBg = 'bg-emerald-50 border-emerald-200';
+                        textColor = 'text-emerald-700';
+                        icon = '<i class="fa-solid fa-circle-check text-emerald-500"></i>';
+                        statusText = 'مكتمل';
+                        numBg = 'bg-emerald-600';
+                        pulse = ''; // بدون نبض للمكتمل
+                    } else if (r.status === 'out_for_delivery') {
+                        badgeBg = 'bg-blue-50 border-blue-200';
+                        textColor = 'text-blue-700';
+                        icon = '<i class="fa-solid fa-motorcycle text-blue-500"></i>';
+                        statusText = 'توصيل';
+                        numBg = 'bg-blue-500';
+                        pulse = 'animate-pulse';
+                    }
+
+                    // التصميم المدمج لرقم الأوردر والحالة
                     orderHtml = `
-                        <div class="text-xs font-mono text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block shadow-sm mb-1"># ${r.orderNumber}</div>
-                        <div>${statusBadge}</div>
+                        <div class="inline-flex items-center justify-between gap-3 px-2 py-1.5 rounded-xl ${badgeBg} border ${textColor} font-bold text-xs shadow-sm whitespace-nowrap w-max mb-1 ${pulse}">
+                            <span class="flex items-center gap-1.5">${icon} ${statusText}</span>
+                            <span class="${numBg} text-white px-2 py-0.5 rounded-md text-[10px] tracking-wider shadow-inner font-mono w-max">#${r.orderNumber}</span>
+                        </div>
                         ${receiverHtml}
                     `;
                 } else if (r.itemCode) {
@@ -4139,21 +4184,39 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
         updateDelegatesOutStatus();
     } catch(e) { showToast("حدث خطأ أثناء الحذف", "error"); }
 }
+// متغيرات عامة لفلترة الأوردرات المعلقة بذكاء وسرعة
+let currentPendingOrdersList = [];
+let currentPendingDelegateFilter = 'all';
 
-      async function openPendingOrdersModal() {
+async function openPendingOrdersModal() {
     document.getElementById('pendingOrdersModal').classList.add('active');
-    const tbody = document.getElementById('pendingOrdersTableBody');
-    
     const loadingIndicator = document.getElementById('pendingLoading');
     if(loadingIndicator) loadingIndicator.classList.remove('hidden');
+
+    // 1. إعدادات فلتر الفروع (للإدارة فقط)
+    const branchContainer = document.getElementById('pendingBranchFilterContainer');
+    const branchSelect = document.getElementById('pendingBranchSelect');
+    const isGeneralAdmin = currentUser.role === 'admin' && currentUser.adminType === 'admin';
     
-    tbody.innerHTML = '';
-    
+    if (isGeneralAdmin) {
+        branchContainer.classList.remove('hidden');
+        let currentVal = branchSelect.value;
+        branchSelect.innerHTML = '<option value="all">جميع الفروع</option>';
+        Object.keys(branches).forEach(k => {
+            branchSelect.innerHTML += `<option value="${k}">${branches[k].name}</option>`;
+        });
+        if(currentVal) branchSelect.value = currentVal;
+    } else {
+        branchContainer.classList.add('hidden');
+    }
+
+    // 2. جلب البيانات لآخر 3 أيام
+    currentPendingOrdersList = [];
     const datesToFetch = [];
     for(let i=0; i<3; i++) {
         let d = new Date(); d.setDate(d.getDate() - i); datesToFetch.push(d.toISOString().split('T')[0]);
     }
-    let pendingOrders = [];
+    
     try {
         const results = await Promise.all(datesToFetch.map(d => getDayData(d, d === new Date().toISOString().split('T')[0])));
         results.forEach((dayData, index) => {
@@ -4162,87 +4225,170 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
                 Object.keys(dayData).forEach(k => {
                     const r = dayData[k];
                     if(r.orderNumber && (r.status === 'preparing' || r.status === 'out_for_delivery' || r.status === 'pending')) {
+                        
+                        // 3. تطبيق الصلاحيات بشكل صارم
                         let hasAccess = false;
-                        if(currentUser.role === 'admin') {
-                            if (currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') {
-                                if (r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.assignedBranch) || r.createdByUserId === currentUser.id) hasAccess = true;
-                            } else {
-                                hasAccess = true;
-                            }
+                        if (isGeneralAdmin) {
+                            hasAccess = true;
+                        } else if (currentUser.role === 'admin' && (currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء' || currentUser.employeeType === 'موظف بفرع')) {
+                            if (r.sourceBranchId === currentUser.assignedBranch || r.branchId === currentUser.assignedBranch || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.assignedBranch) || r.createdByUserId === currentUser.id) hasAccess = true;
                         } else {
                             if(r.sourceBranchId === currentUser.id || r.branchId === currentUser.id || (delegates[r.delegateId] && delegates[r.delegateId].branchId === currentUser.id) || r.createdByUserId === currentUser.id) hasAccess = true;
                         }
 
                         if (hasAccess) {
-                            pendingOrders.push({ id: k, date: dateStr, ...r });
+                            currentPendingOrdersList.push({ id: k, date: dateStr, ...r });
                         }
                     }
                 });
             }
         });
-        pendingOrders.sort((a,b) => a.timestamp - b.timestamp); 
         
-        if(pendingOrders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-clipboard-check text-4xl text-green-400 mb-3 block"></i><span class="font-bold text-lg">ممتاز! لا توجد أوردرات معلقة حالياً.</span></td></tr>';
-        } else {
-            pendingOrders.forEach(r => {
-                const currentStatus = (r.status === 'pending') ? 'preparing' : r.status; 
-                
-                let statusBadge = '';
-                let actionBtn = '';
-
-                if(currentStatus === 'preparing') {
-                    statusBadge = '<span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-box"></i> جاري التجهيز بالفرع</span>';
-                    
-                    if (r.delegateId === 'pending' || !r.delegateId) {
-                        actionBtn = `<button onclick="assignDelegateForDelivery('${r.date}', '${r.id}')" class="bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-indigo-600 transition shadow-md w-full sm:w-auto"><i class="fa-solid fa-user-plus mr-1"></i> تحديد المندوب والخروج</button>`;
-                    } else {
-                        actionBtn = `<button onclick="updateOrderStatus('${r.date}', '${r.id}', 'out_for_delivery')" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-md w-full sm:w-auto"><i class="fa-solid fa-motorcycle mr-1"></i> خرج للتوصيل</button>`;
-                    }
-                } else if (currentStatus === 'out_for_delivery') {
-                    statusBadge = '<span class="bg-amber-100 text-amber-700 border border-amber-300 px-2 py-1 rounded text-xs font-bold animate-pulse"><i class="fa-solid fa-motorcycle"></i> خرج للتوصيل الآن</span>';
-                    actionBtn = `<button onclick="updateOrderStatus('${r.date}', '${r.id}', 'delivered')" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-600 transition shadow-md w-full sm:w-auto"><i class="fa-solid fa-check-double mr-1"></i> تأكيد التسليم</button>`;
-                }
-
-                const orderValNum = Number(r.orderValue) || 0;
-                const changeValNum = Number(r.changeAmount) || 0;
-                const rowTotal = orderValNum + changeValNum;
-                let changeHtml = changeValNum > 0 ? `<div class="text-[10px] text-teal-600 font-bold bg-teal-50 px-1 rounded inline-block mt-1">شامل باقي: ${changeValNum}</div>` : '';
-                let paymentBadge = `<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded shadow-sm mt-1 inline-block"><i class="fa-solid fa-wallet"></i> ${r.paymentMethod || 'نقدي'}</span>`;
-
-                const overdueData = checkOrderOverdueStatus(r);
-                const isOverdue = overdueData.isOverdue;
-                const overdueWarning = isOverdue ? `<div class="text-xs font-bold text-red-600 mt-1 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> متأخر</div>` : '';
-
-                let addTimeBtn = '';
-                if (isOverdue) {
-                    addTimeBtn = `<button onclick="addExtraTime('${r.date}', '${r.id}')" class="bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-purple-600 transition shadow-md w-full sm:w-auto mt-2"><i class="fa-solid fa-clock"></i> +30 دقيقة</button>`;
-                }
-
-                tbody.innerHTML += `
-                <tr class="border-b transition-colors hover:bg-orange-50/50">
-                    <td class="p-4 text-sm"><div class="font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div>${overdueWarning}</td>
-                    <td class="p-4"><span class="font-extrabold text-orange-600 bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg shadow-sm tracking-wider"># ${r.orderNumber}</span></td>
-                    <td class="p-4">
-                        <div class="font-bold text-gray-800 text-lg">${rowTotal > 0 ? rowTotal : 'غير محدد'} <span class="text-xs text-gray-500">ج.م</span></div>
-                        ${changeHtml}
-                        <div>${paymentBadge}</div>
-                        <div class="mt-2">${statusBadge}</div>
-                    </td>
-                    <td class="p-4 font-semibold text-gray-800 flex items-center h-full min-h-[80px]">${racingBikeIcon} ${r.delegateName}</td>
-                    <td class="p-4 text-center align-middle">
-                        <div class="flex flex-col gap-2 justify-center items-center w-full">
-                            ${actionBtn}
-                            ${addTimeBtn}
-                        </div>
-                    </td>
-                </tr>`;
-            });
-        }
-    } catch(e) { showToast("حدث خطأ في جلب بيانات الأوردرات", "error"); }
+        currentPendingOrdersList.sort((a,b) => a.timestamp - b.timestamp);
+        currentPendingDelegateFilter = 'all'; // تصفير فلتر المندوب عند فتح النافذة
+        renderPendingOrdersTable(); // رسم الجدول
+        
+    } catch(e) { 
+        showToast("حدث خطأ في جلب بيانات الأوردرات", "error"); 
+    }
     
     if(loadingIndicator) loadingIndicator.classList.add('hidden');
+}
+
+// دالة جديدة لتطبيق الفلاتر ورسم الجدول بذكاء (Client-side)
+function renderPendingOrdersTable() {
+    const tbody = document.getElementById('pendingOrdersTableBody');
+    const branchSelect = document.getElementById('pendingBranchSelect');
+    const selectedBranch = branchSelect ? branchSelect.value : 'all';
+    const isGeneralAdmin = currentUser.role === 'admin' && currentUser.adminType === 'admin';
+    
+    // 1. الفلترة حسب الفرع (إذا كان المُستخدم مدير عام واختار فرعاً)
+    let branchFilteredList = currentPendingOrdersList.filter(r => {
+        if (!isGeneralAdmin) return true; // غير المديرين مفلترين أصلاً في الجلب
+        if (selectedBranch === 'all') return true;
+        return r.sourceBranchId === selectedBranch || r.branchId === selectedBranch;
+    });
+
+    // 2. تجميع وحساب أوردرات المناديب لبناء الشريط السفلي
+    const delegateStats = {};
+    branchFilteredList.forEach(r => {
+        if (r.delegateId && r.delegateId !== 'pending') {
+            const dId = r.delegateId;
+            if (!delegateStats[dId]) {
+                delegateStats[dId] = { name: r.delegateName, count: 0 };
+            }
+            delegateStats[dId].count++;
         }
+    });
+    renderPendingDelegatesBar(delegateStats);
+
+    // 3. الفلترة حسب المندوب (الضغط على الزر)
+    let finalFilteredList = branchFilteredList;
+    if (currentPendingDelegateFilter !== 'all') {
+        finalFilteredList = branchFilteredList.filter(r => r.delegateId === currentPendingDelegateFilter);
+    }
+
+    // 4. رسم الجدول بالبيانات المفلترة
+    tbody.innerHTML = '';
+    if(finalFilteredList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-gray-500 bg-gray-50"><i class="fa-solid fa-clipboard-check text-4xl text-green-400 mb-3 block"></i><span class="font-bold text-lg">ممتاز! لا توجد أوردرات معلقة مطابقة للفلاتر.</span></td></tr>';
+        return;
+    }
+
+    finalFilteredList.forEach(r => {
+        const currentStatus = (r.status === 'pending') ? 'preparing' : r.status; 
+        
+        let statusBadge = '';
+        let actionBtn = '';
+
+        if(currentStatus === 'preparing') {
+            statusBadge = '<span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-box"></i> جاري التجهيز بالفرع</span>';
+            if (r.delegateId === 'pending' || !r.delegateId) {
+                actionBtn = `<button onclick="assignDelegateForDelivery('${r.date}', '${r.id}')" class="bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-indigo-600 transition shadow-md w-full sm:w-auto"><i class="fa-solid fa-user-plus mr-1"></i> تحديد المندوب والخروج</button>`;
+            } else {
+                actionBtn = `<button onclick="updateOrderStatus('${r.date}', '${r.id}', 'out_for_delivery')" class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-600 transition shadow-md w-full sm:w-auto"><i class="fa-solid fa-motorcycle mr-1"></i> خرج للتوصيل</button>`;
+            }
+        } else if (currentStatus === 'out_for_delivery') {
+            statusBadge = '<span class="bg-amber-100 text-amber-700 border border-amber-300 px-2 py-1 rounded text-xs font-bold animate-pulse"><i class="fa-solid fa-motorcycle"></i> خرج للتوصيل الآن</span>';
+            actionBtn = `<button onclick="updateOrderStatus('${r.date}', '${r.id}', 'delivered')" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-600 transition shadow-md w-full sm:w-auto"><i class="fa-solid fa-check-double mr-1"></i> تأكيد التسليم</button>`;
+        }
+
+        const orderValNum = Number(r.orderValue) || 0;
+        const changeValNum = Number(r.changeAmount) || 0;
+        const rowTotal = orderValNum + changeValNum;
+        let changeHtml = changeValNum > 0 ? `<div class="text-[10px] text-teal-600 font-bold bg-teal-50 px-1 rounded inline-block mt-1">شامل باقي: ${changeValNum}</div>` : '';
+        let paymentBadge = `<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded shadow-sm mt-1 inline-block"><i class="fa-solid fa-wallet"></i> ${r.paymentMethod || 'نقدي'}</span>`;
+
+        const overdueData = checkOrderOverdueStatus(r);
+        const isOverdue = overdueData.isOverdue;
+        const overdueWarning = isOverdue ? `<div class="text-xs font-bold text-red-600 mt-1 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> متأخر</div>` : '';
+
+        let addTimeBtn = '';
+        if (isOverdue) {
+            addTimeBtn = `<button onclick="addExtraTime('${r.date}', '${r.id}')" class="bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-purple-600 transition shadow-md w-full sm:w-auto mt-2"><i class="fa-solid fa-clock"></i> +30 دقيقة</button>`;
+        }
+
+        tbody.innerHTML += `
+        <tr class="border-b transition-colors hover:bg-orange-50/50">
+            <td class="p-4 text-sm"><div class="font-bold ${isOverdue ? 'text-red-700' : 'text-gray-700'}">${r.date}</div><div class="text-xs text-gray-500 mt-1" dir="ltr"><i class="fa-regular fa-clock"></i> ${r.time}</div>${overdueWarning}</td>
+            <td class="p-4">
+                <div class="text-xs font-bold text-gray-500 mb-1"><i class="fa-solid fa-store text-blue-500"></i> ${r.sourceBranchName || 'الفرع'}</div>
+            </td>
+            <td class="p-4"><span class="font-extrabold text-orange-600 bg-orange-100 border border-orange-200 px-3 py-1.5 rounded-lg shadow-sm tracking-wider"># ${r.orderNumber}</span></td>
+            <td class="p-4">
+                <div class="font-bold text-gray-800 text-lg">${rowTotal > 0 ? rowTotal : 'غير محدد'} <span class="text-xs text-gray-500">ج.م</span></div>
+                ${changeHtml}
+                <div>${paymentBadge}</div>
+                <div class="mt-2">${statusBadge}</div>
+            </td>
+            <td class="p-4 font-semibold text-gray-800 flex items-center h-full min-h-[80px]">${racingBikeIcon} ${r.delegateName}</td>
+            <td class="p-4 text-center align-middle">
+                <div class="flex flex-col gap-2 justify-center items-center w-full">
+                    ${actionBtn}
+                    ${addTimeBtn}
+                </div>
+            </td>
+        </tr>`;
+    });
+}
+
+// دالة رسم أزرار المناديب النشطين
+function renderPendingDelegatesBar(delegateStats) {
+    const bar = document.getElementById('activeDelegatesBar');
+    if(!bar) return;
+    bar.innerHTML = '';
+    
+    const allActive = currentPendingDelegateFilter === 'all';
+    bar.innerHTML += `
+        <button onclick="setPendingDelegateFilter('all')" class="${allActive ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 hover:bg-amber-100 border-gray-200'} font-bold py-1.5 px-4 rounded-full text-sm border transition">
+            جميع الأوردرات
+        </button>
+    `;
+
+    Object.keys(delegateStats).forEach(dId => {
+        const stat = delegateStats[dId];
+        const isActive = currentPendingDelegateFilter === dId;
+        bar.innerHTML += `
+            <button onclick="setPendingDelegateFilter('${dId}')" class="${isActive ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 hover:bg-amber-100 border-gray-200'} font-bold py-1.5 px-4 rounded-full text-sm border transition flex items-center gap-2">
+                ${stat.name} <span class="${isActive ? 'bg-white text-amber-600' : 'bg-amber-500 text-white'} px-2 py-0.5 rounded-full text-xs shadow-inner">${stat.count}</span>
+            </button>
+        `;
+    });
+}
+
+// دالة تفاعل المستخدم مع أزرار المناديب
+function setPendingDelegateFilter(delegateId) {
+    currentPendingDelegateFilter = delegateId;
+    renderPendingOrdersTable();
+}
+
+// الدالة المرتبطة بحدث تغيير select الخاص بفلتر الفرع
+function loadPendingOrders() {
+    currentPendingDelegateFilter = 'all'; // إعادة التصفير عند تغيير الفرع
+    renderPendingOrdersTable();
+}
+
+function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
               function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
 
       // متغيرات عامة لحفظ بيانات الأوردر المراد تسليمه
