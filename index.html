@@ -271,9 +271,9 @@
                                     <th class="p-3 border-b">المُسجل</th>
                                     <th class="p-3 border-b">المندوب</th>
                                     <th class="p-3 border-b">الفرع المُحول إليه</th>
-                                    <th class="p-3 border-b text-center">الكمية</th>
-                                    <th class="p-3 border-b">تفاصيل الأوردر</th>
-                                    <th class="p-3 border-b text-center">إجراء</th>
+                                   <th class="p-3 border-b text-center">الكمية</th>
+<th class="p-3 border-b">تفاصيل الأوردر والحالة</th>
+<th class="p-3 border-b text-center">إجراء</th>
                                 </tr>
                             </thead>
                             <tbody id="recordsTableBody"></tbody>
@@ -783,7 +783,39 @@
             </section>
         </main>
     </div>
+<div id="cashReceiverModal" class="modal !z-[9999]">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform transition-all border-t-4 border-emerald-500">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fa-solid fa-hand-holding-dollar text-2xl text-emerald-500 ml-2"></i> تأكيد استلام النقدية
+            </h2>
+            <button onclick="closeCashReceiverModal()" class="text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 text-sm font-bold text-emerald-800 text-center">
+                يرجى إدخال كود المسؤول الذي استلم النقدية لإنهاء الأوردر
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">كود المسؤول (المستلم):</label>
+                <input type="text" id="receiverCodeInput" oninput="verifyCashReceiverCode()" placeholder="أدخل الكود هنا..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 outline-none transition font-black text-center text-lg shadow-inner">
+            </div>
+            
+            <div id="receiverNameDisplay" class="h-10 flex items-center justify-center font-bold text-lg transition-all">
+                </div>
 
+            <div class="flex gap-2 pt-3 mt-2 border-t border-gray-100">
+                <button type="button" id="btnConfirmDelivery" disabled onclick="confirmDeliveryWithReceiver()" class="flex-[2] bg-emerald-500 text-white py-3 rounded-lg font-bold hover:bg-emerald-600 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-check-double"></i> حفظ وتأكيد الاستلام
+                </button>
+                <button type="button" onclick="closeCashReceiverModal()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-lg font-bold hover:bg-gray-200 transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
     <div id="settingsModal" class="modal">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all relative">
             <div class="flex justify-between items-center mb-5 border-b pb-3">
@@ -3889,16 +3921,31 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
                 const targetBranchName = r.branchName || r.toBranchName || 'غير حدد';
                 const timeStr = r.timeString || r.time || '';
                 
+                // التحقق مما إذا كان الأوردر تم تسليمه ويوجد اسم وكود للمستلم
+                let receiverHtml = '';
+                if(r.status === 'delivered' && r.cashReceiverName) {
+                    const receiverCode = r.cashReceiverCode || '-';
+                    receiverHtml = `<div class="text-[10px] text-emerald-700 font-bold mt-1.5 bg-emerald-50 border border-emerald-200 px-1.5 py-1 rounded flex items-center justify-center gap-1 shadow-sm"><i class="fa-solid fa-hand-holding-dollar"></i> المُستلم: <span class="bg-white text-emerald-800 px-1 rounded shadow-sm border border-emerald-100 font-mono">${receiverCode}</span> ${r.cashReceiverName}</div>`;
+                }
+
                 let orderHtml = `<span class="text-gray-400 font-bold">—</span>`;
                 if(r.orderNumber) {
                     orderHtml = `
-                        <div class="text-xs font-mono text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block shadow-sm"># ${r.orderNumber}</div>
-                        <div class="mt-1">${statusBadge}</div>
+                        <div class="text-xs font-mono text-gray-700 bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block shadow-sm mb-1"># ${r.orderNumber}</div>
+                        <div>${statusBadge}</div>
+                        ${receiverHtml}
                     `;
                 } else if (r.itemCode) {
-                    orderHtml = `<div class="text-xs text-primary font-bold mb-1">صنف: ${r.itemCode}</div><div>${statusBadge}</div>`;
+                    orderHtml = `
+                        <div class="text-xs text-primary font-bold mb-1">صنف: ${r.itemCode}</div>
+                        <div>${statusBadge}</div>
+                        ${receiverHtml}
+                    `;
                 } else {
-                    orderHtml = `<div class="mt-1">${statusBadge}</div>`;
+                    orderHtml = `
+                        <div>${statusBadge}</div>
+                        ${receiverHtml}
+                    `;
                 }
 
                 html += `
@@ -4184,41 +4231,52 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
         }
               function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
 
-       async function updateOrderStatus(date, recordId, newStatus) {
-        let msg = newStatus === 'out_for_delivery' ? "هل خرج المندوب لتوصيل هذا الأوردر؟" : "تأكيد: هل تم تسليم هذا الأوردر للعميل بنجاح؟";
-        if(!confirm(msg)) return;
+      // متغيرات عامة لحفظ بيانات الأوردر المراد تسليمه
+let pendingDeliveryDate = null;
+let pendingDeliveryRecordId = null;
+let verifiedReceiverData = null;
+
+async function updateOrderStatus(date, recordId, newStatus) {
+    // إذا كانت الحالة "تم التسليم"، نفتح نافذة المستلم بدلاً من الحفظ المباشر
+    if (newStatus === 'delivered') {
+        pendingDeliveryDate = date;
+        pendingDeliveryRecordId = recordId;
+        verifiedReceiverData = null;
         
-        // 🌟 البحث الآمن عن الفرع (من الكاش أو السجلات الحالية لتجنب خطأ undefined للأوردرات القديمة)
-        let branchNode = 'admin';
-        if (currentRecords[date] && currentRecords[date][recordId]) {
-            branchNode = currentRecords[date][recordId].sourceBranchId || 'admin';
-        } else if (recordsCache[date] && recordsCache[date][recordId]) {
-            branchNode = recordsCache[date][recordId].sourceBranchId || 'admin';
-        }
+        document.getElementById('receiverCodeInput').value = '';
+        document.getElementById('receiverNameDisplay').innerHTML = '<span class="text-gray-400 text-sm">في انتظار إدخال الكود...</span>';
+        document.getElementById('btnConfirmDelivery').disabled = true;
+        
+        document.getElementById('cashReceiverModal').classList.add('active');
+        setTimeout(() => document.getElementById('receiverCodeInput').focus(), 100);
+        return;
+    }
 
-        try {
-            let payload = { status: newStatus };
-            if (newStatus === 'delivered') payload.deliveryTimestamp = Date.now();
-            else payload.outForDeliveryTimestamp = Date.now();
+    // المنطق القديم لحالة "خرج للتوصيل"
+    if(!confirm("هل خرج المندوب لتوصيل هذا الأوردر؟")) return;
+    
+    let branchNode = 'admin';
+    if (currentRecords[date] && currentRecords[date][recordId]) {
+        branchNode = currentRecords[date][recordId].sourceBranchId || 'admin';
+    } else if (recordsCache[date] && recordsCache[date][recordId]) {
+        branchNode = recordsCache[date][recordId].sourceBranchId || 'admin';
+    }
 
-            await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
-            
-            // تحديث الكاش المحلي فوراً لإخفاء الأوردر من قائمة المعلقات
-            if (currentRecords[date] && currentRecords[date][recordId]) {
-                Object.assign(currentRecords[date][recordId], payload);
-            }
-            if (recordsCache[date] && recordsCache[date][recordId]) {
-                Object.assign(recordsCache[date][recordId], payload);
-            }
+    try {
+        let payload = { status: newStatus, outForDeliveryTimestamp: Date.now() };
 
-            showToast("تم تحديث حالة الأوردر بنجاح!");
-            checkOverdueOrdersBackground(); 
-            updateDelegatesOutStatus();
-            openPendingOrdersModal();
-            loadRecords(); // تحديث الجدول الرئيسي خلف النافذة أيضاً
-        } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
-    } 
+        await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
+        
+        if (currentRecords[date] && currentRecords[date][recordId]) Object.assign(currentRecords[date][recordId], payload);
+        if (recordsCache[date] && recordsCache[date][recordId]) Object.assign(recordsCache[date][recordId], payload);
 
+        showToast("تم تحديث حالة الأوردر بنجاح!");
+        checkOverdueOrdersBackground(); 
+        updateDelegatesOutStatus();
+        openPendingOrdersModal();
+        loadRecords(); 
+    } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
+}
      async function addExtraTime(date, recordId) {
         if(!confirm("هل تود إضافة 30 دقيقة إضافية لوقت هذا الأوردر للحد من التأخير؟")) return;
         try {
@@ -4245,6 +4303,100 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
             }
         } catch(e) { showToast("حدث خطأ في تمديد الوقت", "error"); }
     }
+
+    function closeCashReceiverModal() {
+    document.getElementById('cashReceiverModal').classList.remove('active');
+    pendingDeliveryDate = null;
+    pendingDeliveryRecordId = null;
+}
+
+function verifyCashReceiverCode() {
+    const code = document.getElementById('receiverCodeInput').value.trim();
+    const display = document.getElementById('receiverNameDisplay');
+    const btn = document.getElementById('btnConfirmDelivery');
+
+    if (!code) { 
+        display.innerHTML = '<span class="text-gray-400 text-sm">في انتظار إدخال الكود...</span>'; 
+        btn.disabled = true; 
+        verifiedReceiverData = null;
+        return; 
+    }
+
+    // البحث عن الكود في كائن المسؤولين (admins)
+    let foundAdmin = null;
+    if (typeof admins !== 'undefined') {
+        for (let k in admins) {
+            if (admins[k].code === code) {
+                foundAdmin = admins[k];
+                break;
+            }
+        }
+    }
+
+    if (foundAdmin) {
+        display.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-4 py-1 rounded-full border border-emerald-200"><i class="fa-solid fa-check-circle mr-1"></i> ${foundAdmin.name}</span>`;
+        verifiedReceiverData = { code: code, name: foundAdmin.name };
+        btn.disabled = false;
+    } else {
+        display.innerHTML = `<span class="text-red-500 text-sm bg-red-50 px-4 py-1 rounded-full border border-red-200"><i class="fa-solid fa-xmark-circle mr-1"></i> كود غير صحيح</span>`;
+        verifiedReceiverData = null;
+        btn.disabled = true;
+    }
+}
+
+async function confirmDeliveryWithReceiver() {
+    if (!verifiedReceiverData || !pendingDeliveryDate || !pendingDeliveryRecordId) return;
+
+    const btn = document.getElementById('btnConfirmDelivery');
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الحفظ...';
+    btn.disabled = true;
+
+    let branchNode = 'admin';
+    if (currentRecords[pendingDeliveryDate] && currentRecords[pendingDeliveryDate][pendingDeliveryRecordId]) {
+        branchNode = currentRecords[pendingDeliveryDate][pendingDeliveryRecordId].sourceBranchId || 'admin';
+    } else if (recordsCache[pendingDeliveryDate] && recordsCache[pendingDeliveryDate][pendingDeliveryRecordId]) {
+        branchNode = recordsCache[pendingDeliveryDate][pendingDeliveryRecordId].sourceBranchId || 'admin';
+    }
+
+    const receiveTimeRaw = Date.now();
+    const receiveTimeString = new Date(receiveTimeRaw).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+
+    try {
+        let payload = { 
+            status: 'delivered', 
+            deliveryTimestamp: receiveTimeRaw,
+            cashReceiverName: verifiedReceiverData.name,
+            cashReceiverCode: verifiedReceiverData.code,
+            cashReceiveTime: receiveTimeString
+        };
+
+        await fetch(`${DB_URL}daily_records/${pendingDeliveryDate}/${branchNode}/${pendingDeliveryRecordId}.json`, { 
+            method: 'PATCH', 
+            body: JSON.stringify(payload) 
+        });
+        
+        // التحديث المحلي
+        if (currentRecords[pendingDeliveryDate] && currentRecords[pendingDeliveryDate][pendingDeliveryRecordId]) {
+            Object.assign(currentRecords[pendingDeliveryDate][pendingDeliveryRecordId], payload);
+        }
+        if (recordsCache[pendingDeliveryDate] && recordsCache[pendingDeliveryDate][pendingDeliveryRecordId]) {
+            Object.assign(recordsCache[pendingDeliveryDate][pendingDeliveryRecordId], payload);
+        }
+
+        showToast(`تم التسليم! استلم النقدية: ${verifiedReceiverData.name}`, "success");
+        closeCashReceiverModal();
+        
+        checkOverdueOrdersBackground(); 
+        updateDelegatesOutStatus();
+        openPendingOrdersModal();
+        loadRecords(); // تحديث الجدول الرئيسي لظهور العمود الجديد
+    } catch(e) { 
+        showToast("حدث خطأ في حفظ بيانات المستلم", "error"); 
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
+    }
+}
         function processOfferImage(event) {
             const file = event.target.files[0];
             if(!file) return;
