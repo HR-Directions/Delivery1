@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-heat/0.2.0/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -163,11 +163,12 @@
        
                <header class="bg-primary text-white shadow-md sticky top-0 z-50">
             <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-scissors text-2xl text-accent"></i>
-                    <h1 class="text-2xl font-bold tracking-wider">Logistics system</h1>
-                    <span id="userInfoDisplay" class="bg-white text-primary text-xs px-2 py-1 rounded-full font-bold ml-4 shadow-sm"></span>
-                </div>
+               <div class="flex items-center gap-3">
+    <i class="fa-solid fa-scissors text-2xl text-accent"></i>
+    <h1 class="text-2xl font-bold tracking-wider">Logistics system</h1>
+    <span id="systemVersionBadge" class="bg-accent text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shadow-sm"></span>
+    <span id="userInfoDisplay" class="bg-white text-primary text-xs px-2 py-1 rounded-full font-bold ml-4 shadow-sm"></span>
+</div>
                 <nav class="flex flex-wrap justify-center gap-2 bg-blue-900 p-1 rounded-lg shadow-inner" id="mainNav">
                     <button onclick="switchTab('mainTab')" id="btn-mainTab" class="nav-btn px-4 py-2 rounded-md font-semibold transition-all duration-200 bg-white text-primary shadow-sm whitespace-nowrap"><i class="fa-solid fa-house ml-2"></i>الرئيسية</button>
                     
@@ -295,7 +296,7 @@
                             <button onclick="switchAdminTab('devicesSubTab'); loadDevices();" id="btn-devicesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors flex justify-between items-center"><span class="flex items-center"><i class="fa-solid fa-laptop-medical ml-2 w-5 text-center"></i>أجهزة الانضمام</span><span id="pendingDevicesBadge" class="hidden bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">!</span></button>
                             <button onclick="switchAdminTab('notificationsSubTab')" id="btn-notificationsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-bell ml-2 w-5 text-center text-red-500"></i>الإعلامات والتحديثات</button>
                             <button onclick="switchAdminTab('trackingSubTab'); loadLogs();" id="btn-trackingSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-eye ml-2 w-5 text-center"></i>التتبع وسجل النشاط</button>
-                            <button onclick="window.open('map.html', '_blank')" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100 admin-sub-tab-btn" data-sub-tab="coverage"><i class="fa-solid fa-map-location-dot text-lg"></i> <span>أماكن التغطية</span></button>
+                            <button onclick="window.open('map.html', '_blank')" class="admin-nav-btn admin-sub-tab-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors" data-sub-tab="coverage"><i class="fa-solid fa-map-location-dot ml-2 w-5 text-center text-blue-500"></i>أماكن التغطية</button>
                             <button onclick="switchAdminTab('offersSubTab'); loadOffers();" id="btn-offersSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-bullhorn ml-2 w-5 text-center text-accent"></i>إدارة العروض</button>
                             <button onclick="switchAdminTab('feedbackSubTab'); loadFeedback();" id="btn-feedbackSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-star ml-2 w-5 text-center text-yellow-500"></i>تقييمات العملاء</button>
                         </div>
@@ -605,6 +606,28 @@
                                     <select id="adminAssignedBranch" class="hidden w-full px-4 py-2 border rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition font-semibold bg-blue-50 border-blue-200 sm:col-span-2">
                                         <option value="">-- يرجى تحديد الفرع الخاص به --</option>
                                     </select>
+                                    
+                                    <div id="adminPermissionsContainer" class="hidden sm:col-span-4 bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                        <label class="block text-sm font-black text-purple-800 mb-3"><i class="fa-solid fa-user-shield"></i> تخصيص صلاحيات الوصول (للمدير العام فقط):</label>
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm font-bold text-gray-700 bg-white p-3 rounded-lg border border-purple-100 shadow-inner">
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="reportsSubTab"> التقارير المتقدمة</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="analyticsSubTab"> الإحصائيات</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="adminsSubTab"> المسؤولين</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="cashSubTab"> إدارة النقدية</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="regionsSubTab"> تسعير المناطق</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="branchesSubTab"> إدارة الفروع</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="delegatesSubTab"> إدارة المناديب</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="devicesSubTab"> أجهزة الانضمام</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="offersSubTab"> العروض</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="feedbackSubTab"> التقييمات</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="notificationsSubTab"> التحديث الجبري</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="trackingSubTab"> سجل المراقبة</label>
+                                            <label class="cursor-pointer hover:text-purple-600 transition"><input type="checkbox" class="perm-cb mr-1 accent-purple-600" value="coverageSubTab"> أماكن التغطية</label>
+                                        </div>
+                                    </div>
+                                    <select id="adminAssignedBranch" class="hidden w-full px-4 py-2 border rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition font-semibold bg-blue-50 border-blue-200 sm:col-span-2">
+                                        <option value="">-- يرجى تحديد الفرع الخاص به --</option>
+                                    </select>
                                     <button type="submit" class="w-full bg-primary text-white py-2.5 rounded-lg font-bold hover:bg-blue-800 transition shadow-sm">حفظ المسؤول</button>
                                 </form>
                             </div>
@@ -707,11 +730,13 @@
                                 <i class="fa-solid fa-arrows-rotate absolute -left-4 -bottom-4 text-6xl opacity-10 text-amber-500"></i>
                                 <h2 class="text-xl font-bold text-gray-800 mb-2 relative z-10"><i class="fa-solid fa-rotate text-amber-500 ml-2"></i>فرض تحديث النظام لجميع الأجهزة</h2>
                                 <p class="text-sm text-gray-600 mb-5 font-semibold relative z-10">استخدم هذا الزر بعد قيامك بتطوير الكود أو إضافة ميزات جديدة، لإجبار جميع الأجهزة النشطة حالياً (فروع أو مناديب) على عمل إعاده تحميل (Refresh) للصفحة لتطبيق التحديث الجديد فوراً (ومسح السجل المؤقت الخاص بها).</p>
-                                <form onsubmit="triggerSystemReload(event)" class="space-y-4 relative z-10">
-                                    <textarea id="systemUpdateNotes" rows="2" placeholder="اكتب ملاحظات التحديث (ما الجديد؟) اختياري..." class="w-full px-4 py-3 border border-amber-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition font-bold shadow-inner"></textarea>
-                                    <button type="submit" class="bg-amber-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-amber-600 transition shadow-md flex items-center gap-2 transform hover:scale-105 active:scale-95"><i class="fa-solid fa-arrows-rotate"></i> إرسال أمر التحديث الإجباري الآن</button>
-                                </form>
-                            </div>
+                               <form onsubmit="triggerSystemReload(event)" class="space-y-4 relative z-10">
+    <div class="flex flex-col sm:flex-row gap-3">
+        <input type="text" id="systemUpdateVersion" required placeholder="رقم الإصدار (إجباري)" class="w-full sm:w-1/3 px-4 py-3 border border-amber-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition font-bold shadow-inner text-center text-amber-700" dir="ltr">
+        <textarea id="systemUpdateNotes" rows="1" placeholder="اكتب ملاحظات التحديث (ما الجديد؟) اختياري..." class="w-full sm:w-2/3 px-4 py-3 border border-amber-200 rounded-xl outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition font-bold shadow-inner"></textarea>
+    </div>
+    <button type="submit" class="w-full bg-amber-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-amber-600 transition shadow-md flex items-center justify-center gap-2 transform hover:scale-105 active:scale-95"><i class="fa-solid fa-arrows-rotate"></i> إرسال أمر التحديث الإجباري الآن</button>
+</form>
 
                             <div class="bg-gradient-to-r from-red-50 to-white rounded-xl shadow-sm p-6 border border-red-100 mb-6 relative overflow-hidden">
                                 <i class="fa-solid fa-bullhorn absolute -left-4 -bottom-4 text-6xl opacity-10 text-red-500"></i>
@@ -971,6 +996,41 @@
             </div>
         </div>
     </div>
+<div id="editQuantityModal" class="modal">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all border-2 border-amber-500">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fa-solid fa-pen-to-square ml-2 text-2xl text-amber-500"></i> تعديل الكميات (تسجيل عجز)
+            </h2>
+            <button onclick="closeEditQuantityModal()" class="text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        
+        <form id="editQuantityForm" onsubmit="submitEditedQuantity(event)" class="space-y-4">
+            
+            <input type="hidden" id="editOrderDate">
+            <input type="hidden" id="editOrderId">
+            <input type="hidden" id="editTargetBranchName">
+            <input type="hidden" id="editTargetBranchId">
+            <input type="hidden" id="editSourceBranchId">
+            
+            <div id="editItemsContainer" class="max-h-60 overflow-y-auto pr-1 space-y-3"></div>
+            
+            <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-xs font-bold text-amber-800 text-center flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-info text-amber-500 text-lg"></i> 
+                <span>سيتم إشعار الفرع الطالب بالتعديلات التي تمت.</span>
+            </div>
+
+            <div class="flex gap-2 pt-3 mt-2 border-t border-gray-100">
+                <button type="submit" id="btnSubmitEditQty" class="flex-[2] bg-amber-500 text-white py-3 rounded-lg font-bold hover:bg-amber-600 transition shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check-double"></i> تأكيد التعديل
+                </button>
+                <button type="button" onclick="closeEditQuantityModal()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-lg font-bold hover:bg-gray-200 transition">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
 
     <div id="pendingOrdersModal" class="modal">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-5xl max-h-[85vh] flex flex-col transform transition-all">
@@ -1060,7 +1120,28 @@
         </div>
     </div>
 </div>
+<div id="regionsTreeModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col transform transition-all border-t-4 border-purple-600">
+            <div class="flex justify-between items-center p-5 border-b bg-gray-50 rounded-t-2xl">
+                <h2 class="text-2xl font-black text-purple-700 flex items-center"><i class="fa-solid fa-map-location-dot ml-3 text-3xl opacity-80"></i> الخريطة الهيكلية للمناطق</h2>
+                <button onclick="closeRegionsTreeModal()" class="text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 shadow-sm border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto p-5 space-y-3 flex-grow" id="regionsAccordionContainer"></div>
+        </div>
+    </div>
+<div id="editQtyModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-blue-100 animate-in fade-in zoom-in duration-300">
+        <h2 class="text-xl font-black text-primary mb-4 border-b pb-2">تعديل الكميات الفعلية</h2>
+        
+        <div id="editQtyInputs" class="max-h-[60vh] overflow-y-auto mb-6 pr-2">
+            </div>
 
+        <div class="flex gap-3">
+            <button onclick="document.getElementById('editQtyModal').classList.add('hidden')" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-bold transition">إلغاء</button>
+            <button onclick="saveEditChanges()" class="flex-1 py-3 bg-primary hover:bg-blue-800 text-white rounded-xl font-bold shadow-lg transition">حفظ الكميات</button>
+        </div>
+    </div>
+</div>
     
     <script>
         let currentEditType = null;
@@ -1154,7 +1235,8 @@ let delegatesOut = {};
         let unreadNotifCount = 0;
         let cashSettings = {}; // مصفوفة أسعار الحركات المالية بين الفروع
         let localSeenBranchNotifIds = new Set(); // سجل تتبع إشعارات الردود
-
+        let lastAlertTime = 0; // <-- أضف هذا السطر هنا
+        
         window.addEventListener('offline', updateOnlineStatus);
         window.addEventListener('online', updateOnlineStatus);
         function updateOnlineStatus() {
@@ -1460,31 +1542,28 @@ let delegatesOut = {};
             setTimeout(() => t.remove(), 4000);
         }
 
-        function toggleAdminBranchSelect(mode) {
-            const adminTypeSelect = document.getElementById(mode === 'add' ? 'adminType' : 'editAdminType');
+       function toggleAdminBranchSelect(mode) {
+            const type = document.getElementById(mode === 'add' ? 'adminType' : 'editAdminType').value;
             const branchSelect = document.getElementById(mode === 'add' ? 'adminAssignedBranch' : 'editAdminAssignedBranch');
             const empTypeContainer = document.getElementById(mode === 'add' ? 'employeeTypeContainer' : 'editEmployeeTypeContainer');
             const empTypeSelect = document.getElementById(mode === 'add' ? 'employeeType' : 'editEmployeeType');
+            const permContainer = document.getElementById(mode === 'add' ? 'adminPermissionsContainer' : 'editAdminPermissionsContainer');
 
-            if (!adminTypeSelect || !branchSelect) return;
+            if (type === 'employee') empTypeContainer.classList.remove('hidden');
+            else empTypeContainer.classList.add('hidden');
 
-            const type = adminTypeSelect.value;
-            
-            if (type === 'employee') {
-                if (empTypeContainer) empTypeContainer.classList.remove('hidden');
+            // إظهار لوحة الصلاحيات إذا كان مدير عام فقط
+            if (type === 'admin') {
+                if(permContainer) permContainer.classList.remove('hidden');
             } else {
-                if (empTypeContainer) empTypeContainer.classList.add('hidden');
+                if(permContainer) permContainer.classList.add('hidden');
             }
 
             const isBranchEmp = (type === 'employee' && empTypeSelect && (empTypeSelect.value === 'موظف بفرع' || empTypeSelect.value === 'موظف خدمة عملاء'));
-            
             if (type === 'branch_manager' || isBranchEmp) {
-                branchSelect.classList.remove('hidden');
-                branchSelect.required = true;
+                branchSelect.classList.remove('hidden'); branchSelect.required = true;
             } else {
-                branchSelect.classList.add('hidden');
-                branchSelect.required = false;
-                branchSelect.value = '';
+                branchSelect.classList.add('hidden'); branchSelect.required = false; branchSelect.value = '';
             }
         }
 
@@ -1498,7 +1577,23 @@ let delegatesOut = {};
 
             const currentDeviceId = getDeviceId();
             const currentDeviceInfo = getDeviceInfo();
-
+// التحقق من توافق الإصدار قبل السماح بالدخول
+const sysRes = await fetch(`${DB_URL}system_control/update_signal.json`);
+const sysData = await sysRes.json();
+if (sysData && sysData.version && sysData.version !== CURRENT_APP_VERSION) {
+    document.getElementById('loginLoading').classList.add('hidden');
+    document.getElementById('loginFormContainer').classList.remove('hidden');
+    
+    if (sysData.notes) {
+        document.getElementById('reloadNotesContent').textContent = sysData.notes;
+        document.getElementById('reloadNotesContainer').classList.remove('hidden');
+    } else {
+        document.getElementById('reloadNotesContainer').classList.add('hidden');
+    }
+    
+    document.getElementById('forceReloadModal').classList.add('active');
+    return; // إيقاف تسجيل الدخول فوراً
+}
             try {
                 let targetAccount = null;
 
@@ -1565,7 +1660,8 @@ let delegatesOut = {};
                         adminType: targetAccount.data.type || 'admin',
                         employeeType: targetAccount.data.employeeType || '',
                         code: targetAccount.data.code,
-                        assignedBranch: targetAccount.data.assignedBranch || null 
+                        assignedBranch: targetAccount.data.assignedBranch || null,
+                        permissions: targetAccount.data.permissions || [] // السطر الذي تم إضافته لجلب الصلاحيات بدقة
                     };
                 } else {
                     currentUser = { role: 'branch', id: targetAccount.id, name: targetAccount.data.name, code: targetAccount.data.code };
@@ -1639,15 +1735,45 @@ function startApp() {
             switchTab('mainTab');
 
         } else {
-            // المدير العام (صلاحيات كاملة)
+            // المدير العام (الآن بصلاحيات مخصصة!)
             document.getElementById('btn-adminTab').classList.remove('hidden');
             document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-            document.getElementById('btn-devicesSubTab').style.display = 'flex';
             
-            const coverageBtn = document.querySelector('.admin-sub-tab-btn[data-sub-tab="coverage"]');
-            if(coverageBtn) coverageBtn.style.display = 'flex';
-            
-            switchTab('mainTab');
+            if (currentUser.permissions && currentUser.permissions.length > 0) {
+                // إخفاء الأزرار التي لا يملك صلاحية لها
+                const allAdminTabs = ['reportsSubTab', 'analyticsSubTab', 'adminsSubTab', 'cashSubTab', 'regionsSubTab', 'branchesSubTab', 'delegatesSubTab', 'devicesSubTab', 'notificationsSubTab', 'trackingSubTab', 'offersSubTab', 'feedbackSubTab'];
+                
+                allAdminTabs.forEach(tab => {
+                    const btn = document.getElementById('btn-' + tab);
+                    if (btn) {
+                        btn.style.display = currentUser.permissions.includes(tab) ? 'flex' : 'none';
+                    }
+                });
+
+                // ربط زر الخريطة بصلاحية أماكن التغطية المستقلة
+                const coverageBtn = document.querySelector('.admin-sub-tab-btn[data-sub-tab="coverage"]');
+                if (coverageBtn) coverageBtn.style.display = currentUser.permissions.includes('coverageSubTab') ? 'flex' : 'none';
+
+                // إذا فتح الإدارة، نوجهه لأول تبويب مسموح له
+                document.getElementById('btn-adminTab').onclick = function() {
+                    switchTab('adminTab');
+                    switchAdminTab(currentUser.permissions[0]);
+                };
+                switchTab('mainTab');
+
+            } else {
+                // توافقية رجعية: لو الحساب قديم ومافيهوش Array صلاحيات، نعتبره Super Admin
+                document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.style.display = 'flex');
+                document.getElementById('btn-devicesSubTab').style.display = 'flex';
+                const coverageBtn = document.querySelector('.admin-sub-tab-btn[data-sub-tab="coverage"]');
+                if(coverageBtn) coverageBtn.style.display = 'flex';
+                
+                document.getElementById('btn-adminTab').onclick = function() {
+                    switchTab('adminTab');
+                    switchAdminTab('reportsSubTab');
+                };
+                switchTab('mainTab');
+            }
         }
     } else {
         // حساب الفروع العادية
@@ -1818,7 +1944,7 @@ function closeNotificationsModal() {
     document.getElementById('notificationsModal').classList.remove('active');
 }
 
-// دالة جلب البيانات وتطبيق الفلاتر عليها
+// دالة جلب البيانات وتطبيق الفلاتر عليها من المسار الصحيح (branch_orders)
 async function fetchFilteredNotifications() {
     const fromStr = document.getElementById('advNotifFrom').value;
     const toStr = document.getElementById('advNotifTo').value;
@@ -1842,52 +1968,65 @@ async function fetchFilteredNotifications() {
         curr.setDate(curr.getDate() + 1);
     }
 
-    let collectedNotifs = [];
+    let collectedOrders = [];
 
     try {
-        const results = await Promise.all(datesToFetch.map(d => getDayData(d, true)));
-        
-        results.forEach((dayData, index) => {
-            if(dayData) {
-                const dateStr = datesToFetch[index];
-                
-                Object.keys(dayData).forEach(k => {
-                    const r = dayData[k];
-                    
-                    // هل هذا الإشعار موجه لي؟ (لفرعي أو للإدارة)
-                    const myTargetId = currentUser.role === 'branch' ? currentUser.id : ((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') ? currentUser.assignedBranch : null);
-                    
-                    let isTarget = false;
-                    if (currentUser.role === 'admin' && currentUser.adminType === 'admin') isTarget = true; // مدير عام يرى كل شيء
-                    else if (r.branchId === myTargetId && r.createdByUserId !== currentUser.id) isTarget = true;
-
-                    if (isTarget) {
-                        // تطبيق فلتر الفرع المصدر
-                        if (branchFilter && r.sourceBranchId !== branchFilter) return;
-
-                        // تطبيق فلتر البحث
-                        if(searchVal) {
-    const cleanSearch = searchVal.replace(/\s+/g, '');
-    const matchOrder = r.orderNumber && r.orderNumber.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
-    const matchItemCode = r.itemCode && r.itemCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
-    const matchDelCode = r.delegateCode && r.delegateCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
-    const matchDelName = r.delegateName && r.delegateName.toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
-    const matchBranch = (r.branchName || r.toBranchName || '').toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
-    
-    if(!matchOrder && !matchDelCode && !matchDelName && !matchBranch && !matchItemCode) return;
-}
-
-                        r.id = k;
-                        r.date = dateStr;
-                        collectedNotifs.push(r);
-                    }
-                });
+        const results = await Promise.all(datesToFetch.map(async (dateStr) => {
+            try {
+                const res = await fetch(`${DB_URL}branch_orders/${dateStr}.json`);
+                const data = await res.json();
+                return { date: dateStr, data: data || {} };
+            } catch(e) { 
+                return { date: dateStr, data: {} }; 
             }
+        }));
+        
+        results.forEach(dayResult => {
+            const dateStr = dayResult.date;
+            const dayOrders = dayResult.data;
+            
+            Object.keys(dayOrders).forEach(orderId => {
+                const order = dayOrders[orderId];
+                
+                let currentActiveBranch = 'admin';
+                if (currentUser.role === 'branch') currentActiveBranch = currentUser.id;
+                else if (currentUser.role === 'admin' && currentUser.assignedBranch) currentActiveBranch = currentUser.assignedBranch;
+
+                let isTarget = false;
+                if (currentUser.role === 'admin' && currentUser.adminType === 'admin') {
+                    isTarget = true;
+                } else if (order.targetBranchId === currentActiveBranch || order.sourceBranchId === currentActiveBranch) {
+                    isTarget = true;
+                }
+
+                if (isTarget) {
+                    if (branchFilter && order.sourceBranchId !== branchFilter) return;
+
+                    if(searchFilter) {
+                        const cleanSearch = searchFilter.replace(/\s+/g, '');
+                        const matchSource = (order.sourceBranchName || '').toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+                        const matchTarget = (order.targetBranchName || '').toLowerCase().replace(/\s+/g, '').includes(cleanSearch);
+                        
+                        // حماية مصفوفة الأصناف من خطأ Firebase
+                        let itemsArr = [];
+                        if (order.items) itemsArr = Array.isArray(order.items) ? order.items : Object.values(order.items);
+                        
+                        const matchItems = itemsArr.some(item => 
+                            (item.itemCode && item.itemCode.toLowerCase().replace(/\s+/g, '').includes(cleanSearch))
+                        );
+                        
+                        if(!matchSource && !matchTarget && !matchItems) return;
+                    }
+
+                    order.id = orderId;
+                    order.date = dateStr;
+                    collectedOrders.push(order);
+                }
+            });
         });
 
-        // ترتيب تنازلي (الأحدث أولاً)
-        collectedNotifs.sort((a,b) => b.timestamp - a.timestamp);
-        renderAdvancedNotifs(collectedNotifs);
+        collectedOrders.sort((a,b) => b.timestamp - a.timestamp);
+        renderAdvancedNotifs(collectedOrders);
 
     } catch (e) {
         console.error(e);
@@ -1897,164 +2036,195 @@ async function fetchFilteredNotifications() {
     }
 }
 
-// رسم الإشعارات المجمعة في النافذة
-function renderAdvancedNotifs(notifsArray) {
+// رسم الإشعارات المجمعة في النافذة بناءً على بنية branch_orders
+function renderAdvancedNotifs(ordersArray) {
     const grid = document.getElementById('advNotifsGrid');
     grid.innerHTML = '';
 
-    if (notifsArray.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><i class="fa-solid fa-box-open text-6xl mb-4 text-gray-300 block"></i><span class="text-xl font-bold">لا توجد تحويلات واردة مطابقة للبحث في هذه الفترة</span></div>';
+    if (ordersArray.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><i class="fa-solid fa-box-open text-6xl mb-4 text-gray-300 block"></i><span class="text-xl font-bold">لا توجد طلبات فروع مطابقة في هذه الفترة</span></div>';
         return;
     }
 
-    // تجميع الحركات المرسلة في نفس الوقت ونفس الفرع لتكوين "باقة/فاتورة"
-    const groupedOrders = {};
-    notifsArray.forEach(r => {
-        const groupKey = r.date + '_' + r.time + '_' + r.createdByUserId;
-        if (!groupedOrders[groupKey]) {
-            groupedOrders[groupKey] = {
-                senderName: r.createdByUserName,
-                sourceBranchName: r.sourceBranchId && branches[r.sourceBranchId] ? branches[r.sourceBranchId].name : 'فرع مجهول',
-                delegateName: r.delegateName,
-                time: r.time,
-                date: r.date,
-                items: []
-            };
+    let currentActiveBranch = 'admin';
+    if (currentUser.role === 'branch') currentActiveBranch = currentUser.id;
+    else if (currentUser.role === 'admin' && currentUser.assignedBranch) currentActiveBranch = currentUser.assignedBranch;
+
+    ordersArray.forEach(order => {
+        
+        // معالجة آمنة لمصفوفة الأصناف لتجنب أخطاء الفايربيز
+        let itemsArr = [];
+        if (order.items) {
+            itemsArr = Array.isArray(order.items) ? order.items : Object.values(order.items);
         }
-        groupedOrders[groupKey].items.push(r);
-    });
 
-    // رسم الكروت
-    Object.keys(groupedOrders).forEach(groupKey => {
-        const group = groupedOrders[groupKey];
-        
-        let allConfirmed = true;
-        let anyModified = false;
-        let itemsHtml = '';
-        
-        group.items.forEach(r => {
-            if (!r.isAcceptedByReceiver) allConfirmed = false;
-            if (r.quantityEdited) anyModified = true;
-
-            const itemCodeDisplay = r.itemCode ? r.itemCode : 'صنف مجهول';
-            const reqQty = r.quantityEdited ? r.originalCount : (r.count || r.quantity || 1);
-            const currentQty = r.count || r.quantity || 1;
-
-          let itemActions = '';
-if (!r.isAcceptedByReceiver) {
-    itemActions = `
-    <div class="flex flex-wrap gap-2 justify-end mt-2 w-full">
-        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', '${r.sourceBranchId || 'admin'}', 'confirm')" class="bg-[#10b981] hover:bg-[#059669] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-check-double"></i> تأكيد كامل</button>
-        <button onclick="replyToAdvancedNotif('${group.date}', '${r.id}', '${r.sourceBranchId || 'admin'}', 'edit')" class="bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold py-1.5 px-3 rounded-md text-[11px] shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1 whitespace-nowrap"><i class="fa-solid fa-pen"></i> تعديل عجز</button>
-    </div>`;
- 
-
-              
-            } else {
-                itemActions = `<div class="text-xs text-green-700 bg-green-50 px-2 py-1.5 rounded border border-green-200 font-bold mt-2 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> تم استلام (${currentQty}) بنجاح</div>`;
-            }
-
-            itemsHtml += `
-                <div class="bg-white border border-gray-200 rounded-lg p-3 mb-2 shadow-sm hover:shadow transition">
-                    <div class="flex justify-between items-center font-bold">
-                        <span class="text-primary text-sm flex items-center gap-1"><i class="fa-solid fa-box-archive text-gray-400"></i> ${itemCodeDisplay}</span>
-                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-xs border">الكمية المرسلة: ${reqQty}</span>
-                    </div>
-                    ${itemActions}
-                </div>
-            `;
-        });
-
+        // داخل دالة renderAdvancedNotifs
+let itemsHtml = itemsArr.map(item => `
+    <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 text-sm mb-1.5 shadow-sm">
+        <span class="text-primary font-bold flex items-center">
+            <i class="fa-solid fa-box-archive text-gray-400 ml-1"></i> ${item.itemCode}
+            <button type="button" onclick="copyToClipboard('${item.itemCode}')" 
+                    class="mr-2 p-1 bg-gray-50 hover:bg-gray-200 rounded text-gray-400 hover:text-primary transition">
+                <i class="fa-solid fa-copy text-[10px]"></i>
+            </button>
+        </span>
+        <span class="text-[11px] font-bold">
+            المرسل: <span class="text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded mr-1">${item.requestedQty}</span> | 
+            المستلم: <span class="text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">${item.actualQty}</span>
+        </span>
+    </div>
+`).join('');
+        let actionButtonsHtml = '';
         let globalStatusHtml = '';
-        if (allConfirmed) {
-            globalStatusHtml = anyModified ? 
-                '<span class="bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full border border-amber-200 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> يوجد عجز بالطلب</span>' : 
-                '<span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full border border-green-200 font-bold"><i class="fa-solid fa-check-double"></i> تم الاستلام بالكامل</span>';
-        } else {
-            globalStatusHtml = '<span class="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full border border-red-200 font-bold animate-pulse"><i class="fa-solid fa-clock"></i> بانتظار الجرد والتأكيد</span>';
+
+        if (order.status === 'pending') {
+            globalStatusHtml = '<span class="bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded-full border border-red-200 font-bold animate-pulse"><i class="fa-solid fa-clock"></i> بانتظار التأكيد</span>';
+            
+            // إظهار أزرار التأكيد فقط للفرع المستلم (أو المدير العام)
+            if (order.targetBranchId === currentActiveBranch || (currentUser.role === 'admin' && currentUser.adminType === 'admin')) {
+                actionButtonsHtml = `
+                    <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100 w-full">
+                        <button onclick="executeOrderAction('${order.date}', '${order.id}', 'confirm', '${order.targetBranchName}', '${order.targetBranchId}', '${order.sourceBranchId}')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-2 rounded-lg text-xs shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-check-double"></i> تأكيد كامل
+                        </button>
+                        <button onclick="executeOrderAction('${order.date}', '${order.id}', 'edit', '${order.targetBranchName}', '${order.targetBranchId}', '${order.sourceBranchId}')" 
+        class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-2 rounded-lg text-xs shadow-sm transition transform active:scale-95 flex items-center justify-center gap-1">
+    <i class="fa-solid fa-pen"></i> تعديل الكمية
+</button>
+                    </div>
+                `;
+            }
+        } else if (order.status === 'confirmed') {
+            globalStatusHtml = '<span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded-full border border-green-200 font-bold"><i class="fa-solid fa-check-double"></i> استلام كامل</span>';
+        } else if (order.status === 'edited') {
+            globalStatusHtml = '<span class="bg-amber-100 text-amber-700 text-[10px] px-2 py-1 rounded-full border border-amber-200 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> عجز (مُعدّل)</span>';
         }
+
+        const timeStr = new Date(order.timestamp).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
 
         grid.innerHTML += `
             <div class="bg-gradient-to-br from-blue-50/30 to-white border border-blue-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col relative overflow-hidden">
                 <div class="absolute -left-6 -top-6 text-7xl text-blue-100 opacity-50"><i class="fa-solid fa-truck-ramp-box"></i></div>
-                <div class="relative z-10 flex justify-between items-start mb-3 border-b border-gray-100 pb-3">
+                
+                <div class="relative z-10 flex justify-between items-start mb-3 border-b border-gray-100 pb-2">
                     <div>
-                        <div class="font-black text-gray-800 text-sm flex items-center gap-1"><i class="fa-solid fa-store text-secondary"></i> ${group.sourceBranchName}</div>
-                        <div class="text-[11px] text-gray-500 font-bold mt-1">بواسطة: ${group.senderName}</div>
+                        <div class="font-black text-gray-800 text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-store text-secondary"></i> ${order.sourceBranchName}
+                        </div>
+                        <div class="text-[10px] text-gray-500 mt-1 font-bold">
+                            تحويل إلى: <span class="text-primary">${order.targetBranchName}</span>
+                        </div>
                     </div>
-                    <div class="text-left">
-                        <div class="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">${group.date}</div>
-                        <div class="text-[10px] text-gray-500 mt-1 text-center" dir="ltr">${group.time}</div>
+                    <div class="text-left flex flex-col items-end">
+                        ${globalStatusHtml}
+                        <div class="text-[10px] text-gray-400 mt-1 font-mono">${order.date} | ${timeStr}</div>
                     </div>
                 </div>
-                <div class="relative z-10 flex justify-between items-center mb-3 bg-white p-2 rounded-lg border border-gray-100">
-                    <p class="text-xs text-gray-600 font-bold"><i class="fa-solid fa-motorcycle text-gray-400"></i> المندوب: <span class="text-gray-800">${group.delegateName}</span></p>
-                    ${globalStatusHtml}
-                </div>
+                
                 <div class="relative z-10 bg-gray-50 p-2 rounded-xl border border-gray-200 flex-grow">
-                    <div class="text-xs font-black text-gray-500 mb-2 mr-1">تفاصيل ومحتويات الإرسالية:</div>
+                    <div class="text-xs font-black text-gray-500 mb-2 mr-1">الأصناف المرفقة بالطلب:</div>
                     ${itemsHtml}
+                </div>
+                
+                <div class="relative z-10">
+                    ${actionButtonsHtml}
                 </div>
             </div>
         `;
     });
 }
 
-// دالة الرد والتأكيد أو التعديل من داخل النافذة
-// دالة الرد والتأكيد أو التعديل من داخل النافذة (محدثة وخالية من الأخطاء)
-// تمت إضافة branchId كمتغير جديد في الدالة
-async function replyToAdvancedNotif(date, recordId, branchId, action) {
-    try {
-        const res = await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`);
-        const rec = await res.json();
-        if(!rec) return showToast("عذراً، هذه الحركة لم تعد متوفرة في النظام", "error");
+// الدالة المخصصة والآمنة لتنفيذ إجراء الطلب (تأكيد أو تعديل) مع التحديث الفوري
+// متغيرات عالمية لتخزين بيانات الطلب الحالي
+// متغير لتخزين بيانات الطلب الحالي (Date, ID, Items)
+let currentOrderEditData = {};
 
+async function executeOrderAction(date, orderId, action, targetBranchName, targetBranchId, sourceBranchId) {
+    try {
         if (action === 'confirm') {
-            await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`, {
-                method: 'PATCH', body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
+            await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'confirmed' })
             });
-            showToast("تم تأكيد الاستلام بنجاح", "success");
+            showToast("تم تأكيد الاستلام بالكامل", "success");
+            fetchFilteredNotifications();
+        } 
+        else if (action === 'edit') {
+            // جلب بيانات الطلب المحدثة
+            const res = await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`);
+            const order = await res.json();
             
-        } else if (action === 'edit') {
-            const oldQty = parseInt(rec.count || rec.quantity || 1);
-            const newQtyStr = prompt(`جرد الصنف (${rec.itemCode || 'بدون كود'}):\nيرجى إدخال الكمية الفعلية التي وصلت للفرع (المرسل: ${oldQty}):`, oldQty);
-            if (newQtyStr === null || newQtyStr.trim() === '') return; 
+            // تحويل الأصناف لمصفوفة (حماية)
+            const items = Array.isArray(order.items) ? order.items : Object.values(order.items);
             
-            const newQty = parseInt(newQtyStr);
-            if (isNaN(newQty) || newQty <= 0) return showToast("خطأ: يرجى إدخال رقم صحيح", "error");
+            currentOrderEditData = { date, orderId, items };
+
+            // بناء الحقول داخل النافذة
+            const container = document.getElementById('editQtyInputs');
+            container.innerHTML = '';
             
-            if (newQty === oldQty) {
-                await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`, {
-                    method: 'PATCH', body: JSON.stringify({ status: 'confirmed', isAcceptedByReceiver: true })
-                });
-                showToast("الكمية مطابقة! تم الاستلام بالكامل", "success");
-            } else {
-                if(!confirm(`تأكيد الجرد: استلام (${newQty}) بدلاً من (${oldQty}) للصنف؟`)) return;
-                
-                await fetch(`${DB_URL}daily_records/${date}/${branchId}/${recordId}.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ 
-                        count: newQty, quantity: newQty, status: 'confirmed',
-                        originalCount: oldQty, quantityEdited: true, isAcceptedByReceiver: true
-                    })
-                });
-                
-                showToast("تم حفظ العجز والكمية المستلمة بنجاح", "success");
-                const validTargetId = rec.createdByUserId || 'admin';
-                await fetch(`${DB_URL}branch_notifications.json`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        text: `تنبيه عجز: استلم الفرع الصنف (${rec.itemCode || 'مجهول'}) بكمية (${newQty}) بدلاً من (${oldQty}).`,
-                        senderId: currentUser.id, targetId: validTargetId, timestamp: Date.now()
-                    })
-                });
-                if(typeof logActivity === 'function') logActivity('edit', `تعديل استلام الصنف ${rec.itemCode || 'بدون كود'}: من ${oldQty} إلى ${newQty}`);
-            }
+           // ... داخل دالة executeOrderAction، وتحديداً في جزء items.forEach:
+
+items.forEach((item, index) => {
+    container.innerHTML += `
+        <div class="mb-4 p-3 bg-gray-50 rounded-xl border">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-gray-700 flex items-center gap-2">
+                    كود: ${item.itemCode}
+                    <!-- زر النسخ الصغير -->
+                    <button type="button" onclick="copyToClipboard('${item.itemCode}')" 
+                            class="bg-white border p-1 rounded hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition">
+                        <i class="fa-solid fa-copy text-[10px]"></i>
+                    </button>
+                </span>
+                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">المطلوب: ${item.requestedQty}</span>
+            </div>
+            
+            <label class="text-[10px] text-gray-500 font-bold">الكمية المستلمة الفعلية:</label>
+            <input type="number" id="qtyInput_${index}" value="${item.actualQty || item.requestedQty}" 
+                   class="w-full border p-2 rounded-lg mt-1 font-bold" />
+        </div>
+    `;
+});
+
+            // إظهار النافذة
+            document.getElementById('editQtyModal').classList.remove('hidden');
         }
-        await fetchFilteredNotifications(); if (typeof loadRecords === 'function') loadRecords();
-    } catch(e) { showToast("خطأ أثناء الاتصال بقاعدة البيانات", "error"); }
+    } catch (e) {
+        showToast("خطأ في الاتصال", "error");
+    }
 }
 
+// دالة الحفظ
+async function saveEditChanges() {
+    const { date, orderId, items } = currentOrderEditData;
+    
+    // بناء مصفوفة الأصناف الجديدة
+    const updatedItems = items.map((item, index) => {
+        const inputVal = document.getElementById(`qtyInput_${index}`).value;
+        return {
+            ...item, // نحتفظ بكود الصنف والبيانات القديمة
+            requestedQty: item.requestedQty, // المطلوبة تبقى كما هي
+            actualQty: parseInt(inputVal) // التحديث الفعلي
+        };
+    });
+
+    try {
+        await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`, {
+            method: 'PATCH',
+            body: JSON.stringify({ 
+                items: updatedItems, 
+                status: 'edited' 
+            })
+        });
+
+        document.getElementById('editQtyModal').classList.add('hidden');
+        showToast("تم تحديث الكميات بنجاح", "success");
+        fetchFilteredNotifications(); // تحديث القائمة
+    } catch (e) {
+        showToast("فشل في حفظ البيانات", "error");
+    }
+}
         async function checkPendingDevicesBackground() {
             try {
                 const res = await fetch(`${DB_URL}devices.json`);
@@ -2395,7 +2565,7 @@ async function replyToAdvancedNotif(date, recordId, branchId, action) {
         }
 window.activeDelegatesOut = delegatesOut;
 if(typeof updateDelegatesDropdownUI === 'function') updateDelegatesDropdownUI();
-       async function updateDelegatesOutStatus() {
+        async function updateDelegatesOutStatus() {
     if(!currentUser) return;
     
     // 🌟 الحل الجذري 1: تصفير كائن العهدة تماماً قبل بدء الحساب الجديد لمنع التضاعف الوهمي
@@ -3231,7 +3401,154 @@ function openOrderModal(id, name) {
             `;
             container.insertAdjacentHTML('beforeend', rowHtml);
         }
+async function loadBranchOrdersNew() {
+    const date = document.getElementById('recordDate').value || new Date().toISOString().split('T')[0];
+    const container = document.getElementById('advancedNotifsContainer'); 
+    if(!container) return;
+    
+    container.innerHTML = '<p class="text-center text-gray-400 py-4"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحميل الطلبات المتقدمة...</p>';
 
+    try {
+        const res = await fetch(`${DB_URL}branch_orders/${date}.json`);
+        const data = await res.json();
+        
+        container.innerHTML = '';
+
+        if(!data) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-4">لا توجد طلبات فروع مسجلة لهذا اليوم</p>';
+            return;
+        }
+
+        let currentActiveBranch = 'admin';
+        if (currentUser.role === 'branch') currentActiveBranch = currentUser.id;
+        else if (currentUser.role === 'admin' && currentUser.assignedBranch) currentActiveBranch = currentUser.assignedBranch;
+
+        for(let orderId in data) {
+            const order = data[orderId];
+            
+            // فلترة: إظهار الطلب فقط للفرع المرسل، الفرع المستلم، أو الأدمن العام للتحكم
+            if(currentUser.role !== 'admin' && order.targetBranchId !== currentActiveBranch && order.sourceBranchId !== currentActiveBranch) {
+                continue;
+            }
+
+            // بناء واجهة عرض الأصناف المرفقة بالطلب
+            let itemsListHtml = order.items.map(item => `
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100 text-sm">
+                    <span>كود الصنف: <b class="text-blue-600 font-mono">${item.itemCode}</b></span>
+                    <span>المطلوب: <b class="text-gray-700">${item.requestedQty}</b> | الفعلي مع المندوب: <b class="text-green-600">${item.actualQty}</b></span>
+                </div>
+            `).join('');
+
+            // التحكم في ظهور أزرار الإجراءات بناءً على صلاحية الفرع وحالة الطلب الحالية
+            let actionButtonsHtml = '';
+            if(order.targetBranchId === currentActiveBranch && order.status === 'pending') {
+                actionButtonsHtml = `
+                    <div class="flex gap-2 mt-3 pt-2 border-t border-gray-100">
+                        <button onclick="handleBranchOrderAction('${date}', '${orderId}', 'confirm')" class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-green-700 font-bold transition-all shadow-sm">
+                            <i class="fa-solid fa-check-double"></i> تأكيد الاستلام كاملاً
+                        </button>
+                        <button onclick="handleBranchOrderAction('${date}', '${orderId}', 'edit')" class="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-amber-600 font-bold transition-all shadow-sm">
+                            <i class="fa-solid fa-pen-to-square"></i> تعديل العجز وإنهاء الطلب
+                        </button>
+                    </div>
+                `;
+            } else {
+                let badge = '';
+                if(order.status === 'confirmed') badge = '<span class="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full font-bold border border-green-200"><i class="fa-solid fa-circle-check"></i> تم التأكيد والاستلام بالكامل</span>';
+                if(order.status === 'edited') badge = '<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-bold border border-amber-200"><i class="fa-solid fa-triangle-exclamation"></i> تم تعديل العجز واعتماد الشحن الفعلي</span>';
+                actionButtonsHtml = `<div class="mt-2 pt-2 border-t border-gray-50">${badge}</div>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = `bg-white border p-4 rounded-xl shadow-sm mb-3 border-r-4 transition-all ${order.status === 'pending' ? 'border-r-amber-500 hover:shadow-md' : 'border-r-green-500'}`;
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs text-gray-400"><i class="fa-regular fa-clock"></i> ${new Date(order.timestamp).toLocaleTimeString('ar-EG')}</span>
+                    <span class="text-xs font-bold text-gray-700 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">من: ${order.sourceBranchName} ➔ إلى: ${order.targetBranchName}</span>
+                </div>
+                <div class="space-y-1.5">${itemsListHtml}</div>
+                ${actionButtonsHtml}
+            `;
+            container.appendChild(card);
+        }
+    } catch (e) {
+        container.innerHTML = '<p class="text-center text-red-500 py-4">خطأ أثناء جلب طلبات الفروع المتقدمة</p>';
+    }
+}async function handleBranchOrderAction(date, orderId, action) {
+    try {
+        // جلب تفاصيل الطلب من المسار الجديد للتحقق منه
+        const res = await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`);
+        const order = await res.json();
+        if(!order) throw new Error("الطلب المحدد غير موجود بالقاعدة");
+
+        if(action === 'confirm') {
+            // أ- تأكيد الطلب كما هو بدون تعديل في الكميات
+            await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: 'confirmed' })
+            });
+            showToast("تم تأكيد شحن واستلام الطلب بنجاح", "success");
+        } 
+        
+        else if(action === 'edit') {
+            // ب- نافذة منبثقة تفاعلية لتحديث كمية كل صنف مرسل فعلياً مع المندوب
+            let updatedItems = [];
+            
+            for(let item of order.items) {
+                const promptValue = window.prompt(`الصنف: [ ${item.itemCode} ]\nالكمية المطلوبة أساساً: ( ${item.requestedQty} )\n\nالرجاء إدخال الكمية الفعلية المرسلة مع المندوب حالياً:`, item.requestedQty);
+                
+                // إذا قام المستخدم بالضغط على إلغاء (Cancel) يتم إيقاف العملية بالكامل حمايةً للبيانات
+                if(promptValue === null) return; 
+                
+                const actualQtyParsed = parseInt(promptValue);
+                if(isNaN(actualQtyParsed) || actualQtyParsed < 0) {
+                    alert("الكمية المدخلة غير صحيحة! تم إلغاء عملية التعديل بالكامل.");
+                    return;
+                }
+                
+                // إضافة الصنف بالمصفوفة المعدلة بالقيم الجديدة والقديمة للتوثيق
+                updatedItems.push({
+                    itemCode: item.itemCode,
+                    requestedQty: item.requestedQty,
+                    actualQty: actualQtyParsed
+                });
+            }
+
+            // ج- تحديث البيانات الإجمالية للأصناف داخل المسار المخصص وتعديل الحالة إلى edited
+            await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ 
+                    items: updatedItems,
+                    status: 'edited'
+                })
+            });
+
+            showToast("تم تحديث وحفظ الكميات الفعلية بنجاح وإنهاء الطلب", "success");
+
+            // د- صياغة نص الإشعار الفوري وإرساله إلى مسار إشعارات الفروع الفرعي لإخطار الفرع الطالب
+            const changeLogs = updatedItems.map(i => `[الصنف: ${i.itemCode} | الكمية المستلمة: ${i.actualQty} بدلاً من ${i.requestedQty}]`).join(' ، ');
+            const alertMessage = `إشعار تعديل الكمية: قام فرع (${order.targetBranchName}) بتحديث الكميات المرسلة فعلياً مع المندوب لطلبكم لتصبح كالتالي: ${changeLogs}`;
+
+            await fetch(`${DB_URL}branch_notifications.json`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    text: alertMessage,
+                    senderId: order.targetBranchId,
+                    targetId: order.sourceBranchId, // إرسال مباشر لمعرف الفرع الطالب الأصلي
+                    timestamp: Date.now()
+                })
+            });
+        }
+
+        // هـ- إعادة تحديث واجهات النظام فوراً بدون الحاجة لعمل ريلود كامل للصفحة
+        if(typeof loadBranchOrdersNew === 'function') await loadBranchOrdersNew();
+        if(typeof loadRecords === 'function') loadRecords(); // تحديث الديلي ريكوردز لضمان تزامن الأرقام الإحصائية
+
+    } catch(e) {
+        console.error(e);
+        showToast("فشلت العملية: " + e.message, "error");
+    }
+}
         // دالة حذف سطر صنف من القائمة
         function deleteWeightRow(rowId) {
             const container = document.getElementById('weightRowsContainer');
@@ -3246,36 +3563,77 @@ function openOrderModal(id, name) {
         function closeWeightModal() { document.getElementById('weightModal').classList.remove('active'); }
 
         // حفظ بيانات الأصناف المتعددة المدخلة وتوجيهها كحركات منفردة ذكية في قاعدة البيانات
-        async function saveManualWeight() {
-            const rows = document.querySelectorAll('.weight-row');
-            let validEntries = [];
-            
-            for(let row of rows) {
-                const code = row.querySelector('.row-item-code').value.trim();
-                const qty = parseInt(row.querySelector('.row-item-qty').value) || 0;
-                
-                if(!code) {
-                    showToast("يرجى إدخال كود الصنف في جميع الخانات المضافة", "error");
-                    return;
-                }
-                if(qty <= 0) {
-                    showToast("الكمية المحددة يجب أن تفوق الصفر", "error");
-                    return;
-                }
-                validEntries.push({ code, qty });
-            }
-            
-            closeWeightModal();
-            
-            // تسجيل كل صنف كحركة مستقلة في قاعدة البيانات لتتبعها والرد عليها بدقة
-            for(let entry of validEntries) {
-                await recordClick(pendingBranchId, pendingBranchName, entry.qty, '', '', '', false, 0, null, 'نقدي', '', '', entry.code);
-            }
-            
-            loadRecords();
+        // حفظ بيانات الأصناف المتعددة المدخلة وتوجيهها كحركات منفردة ذكية في قاعدة البيانات
+async function saveManualWeight() {
+    const rows = document.querySelectorAll('.weight-row');
+    let validEntries = [];
+    
+    // 1. التحقق من المدخلات وجمعها
+    for(let row of rows) {
+        const code = row.querySelector('.row-item-code').value.trim();
+        const qty = parseInt(row.querySelector('.row-item-qty').value) || 0;
+        
+        if(!code) {
+            showToast("يرجى إدخال كود الصنف في جميع الخانات المضافة", "error");
+            return;
         }
+        if(qty <= 0) {
+            showToast("الكمية المحددة يجب أن تفوق الصفر", "error");
+            return;
+        }
+        validEntries.push({ code, qty });
+    }
+    
+    // إغلاق النافذة
+    closeWeightModal();
+    
+    // 2. الكود الجديد: تسجيل حركة واحدة بالديلي ريكوردز وإرسال التفاصيل للمسار الجديد
+    try {
+        const date = document.getElementById('recordDate').value || new Date().toISOString().split('T')[0];
+        
+        // أ- تحديد معرف الفرع المرسِل الحالي
+        let sBranchId = 'admin';
+        if (currentUser.role === 'branch') sBranchId = currentUser.id;
+        else if (currentUser.role === 'admin' && currentUser.assignedBranch) sBranchId = currentUser.assignedBranch;
 
-            async function recordClick(toBranchId, toBranchName, count = 1, orderNum = '', orderVal = '', customerWhatsapp = '', sendWhatsapp = false, changeAmount = 0, customDeliveryTime = null, paymentMethod = 'نقدي', customerContact = '', customerAddress = '', itemCode = '', subRegionId = '', subRegionName = '') {
+        // ب- تسجيل حركة إحصائية واحدة ثابتة قيمتها 1 في الـ daily_records بدون تفاصيل الأصناف
+        await recordClick(pendingBranchId, pendingBranchName, 1, '', '', '', false, 0, null, 'نقدي', '', '', 'طلب فروع (تفاصيل بمسار آخر)');
+
+        // ج- تجهيز الكائن الكامل للطلب ليتم حفظه بمساره الجديد الاحترافي
+        const branchOrderData = {
+            sourceBranchId: sBranchId,
+            sourceBranchName: currentUser.name || 'الفرع الطالب',
+            targetBranchId: pendingBranchId,
+            targetBranchName: pendingBranchName,
+            // خريطة الأصناف: نضع الكمية المطلوبة والفعلية متطابقتين في البداية حتى يقدم الطرف الآخر تعديله
+            items: validEntries.map(e => ({
+                itemCode: e.code,
+                requestedQty: parseInt(e.qty),
+                actualQty: parseInt(e.qty) 
+            })),
+            status: 'pending', // الحالات المتاحة: pending, confirmed, edited
+            timestamp: Date.now(),
+            date: date
+        };
+
+        // د- حفظ كائن الطلب في مسار الفروع الجديد والمستقل
+        await fetch(`${DB_URL}branch_orders/${date}.json`, {
+            method: 'POST',
+            body: JSON.stringify(branchOrderData)
+        });
+
+        showToast("تم إرسال الطلب وحفظ حركته الإحصائية بنجاح", "success");
+        
+        // استدعاء دوال تحديث الواجهة
+        loadRecords(); // تحديث الجدول الأساسي
+        if(typeof loadBranchOrdersNew === 'function') await loadBranchOrdersNew(); // تحديث إشعارات الفروع
+
+    } catch (error) {
+        console.error(error);
+        showToast("حدث خطأ أثناء معالجة الطلب: " + error.message, "error");
+    }
+}
+            async function recordClick(toBranchId, toBranchName, count = 1, orderNum = '', orderVal = '', customerWhatsapp = '', sendWhatsapp = false, changeAmount = 0, customDeliveryTime = null, paymentMethod = 'نقدي', customerContact = '', customerAddress = '', itemCode = '', subRegionId = '', subRegionName = '', itemQuantity = null) {
             const date = document.getElementById('recordDate').value;
             const todayStr = new Date().toISOString().split('T')[0];
             const delId = document.getElementById('recordDelegate').value;
@@ -3297,6 +3655,7 @@ function openOrderModal(id, name) {
                 createdByUserName: currentUser.name,
                 time: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit', second:'2-digit'}),
                 timestamp: Date.now(), count: count, orderNumber: orderNum, orderValue: orderVal,
+                quantity: itemQuantity !== null ? itemQuantity : (itemCode ? count : null),
                 changeAmount: changeAmount, 
                 customerWhatsapp: customerWhatsapp,
                 customerContact: customerContact,
@@ -3400,29 +3759,49 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
             isAssigningForDelivery = false; 
         }
 
-        async function saveDelegateChange() {
-    const newDelId = document.getElementById('newDelegateSelect').value;
-    if (!newDelId) return showToast("يجب اختيار مندوب أولاً", "error");
-    
-    const newDel = delegates[newDelId];
-    const branchNode = currentRecords[changeDelegateDate][recordToChangeDelegate].sourceBranchId || 'admin';
-    
-    try {
-        let payload = { delegateId: newDelId, delegateName: newDel.name, delegateCode: newDel.code, sourceBranchId: newDel.branchId || 'admin' };
-        if (isAssigningForDelivery) { payload.status = 'out_for_delivery'; payload.outForDeliveryTimestamp = Date.now(); }
+       async function saveDelegateChange() {
+        const newDelId = document.getElementById('newDelegateSelect').value;
+        if (!newDelId) return showToast("يجب اختيار مندوب أولاً", "error");
+        
+        const newDel = delegates[newDelId];
+        
+        // 🌟 البحث الآمن
+        let branchNode = 'admin';
+        if (currentRecords[changeDelegateDate] && currentRecords[changeDelegateDate][recordToChangeDelegate]) {
+            branchNode = currentRecords[changeDelegateDate][recordToChangeDelegate].sourceBranchId || 'admin';
+        } else if (recordsCache[changeDelegateDate] && recordsCache[changeDelegateDate][recordToChangeDelegate]) {
+            branchNode = recordsCache[changeDelegateDate][recordToChangeDelegate].sourceBranchId || 'admin';
+        }
+        
+        try {
+            let payload = { delegateId: newDelId, delegateName: newDel.name, delegateCode: newDel.code, sourceBranchId: newDel.branchId || 'admin' };
+            if (isAssigningForDelivery) { payload.status = 'out_for_delivery'; payload.outForDeliveryTimestamp = Date.now(); }
 
-        await fetch(`${DB_URL}daily_records/${changeDelegateDate}/${branchNode}/${recordToChangeDelegate}.json`, { 
-            method: 'PATCH', body: JSON.stringify(payload) 
-        });
-        
-        logActivity('edit', `تغيير المندوب لسجل بتاريخ ${changeDelegateDate} إلى المندوب (${newDel.name})`);
-        if (isAssigningForDelivery) showToast("تم تحديد المندوب وتحديث الحالة بنجاح", "success");
-        else showToast("تم تبديل المندوب بنجاح", "success");
-        
-        closeChangeDelegateModal(); loadRecords(); 
-        if (isAssigningForDelivery) { openPendingOrdersModal(); checkOverdueOrdersBackground(); updateDelegatesOutStatus(); }
-    } catch (e) { showToast("حدث خطأ أثناء تحديث المندوب", "error"); }
-}
+            await fetch(`${DB_URL}daily_records/${changeDelegateDate}/${branchNode}/${recordToChangeDelegate}.json`, { 
+                method: 'PATCH', body: JSON.stringify(payload) 
+            });
+            
+            if (currentRecords[changeDelegateDate] && currentRecords[changeDelegateDate][recordToChangeDelegate]) {
+                Object.assign(currentRecords[changeDelegateDate][recordToChangeDelegate], payload);
+            }
+            if (recordsCache[changeDelegateDate] && recordsCache[changeDelegateDate][recordToChangeDelegate]) {
+                Object.assign(recordsCache[changeDelegateDate][recordToChangeDelegate], payload);
+            }
+
+            logActivity('edit', `تغيير المندوب لسجل بتاريخ ${changeDelegateDate} إلى المندوب (${newDel.name})`);
+            if (isAssigningForDelivery) showToast("تم تحديد المندوب وتحديث الحالة بنجاح", "success");
+            else showToast("تم تبديل المندوب بنجاح", "success");
+            
+            closeChangeDelegateModal(); 
+            loadRecords(); 
+            
+            if (isAssigningForDelivery) { 
+                openPendingOrdersModal(); 
+                checkOverdueOrdersBackground(); 
+                updateDelegatesOutStatus(); 
+            }
+        } catch (e) { showToast("حدث خطأ أثناء تحديث المندوب", "error"); }
+    }
         
         function renderRecordsTable(isSilent = false) {
             const date = document.getElementById('recordDate').value;
@@ -3801,46 +4180,67 @@ select.innerHTML += `<option value="${k}">${d.name} (${d.code})</option>`;
         }
               function closePendingOrdersModal() { document.getElementById('pendingOrdersModal').classList.remove('active'); }
 
-        async function updateOrderStatus(date, recordId, newStatus) {
-    let msg = newStatus === 'out_for_delivery' ? "هل خرج المندوب لتوصيل هذا الأوردر؟" : "تأكيد: هل تم تسليم هذا الأوردر للعميل بنجاح؟";
-    if(!confirm(msg)) return;
-    const branchNode = currentRecords[date][recordId].sourceBranchId || 'admin';
-
-    try {
-        let payload = { status: newStatus };
-        if (newStatus === 'delivered') payload.deliveryTimestamp = Date.now();
-        else payload.outForDeliveryTimestamp = Date.now();
-
-        await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
-        showToast("تم تحديث حالة الأوردر بنجاح!");
-        checkOverdueOrdersBackground(); 
-        updateDelegatesOutStatus();
-        openPendingOrdersModal();
-    } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
-}
-
-       async function addExtraTime(date, recordId) {
-    if(!confirm("هل تود إضافة 30 دقيقة إضافية لوقت هذا الأوردر للحد من التأخير؟")) return;
-    try {
-        const data = currentRecords[date][recordId];
-        if(data) {
-            const branchNode = data.sourceBranchId || 'admin';
-            const currentExtra = data.extraTime || 0;
-            const newExtra = currentExtra + (30 * 60 * 1000); 
-            
-            await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { 
-                method: 'PATCH', 
-                body: JSON.stringify({ extraTime: newExtra }) 
-            });
-            
-            if(currentRecords[date] && currentRecords[date][recordId]) currentRecords[date][recordId].extraTime = newExtra;
-            if(recordsCache[date] && recordsCache[date][recordId]) recordsCache[date][recordId].extraTime = newExtra;
-            
-            showToast("تم تمديد الوقت 30 دقيقة بنجاح", "success");
-            checkOverdueOrdersBackground(); openPendingOrdersModal();
+       async function updateOrderStatus(date, recordId, newStatus) {
+        let msg = newStatus === 'out_for_delivery' ? "هل خرج المندوب لتوصيل هذا الأوردر؟" : "تأكيد: هل تم تسليم هذا الأوردر للعميل بنجاح؟";
+        if(!confirm(msg)) return;
+        
+        // 🌟 البحث الآمن عن الفرع (من الكاش أو السجلات الحالية لتجنب خطأ undefined للأوردرات القديمة)
+        let branchNode = 'admin';
+        if (currentRecords[date] && currentRecords[date][recordId]) {
+            branchNode = currentRecords[date][recordId].sourceBranchId || 'admin';
+        } else if (recordsCache[date] && recordsCache[date][recordId]) {
+            branchNode = recordsCache[date][recordId].sourceBranchId || 'admin';
         }
-    } catch(e) { showToast("حدث خطأ في تمديد الوقت", "error"); }
-}
+
+        try {
+            let payload = { status: newStatus };
+            if (newStatus === 'delivered') payload.deliveryTimestamp = Date.now();
+            else payload.outForDeliveryTimestamp = Date.now();
+
+            await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
+            
+            // تحديث الكاش المحلي فوراً لإخفاء الأوردر من قائمة المعلقات
+            if (currentRecords[date] && currentRecords[date][recordId]) {
+                Object.assign(currentRecords[date][recordId], payload);
+            }
+            if (recordsCache[date] && recordsCache[date][recordId]) {
+                Object.assign(recordsCache[date][recordId], payload);
+            }
+
+            showToast("تم تحديث حالة الأوردر بنجاح!");
+            checkOverdueOrdersBackground(); 
+            updateDelegatesOutStatus();
+            openPendingOrdersModal();
+            loadRecords(); // تحديث الجدول الرئيسي خلف النافذة أيضاً
+        } catch(e) { showToast("حدث خطأ في تحديث حالة الأوردر", "error"); }
+    } 
+
+     async function addExtraTime(date, recordId) {
+        if(!confirm("هل تود إضافة 30 دقيقة إضافية لوقت هذا الأوردر للحد من التأخير؟")) return;
+        try {
+            // 🌟 البحث الآمن
+            let data = null;
+            if (currentRecords[date] && currentRecords[date][recordId]) data = currentRecords[date][recordId];
+            else if (recordsCache[date] && recordsCache[date][recordId]) data = recordsCache[date][recordId];
+
+            if(data) {
+                const branchNode = data.sourceBranchId || 'admin';
+                const currentExtra = data.extraTime || 0;
+                const newExtra = currentExtra + (30 * 60 * 1000); 
+                
+                await fetch(`${DB_URL}daily_records/${date}/${branchNode}/${recordId}.json`, { 
+                    method: 'PATCH', 
+                    body: JSON.stringify({ extraTime: newExtra }) 
+                });
+                
+                if(currentRecords[date] && currentRecords[date][recordId]) currentRecords[date][recordId].extraTime = newExtra;
+                if(recordsCache[date] && recordsCache[date][recordId]) recordsCache[date][recordId].extraTime = newExtra;
+                
+                showToast("تم تمديد الوقت 30 دقيقة بنجاح", "success");
+                checkOverdueOrdersBackground(); openPendingOrdersModal();
+            }
+        } catch(e) { showToast("حدث خطأ في تمديد الوقت", "error"); }
+    }
         function processOfferImage(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -4020,6 +4420,8 @@ document.getElementById('offerMediaFile').value = '';
             e.preventDefault();
             const type = document.getElementById('adminType').value;
             const empType = type === 'employee' ? document.getElementById('employeeType').value : '';
+            // سحب الصلاحيات المحددة
+            const perms = type === 'admin' ? Array.from(document.querySelectorAll('#addAdminForm .perm-cb:checked')).map(cb => cb.value) : [];
             
             const adm = {
                 name: document.getElementById('adminName').value.trim(),
@@ -4027,6 +4429,7 @@ document.getElementById('offerMediaFile').value = '';
                 password: document.getElementById('adminPass').value.trim(),
                 type: type,
                 employeeType: empType,
+                permissions: perms,
                 assignedBranch: (type === 'branch_manager' || empType === 'موظف بفرع' || empType === 'موظف خدمة عملاء') ? document.getElementById('adminAssignedBranch').value : '',
                 timestamp: Date.now()
             };
@@ -4037,10 +4440,11 @@ document.getElementById('offerMediaFile').value = '';
                 toggleAdminBranchSelect('add');
                 loadAllData();
                 showToast("تم إضافة الحساب الجديد بنجاح", "success");
-            } catch(err) {
-                showToast("حدث خطأ أثناء حفظ الحساب", "error");
-            }
+            } catch(err) { showToast("حدث خطأ أثناء حفظ الحساب", "error"); }
         }
+       
+
+       
 
        async function handleAddBranch(e) {
             e.preventDefault();
@@ -4078,98 +4482,176 @@ document.getElementById('offerMediaFile').value = '';
         }
 
         
-        function openEditModal(type, id) {
-            currentEditType = type;
-            currentEditId = id;
-            const modal = document.getElementById('editModal');
-            const title = document.getElementById('editModalTitle');
-            const fields = document.getElementById('editModalFields');
-            fields.innerHTML = '';
+       function openEditModal(type, id) {
+    // تعريف المتغيرات بوضوح لتجنب أخطاء Strict Mode
+    window.currentEditType = type;
+    window.currentEditId = id;
+    
+    const modal = document.getElementById('editModal');
+    const title = document.getElementById('editModalTitle');
+    const fields = document.getElementById('editModalFields');
+    
+    if (!modal || !title || !fields) return;
+    
+    fields.innerHTML = '';
 
-            if (type === 'branch') {
-                title.innerHTML = `<i class="fa-solid fa-store text-secondary ml-2"></i> تعديل بيانات الفرع`;
-                const d = branches[id];
-                const currentBranchType = d.type || d.branchType || 'normal';
-                fields.innerHTML = `
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">اسم الفرع</label>
-                    <input type="text" id="editBranchName" value="${d.name||''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 font-bold">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">كود الفرع</label>
-                    <input type="text" id="editBranchCode" value="${d.code||''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">كلمة المرور</label>
-                    <input type="text" id="editBranchPass" value="${d.password||''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">نوع الفرع</label>
-                    <select id="editBranchType" class="w-full px-4 py-2 border rounded-lg mb-3 font-semibold bg-white">
-                        <option value="normal" ${currentBranchType === 'normal' || currentBranchType === 'لا يوجد خدمة عملاء' ? 'selected' : ''}>فرع عادي (لا يوجد خدمة عملاء)</option>
-                        <option value="has_cs" ${currentBranchType === 'has_cs' || currentBranchType === 'خدمة عملاء' ? 'selected' : ''}>يوجد خدمة عملاء</option>
-                    </select>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">خط العرض</label>
-                    <input type="text" id="editBranchLat" value="${d.lat||''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">خط الطول</label>
-                    <input type="text" id="editBranchLng" value="${d.lng||''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-2">
-                `;
-            } 
-            else if (type === 'admin') {
-                title.innerHTML = `<i class="fa-solid fa-user-shield text-secondary ml-2"></i> تعديل بيانات المسؤول / الموظف`;
-                const d = admins[id];
-                const currentType = d.type || 'admin';
-                const currentEmpType = d.employeeType || 'موظف رئيسية';
-                const currentAssignedBr = d.assignedBranch || '';
-                
-                let branchOptions = '<option value="">-- يرجى تحديد الفرع الخاص به --</option>';
-                Object.keys(branches).forEach(k => {
-                    branchOptions += `<option value="${k}" ${currentAssignedBr===k?'selected':''}>${branches[k].name}</option>`;
-                });
-
-                fields.innerHTML = `
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">الاسم</label>
-                    <input type="text" id="editAdminName" value="${d.name||''}" class="w-full px-4 py-2 border rounded-lg mb-3 font-bold">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">كود الدخول</label>
-                    <input type="text" id="editAdminCode" value="${d.code||''}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">كلمة المرور</label>
-                    <input type="text" id="editAdminPass" value="${d.password||''}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">نوع المسؤول</label>
-                    <select id="editAdminType" onchange="toggleAdminBranchSelect('edit')" class="w-full px-4 py-2 border rounded-lg mb-3 font-semibold bg-white">
-                        <option value="admin" ${currentType==='admin'?'selected':''}>مسؤول عام</option>
-                        <option value="branch_manager" ${currentType==='branch_manager'?'selected':''}>مسؤول فرع</option>
-                        <option value="employee" ${currentType==='employee'?'selected':''}>موظف</option>
-                    </select>
-                    
-                    <div id="editEmployeeTypeContainer" class="${currentType==='employee'?'':'hidden'} mb-3">
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">نوع ووظيفة الموظف</label>
-                        <select id="editEmployeeType" onchange="toggleAdminBranchSelect('edit')" class="w-full px-4 py-2 border rounded-lg font-semibold bg-white">
-                            <option value="موظف رئيسية" ${currentEmpType==='موظف رئيسية'?'selected':''}>موظف (رئيسية فقط)</option>
-                            <option value="موظف بفرع" ${currentEmpType==='موظف بفرع'?'selected':''}>موظف داخل فرع محدد</option>
-                            <option value="موظف خدمة عملاء" ${currentEmpType==='موظف خدمة عملاء'?'selected':''}>موظف خدمة عملاء</option>
-                        </select>
-                    </div>
-                    
-                    <select id="editAdminAssignedBranch" class="${(currentType==='branch_manager' || (currentType==='employee' && (currentEmpType==='موظف بفرع' || currentEmpType==='موظف خدمة عملاء')))?'':'hidden'} w-full px-4 py-2 border rounded-lg font-semibold bg-blue-50 border-blue-200 mb-2">
-                        ${branchOptions}
-                    </select>
-                `;
-            } 
-            else if (type === 'delegate') {
-                title.innerHTML = `<i class="fa-solid fa-motorcycle text-secondary ml-2"></i> تعديل بيانات المندوب`;
-                const d = delegates[id];
-                let branchOptions = '<option value="">بدون ربط بفرع</option>';
-                Object.keys(branches).forEach(k => {
-                    branchOptions += `<option value="${k}" ${d.branchId===k?'selected':''}>${branches[k].name}</option>`;
-                });
-                fields.innerHTML = `
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">اسم المندوب</label>
-                    <input type="text" id="editDelName" value="${d.name||''}" class="w-full px-4 py-2 border rounded-lg mb-3 font-bold">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">كود المندوب</label>
-                    <input type="text" id="editDelCode" value="${d.code||''}" class="w-full px-4 py-2 border rounded-lg mb-3">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">رقم الهاتف</label>
-                    <input type="text" id="editDelPhone" value="${d.phone||''}" class="w-full px-4 py-2 border rounded-lg mb-3" dir="ltr">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">الفرع التابع له</label>
-                    <select id="editDelBranch" class="w-full px-4 py-2 border rounded-lg mb-2 font-semibold bg-white">${branchOptions}</select>
-                `;
-            }
-            modal.classList.add('active');
+    if (type === 'branch') {
+        title.innerHTML = `<i class="fa-solid fa-store text-secondary ml-2"></i> تعديل بيانات الفرع`;
+        
+        // التحقق من وجود الفرع
+        const d = (typeof branches !== 'undefined' && branches) ? branches[id] : null;
+        if (!d) {
+            if (typeof showToast === 'function') showToast("خطأ: بيانات الفرع غير موجودة", "error");
+            return;
         }
 
+        const currentBranchType = d.type || d.branchType || 'normal';
+        
+        // حماية النصوص من كسر تصميم HTML
+        const safeName = (d.name || '').toString().replace(/"/g, '&quot;');
+        const safeCode = (d.code || '').toString().replace(/"/g, '&quot;');
+        const safePass = (d.password || '').toString().replace(/"/g, '&quot;');
+        
+        fields.innerHTML = `
+            <label class="block text-sm font-semibold text-gray-600 mb-1">اسم الفرع</label>
+            <input type="text" id="editBranchName" value="${safeName}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 font-bold">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">كود الفرع</label>
+            <input type="text" id="editBranchCode" value="${safeCode}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">كلمة المرور</label>
+            <input type="text" id="editBranchPass" value="${safePass}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">نوع الفرع</label>
+            <select id="editBranchType" class="w-full px-4 py-2 border rounded-lg mb-3 font-semibold bg-white">
+                <option value="normal" ${currentBranchType === 'normal' || currentBranchType === 'لا يوجد خدمة عملاء' ? 'selected' : ''}>فرع عادي (لا يوجد خدمة عملاء)</option>
+                <option value="has_cs" ${currentBranchType === 'has_cs' || currentBranchType === 'خدمة عملاء' ? 'selected' : ''}>يوجد خدمة عملاء</option>
+            </select>
+            <label class="block text-sm font-semibold text-gray-600 mb-1">خط العرض</label>
+            <input type="text" id="editBranchLat" value="${d.lat || ''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">خط الطول</label>
+            <input type="text" id="editBranchLng" value="${d.lng || ''}" class="w-full px-4 py-2 border border-gray-200 rounded-lg mb-2">
+        `;
+    } 
+    else if (type === 'admin') {
+        title.innerHTML = `<i class="fa-solid fa-user-shield text-secondary ml-2"></i> تعديل بيانات المسؤول / الموظف`;
+        
+        const d = (typeof admins !== 'undefined' && admins) ? admins[id] : null;
+        if (!d) {
+            if (typeof showToast === 'function') showToast("خطأ: بيانات المسؤول غير موجودة", "error");
+            return;
+        }
+
+        const currentType = d.type || 'admin';
+        const currentEmpType = d.employeeType || 'موظف رئيسية';
+        const currentAssignedBr = d.assignedBranch || '';
+        const perms = d.permissions || [];
+        
+        let branchOptions = '<option value="">-- يرجى تحديد الفرع الخاص به --</option>';
+        if (typeof branches !== 'undefined' && branches !== null) {
+            Object.keys(branches).forEach(k => { 
+                branchOptions += `<option value="${k}" ${currentAssignedBr === k ? 'selected' : ''}>${branches[k].name}</option>`; 
+            });
+        }
+
+        const tabs = [
+            {id: 'reportsSubTab', n: 'التقارير'}, {id: 'analyticsSubTab', n: 'الإحصائيات'}, 
+            {id: 'adminsSubTab', n: 'المسؤولين'}, {id: 'cashSubTab', n: 'النقدية'}, 
+            {id: 'regionsSubTab', n: 'المناطق'}, {id: 'branchesSubTab', n: 'الفروع'},
+            {id: 'delegatesSubTab', n: 'المناديب'}, {id: 'devicesSubTab', n: 'الأجهزة'}, 
+            {id: 'offersSubTab', n: 'العروض'}, {id: 'feedbackSubTab', n: 'التقييمات'}, 
+            {id: 'notificationsSubTab', n: 'الإعلامات'}, {id: 'trackingSubTab', n: 'السجل'},
+            {id: 'coverageSubTab', n: 'أماكن التغطية'} // <-- تم إضافة هذه الصلاحية هنا
+        ];
+        
+        let checksHtml = '';
+        tabs.forEach(t => { 
+            checksHtml += `
+                <label class="flex items-center space-x-1 cursor-pointer">
+                    <input type="checkbox" class="edit-perm-cb mr-1 accent-purple-600" value="${t.id}" ${perms.includes(t.id) ? 'checked' : ''}> 
+                    <span class="text-xs">${t.n}</span>
+                </label>`; 
+        });
+
+        // حماية النصوص
+        const safeName = (d.name || '').toString().replace(/"/g, '&quot;');
+        const safeCode = (d.code || '').toString().replace(/"/g, '&quot;');
+        const safePass = (d.password || '').toString().replace(/"/g, '&quot;');
+
+        fields.innerHTML = `
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">الاسم</label>
+                <input type="text" id="editAdminName" value="${safeName}" class="w-full px-4 py-2 border rounded-lg font-bold">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">كود الدخول</label>
+                <input type="text" id="editAdminCode" value="${safeCode}" class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">كلمة المرور</label>
+                <input type="text" id="editAdminPass" value="${safePass}" class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">نوع المسؤول</label>
+                <select id="editAdminType" onchange="toggleAdminBranchSelect('edit')" class="w-full px-4 py-2 border rounded-lg font-semibold bg-white">
+                    <option value="admin" ${currentType === 'admin' ? 'selected' : ''}>مسؤول عام</option>
+                    <option value="branch_manager" ${currentType === 'branch_manager' ? 'selected' : ''}>مسؤول فرع</option>
+                    <option value="employee" ${currentType === 'employee' ? 'selected' : ''}>موظف</option>
+                </select>
+            </div>
+            
+            <div id="editEmployeeTypeContainer" class="${currentType === 'employee' ? '' : 'hidden'} mb-4">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">الوظيفة</label>
+                <select id="editEmployeeType" onchange="toggleAdminBranchSelect('edit')" class="w-full px-4 py-2 border rounded-lg font-semibold bg-white">
+                    <option value="موظف رئيسية" ${currentEmpType === 'موظف رئيسية' ? 'selected' : ''}>موظف (رئيسية فقط)</option>
+                    <option value="موظف بفرع" ${currentEmpType === 'موظف بفرع' ? 'selected' : ''}>موظف بفرع</option>
+                    <option value="موظف خدمة عملاء" ${currentEmpType === 'موظف خدمة عملاء' ? 'selected' : ''}>خدمة عملاء</option>
+                </select>
+            </div>
+            
+            <select id="editAdminAssignedBranch" class="${(currentType === 'branch_manager' || (currentType === 'employee' && (currentEmpType === 'موظف بفرع' || currentEmpType === 'موظف خدمة عملاء'))) ? '' : 'hidden'} w-full px-4 py-2 border rounded-lg font-semibold bg-blue-50 border-blue-200 mb-4">${branchOptions}</select>
+            
+            <div id="editAdminPermissionsContainer" class="${currentType === 'admin' ? '' : 'hidden'} bg-purple-50 p-3 rounded-lg border border-purple-100 mb-4">
+                <label class="block text-xs font-bold text-purple-800 mb-2">صلاحيات الوصول (للمدير العام):</label>
+                <div class="grid grid-cols-2 gap-2 p-2">${checksHtml}</div>
+            </div>
+        `;
+    }
+    else if (type === 'delegate') {
+        title.innerHTML = `<i class="fa-solid fa-motorcycle text-secondary ml-2"></i> تعديل بيانات المندوب`;
+        
+        // التحقق من وجود المندوب
+        const d = (typeof delegates !== 'undefined' && delegates) ? delegates[id] : null;
+        if (!d) {
+            if (typeof showToast === 'function') showToast("خطأ: بيانات المندوب غير موجودة", "error");
+            return;
+        }
+
+        let branchOptions = '<option value="">بدون ربط بفرع</option>';
+        // التحقق الآمن من الفروع
+        if (typeof branches !== 'undefined' && branches !== null) {
+            Object.keys(branches).forEach(k => {
+                branchOptions += `<option value="${k}" ${d.branchId === k ? 'selected' : ''}>${branches[k].name}</option>`;
+            });
+        }
+
+        // حماية النصوص
+        const safeName = (d.name || '').toString().replace(/"/g, '&quot;');
+        const safeCode = (d.code || '').toString().replace(/"/g, '&quot;');
+        const safePhone = (d.phone || '').toString().replace(/"/g, '&quot;');
+
+        fields.innerHTML = `
+            <label class="block text-sm font-semibold text-gray-600 mb-1">اسم المندوب</label>
+            <input type="text" id="editDelName" value="${safeName}" class="w-full px-4 py-2 border rounded-lg mb-3 font-bold">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">كود المندوب</label>
+            <input type="text" id="editDelCode" value="${safeCode}" class="w-full px-4 py-2 border rounded-lg mb-3">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">رقم الهاتف</label>
+            <input type="text" id="editDelPhone" value="${safePhone}" class="w-full px-4 py-2 border rounded-lg mb-3" dir="ltr">
+            <label class="block text-sm font-semibold text-gray-600 mb-1">الفرع التابع له</label>
+            <select id="editDelBranch" class="w-full px-4 py-2 border rounded-lg mb-2 font-semibold bg-white">${branchOptions}</select>
+        `;
+    }
+    
+    modal.classList.add('active');
+}
                 function closeModal() { document.getElementById('editModal').classList.remove('active'); }
 
         async function handleEditSave(e) {
@@ -4815,36 +5297,41 @@ function printThermalReport() {
     window.print();
 }
 
-         
-       async function triggerSystemReload(event) {
+  async function triggerSystemReload(event) {
     event.preventDefault();
     const btn = event.target.querySelector('button[type="submit"]');
     const originalText = btn.innerHTML;
     
-    if(!confirm("⚠️ تحذير إداري: هل أنت متأكد من رغبتك في إجبار جميع الأجهزة النشطة (فروع ومناديب) على مسح بياناتها وإعادة التحميل الآن فوراً؟")) return;
+    const newVersion = document.getElementById('systemUpdateVersion').value.trim();
+    const updateNotes = document.getElementById('systemUpdateNotes').value.trim();
+    
+    if(!confirm(`⚠️ تحذير إداري: هل أنت متأكد من إجبار الأجهزة على التحديث للإصدار ${newVersion}؟`)) return;
     
     btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري بث إشارة التحديث الجبري...';
     btn.disabled = true;
 
-    // استخدام الوقت الحالي كإشارة فريدة تلتقطها كل المتصفحات
-    const timestampSignal = Date.now(); 
+    // دمج الإصدار والملاحظات والوقت في كائن واحد
+    const updateData = {
+        timestamp: Date.now(),
+        version: newVersion,
+        notes: updateNotes
+    };
     
     try {
-        // نرسل الإشارة للمسار المخصص الذي تستمع إليه الأجهزة عبر الـ EventSource
         await fetch(`${DB_URL}system_control/update_signal.json`, {
             method: 'PUT',
-            body: JSON.stringify(timestampSignal)
+            body: JSON.stringify(updateData)
         });
         
-        showToast("تم بث إشارة التحديث لجميع الأجهزة بنجاح! يتم الآن تدمير بياناتهم.", "success");
+        showToast(`تم بث أمر التحديث للإصدار ${newVersion} لجميع الأجهزة!`, "success");
         
-        // تفريغ حقل الملاحظات إن وجد
         const notesField = document.getElementById('systemUpdateNotes');
+        const versionField = document.getElementById('systemUpdateVersion');
         if(notesField) notesField.value = '';
+        if(versionField) versionField.value = '';
         
-        // تسجيل العملية في سجل النشاط (Tracking)
         if (typeof logActivity === 'function') {
-            logActivity('edit', 'قام بإرسال أمر تحديث ومسح بيانات إجباري لجميع الأجهزة النشطة في نفس اللحظة.');
+            logActivity('edit', `قام بإرسال تحديث إجباري برقم الإصدار ${newVersion}`);
         }
         
     } catch (e) {
@@ -4853,10 +5340,8 @@ function printThermalReport() {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
-}  
-         
-         
-
+}       
+      
 
 function showSystemAlertModal(text) {
     const modal = document.getElementById('systemAlertModal');
@@ -4881,11 +5366,320 @@ function closeSystemAlert() {
         modal.classList.remove('active');
     }
 }
+
 // ==========================================
-        // دوال إدارة وتسعير المناطق
+// الحل الشامل والنهائي لمشكلة تعديل الكميات (تسجيل عجز)
+// ==========================================
+
+// دالة ذكية تقوم ببناء وحقن نافذة التعديل تلقائياً في الصفحة إن لم تكن موجودة لمنع خطأ الـ null نهائياً
+function injectEditQuantityModalIfMissing() {
+    if (!document.getElementById('editQuantityModal')) {
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'editQuantityModal';
+        // تنسيقات مخصصة مدمجة لضمان توسط الشاشة والظهور فوق كل العناصر بشكل احترافي ومتوافق مع Tailwind
+        modalDiv.className = 'fixed inset-0 bg-black/60 z-[9999] hidden items-center justify-center p-4 backdrop-blur-sm transition-all duration-300';
+        modalDiv.innerHTML = `
+            <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all border-2 border-amber-500 animate__animated animate__zoomIn">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-2xl text-amber-500"></i> تعديل الكميات (تسجيل عجز)
+                    </h2>
+                    <button type="button" onclick="closeEditQuantityModal()" class="text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <form id="editQuantityForm" onsubmit="submitEditedQuantity(event)" class="space-y-4">
+                    <input type="hidden" id="editOrderDate">
+                    <input type="hidden" id="editOrderId">
+                    <input type="hidden" id="editTargetBranchName">
+                    <input type="hidden" id="editTargetBranchId">
+                    <input type="hidden" id="editSourceBranchId">
+                    
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700">الأصناف المتاحة للطلب الفعلي:</label>
+                        <div id="editItemsContainer" class="max-h-60 overflow-y-auto pr-1 space-y-3 border border-gray-100 p-2 rounded-lg bg-gray-50/50"></div>
+                    </div>
+                    
+                    <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-xs font-bold text-amber-800 text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-500 text-xl"></i> 
+                        <span>سيتم تحديث الكميات في النظام وإشعار الفرع الطالب بالتعديل فور الحفظ.</span>
+                    </div>
+
+                    <div class="flex gap-2 pt-3 mt-2 border-t border-gray-100">
+                        <button type="submit" id="btnSubmitEditQty" class="flex-[2] bg-amber-500 text-white py-3 rounded-lg font-bold hover:bg-amber-600 transition shadow-md flex items-center justify-center gap-2 transform active:scale-95">
+                            <i class="fa-solid fa-check-double"></i> تأكيد وحفظ التعديلات
+                        </button>
+                        <button type="button" onclick="closeEditQuantityModal()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-lg font-bold hover:bg-gray-200 transition">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+    }
+}
+
+// دالة فتح نافذة تعديل الكميات وجلب الأصناف بأمان
+async function openEditQuantityModal(date, orderId, targetName, targetId, sourceId) {
+    // 1. التأكد من حقن عناصر الـ HTML أولاً في الصفحة لمنع خطأ الـ null تماماً
+    injectEditQuantityModalIfMissing();
+    
+    // 2. تعبئة البيانات في الحقول المخفية بأمان
+    document.getElementById('editOrderDate').value = date || '';
+    document.getElementById('editOrderId').value = orderId || '';
+    document.getElementById('editTargetBranchName').value = targetName || '';
+    document.getElementById('editTargetBranchId').value = targetId || '';
+    document.getElementById('editSourceBranchId').value = sourceId || '';
+    
+    const container = document.getElementById('editItemsContainer');
+    container.innerHTML = '<div class="text-center text-gray-500 text-sm font-bold py-4"><i class="fa-solid fa-circle-notch fa-spin text-amber-500 ml-2"></i> جاري جلب أصناف الطلب...</div>';
+    
+    // 3. إظهار النافذة بأسلوب مرن ومتوسط للشاشة
+    const modal = document.getElementById('editQuantityModal');
+    modal.style.display = 'flex';
+
+    try {
+        // جلب تفاصيل الطلب من الفايربيز بناءً على التاريخ والـ ID الخاص بالطلب
+        const res = await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`);
+        const order = await res.json();
+        
+        if(!order || !order.items) {
+            container.innerHTML = '<div class="text-center text-red-500 text-sm font-bold py-2">عذراً، لم يتم العثور على أصناف لهذا الطلب.</div>';
+            return;
+        }
+
+        // تحويل الأصناف إلى مصفوفة للتعامل معها بمرونة
+        let itemsArr = Array.isArray(order.items) ? order.items : Object.values(order.items);
+        container.innerHTML = '';
+        
+        itemsArr.forEach((item) => {
+            container.innerHTML += `
+                <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-primary text-sm"><i class="fa-solid fa-box ml-1 text-blue-500"></i> صنف: ${item.itemCode}</span>
+                        <span class="text-xs text-gray-700 font-bold bg-gray-100 px-2 py-1 rounded border border-gray-200">المطلوب: ${item.requestedQty}</span>
+                    </div>
+                    <div class="relative">
+                        <input type="hidden" class="edit-item-code" value="${item.itemCode}">
+                        <input type="hidden" class="edit-item-requested" value="${item.requestedQty}">
+                        <input type="number" min="0" step="any" class="edit-item-actual w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-center font-black text-xl text-amber-600 bg-amber-50/30" value="${item.requestedQty}" placeholder="الكمية المرسلة مع المندوب...">
+                    </div>
+                </div>
+            `;
+        });
+    } catch(e) {
+        console.error(e);
+        container.innerHTML = '<div class="text-center text-red-500 text-sm font-bold py-2">فشل الاتصال بالخادم، يرجى التحقق من الشبكة.</div>';
+    }
+}
+
+// دالة إغلاق النافذة بأمان
+function closeEditQuantityModal() {
+    const modal = document.getElementById('editQuantityModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+// 1. دالة التدمير والبناء الإجبارية لمنع أي تعارض مع أكواد HTML قديمة في ملفك
+function forceInjectEditQuantityModal() {
+    // البحث عن أي نافذة قديمة مخفية في الكود الخاص بك وحذفها من الجذور
+    const oldModal = document.getElementById('editQuantityModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    // بناء النافذة الصحيحة والكاملة من الصفر
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'editQuantityModal';
+    modalDiv.className = 'fixed inset-0 bg-black/60 z-[9999] hidden items-center justify-center p-4 backdrop-blur-sm transition-all duration-300';
+    modalDiv.innerHTML = `
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-all border-2 border-amber-500 animate__animated animate__zoomIn">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-2xl text-amber-500"></i> تعديل الكميات (تسجيل عجز)
+                </h2>
+                <button type="button" onclick="closeEditQuantityModal()" class="text-gray-400 hover:text-red-500 bg-gray-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="editQuantityForm" onsubmit="submitEditedQuantity(event)" class="space-y-4">
+                <input type="hidden" id="editOrderDate">
+                <input type="hidden" id="editOrderId">
+                <input type="hidden" id="editTargetBranchName">
+                <input type="hidden" id="editTargetBranchId">
+                <input type="hidden" id="editSourceBranchId">
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-700">الأصناف المتاحة للطلب الفعلي:</label>
+                    <div id="editItemsContainer" class="max-h-60 overflow-y-auto pr-1 space-y-3 border border-gray-100 p-2 rounded-lg bg-gray-50/50"></div>
+                </div>
+                
+                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-xs font-bold text-amber-800 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-info text-amber-500 text-xl"></i> 
+                    <span>سيتم تحديث الكميات وإشعار الفرع الطالب بالتعديل فور الحفظ.</span>
+                </div>
+
+                <div class="flex gap-2 pt-3 mt-2 border-t border-gray-100">
+                    <button type="submit" id="btnSubmitEditQty" class="flex-[2] bg-amber-500 text-white py-3 rounded-lg font-bold hover:bg-amber-600 transition shadow-md flex items-center justify-center gap-2 transform active:scale-95">
+                        <i class="fa-solid fa-check-double"></i> تأكيد وحفظ التعديلات
+                    </button>
+                    <button type="button" onclick="closeEditQuantityModal()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-lg font-bold hover:bg-gray-200 transition">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modalDiv);
+}
+
+// 2. دالة الفتح التي تستخدم التوليد الإجباري
+async function openEditQuantityModal(date, orderId, targetName, targetId, sourceId) {
+    // 1. التأكد من تنظيف وإعادة بناء النافذة بالكامل أولاً
+    forceInjectEditQuantityModal();
+    
+    // 2. تأخير بسيط (100 ميلي ثانية) لضمان أن المتصفح قد انتهى من حقن عناصر الـ HTML في الصفحة
+    setTimeout(() => {
+        try {
+            const dateInput = document.getElementById('editOrderDate');
+            const idInput = document.getElementById('editOrderId');
+            const nameInput = document.getElementById('editTargetBranchName');
+            const targetInput = document.getElementById('editTargetBranchId');
+            const sourceInput = document.getElementById('editSourceBranchId');
+
+            // التحقق مرة أخرى من وجود العناصر قبل تعيين القيم
+            if (dateInput && idInput && nameInput && targetInput && sourceInput) {
+                dateInput.value = date || '';
+                idInput.value = orderId || '';
+                nameInput.value = targetName || '';
+                targetInput.value = targetId || '';
+                sourceInput.value = sourceId || '';
+            }
+
+            const container = document.getElementById('editItemsContainer');
+            if (container) {
+                container.innerHTML = '<div class="text-center text-gray-500 text-sm font-bold py-4"><i class="fa-solid fa-circle-notch fa-spin text-amber-500 ml-2"></i> جاري جلب أصناف الطلب...</div>';
+            }
+            
+            const modal = document.getElementById('editQuantityModal');
+            if (modal) modal.style.display = 'flex';
+
+            // جلب البيانات
+            fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`)
+                .then(res => res.json())
+                .then(order => {
+                    if(!order || !order.items) {
+                        if(container) container.innerHTML = '<div class="text-center text-red-500 text-sm font-bold py-2">لا توجد أصناف.</div>';
+                        return;
+                    }
+                    let itemsArr = Array.isArray(order.items) ? order.items : Object.values(order.items);
+                    if(container) {
+                        container.innerHTML = '';
+                        itemsArr.forEach((item) => {
+                            container.innerHTML += `
+                                <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-primary text-sm">صنف: ${item.itemCode}</span>
+                                        <span class="text-xs text-gray-700 font-bold bg-gray-100 px-2 py-1 rounded">المطلوب: ${item.requestedQty}</span>
+                                    </div>
+                                    <input type="hidden" class="edit-item-code" value="${item.itemCode}">
+                                    <input type="hidden" class="edit-item-requested" value="${item.requestedQty}">
+                                    <input type="number" min="0" class="edit-item-actual w-full px-3 py-2 border border-gray-300 rounded-lg text-center font-black text-xl text-amber-600 bg-amber-50" value="${item.requestedQty}">
+                                </div>
+                            `;
+                        });
+                    }
+                });
+        } catch (err) {
+            console.error("خطأ أثناء فتح النافذة:", err);
+        }
+    }, 100); 
+}
+// دالة حفظ التعديلات وإرسال الإشعار والتحديث للفايربيز
+async function submitEditedQuantity(e) {
+    e.preventDefault();
+    
+    const date = document.getElementById('editOrderDate').value;
+    const orderId = document.getElementById('editOrderId').value;
+    const targetBranchName = document.getElementById('editTargetBranchName').value;
+    const targetBranchId = document.getElementById('editTargetBranchId').value;
+    const sourceBranchId = document.getElementById('editSourceBranchId').value;
+    
+    const btn = document.getElementById('btnSubmitEditQty');
+    const origBtnText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الحفظ...';
+    btn.disabled = true;
+
+    let updatedItems = [];
+    let hasChanges = false;
+    
+    const codes = document.querySelectorAll('.edit-item-code');
+    const requesteds = document.querySelectorAll('.edit-item-requested');
+    const actuals = document.querySelectorAll('.edit-item-actual');
+    
+    for(let i = 0; i < codes.length; i++) {
+        const reqQty = parseFloat(requesteds[i].value);
+        const actQty = parseFloat(actuals[i].value);
+        
+        if(isNaN(actQty) || actQty < 0) {
+            if(typeof showToast === 'function') showToast("يرجى إدخال كميات صحيحة ومقبولة", "error");
+            else alert("يرجى إدخال كميات صحيحة ومقبولة");
+            btn.innerHTML = origBtnText; btn.disabled = false;
+            return;
+        }
+        
+        if (actQty !== reqQty) hasChanges = true;
+        
+        updatedItems.push({
+            itemCode: codes[i].value,
+            requestedQty: reqQty,
+            actualQty: actQty
+        });
+    }
+
+    try {
+        // 1. تحديث تفاصيل الأصناف وحالة الطلب في قاعدة البيانات إلى 'edited'
+        await fetch(`${DB_URL}branch_orders/${date}/${orderId}.json`, {
+            method: 'PATCH',
+            body: JSON.stringify({ items: updatedItems, status: 'edited' })
+        });
+
+        // 2. إرسال إشعار فوري للفرع الطالب يوضح التعديل والكمية الفعلية الجديدة
+        if (hasChanges) {
+            const changeLogs = updatedItems.map(i => `[الصنف: ${i.itemCode} -> الفعلي: ${i.actualQty}]`).join(' ، ');
+            await fetch(`${DB_URL}branch_notifications.json`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    text: `تنبيه عجز: قام فرع (${targetBranchName}) بتحديث الكميات المرسلة لطلبكم لتصبح: ${changeLogs}`,
+                    senderId: targetBranchId,
+                    targetId: sourceBranchId,
+                    timestamp: Date.now()
+                })
+            });
+        }
+
+        if(typeof showToast === 'function') showToast("تم اعتماد التعديل بنجاح وإرساله للفرع الآخر", "success");
+        else alert("تم اعتماد التعديل بنجاح وإرساله للفرع الآخر");
+        
+        closeEditQuantityModal();
+        
+        // 3. تحديث واجهة التنبيهات فوراً بدون ريفريش كامل للصفحة
+        if(typeof fetchFilteredNotifications === 'function') fetchFilteredNotifications();
+        else if(typeof loadNotifications === 'function') loadNotifications();
+        
+    } catch (error) {
+        console.error(error);
+        if(typeof showToast === 'function') showToast("حدث خطأ أثناء الحفظ، يرجى المحاولة لاحقاً", "error");
+        else alert("حدث خطأ أثناء الحفظ، يرجى المحاولة لاحقاً");
+    } finally {
+        btn.innerHTML = origBtnText;
+        btn.disabled = false;
+    }
+}
+// دالة فتح نافذة تعديل الكميات وجلب الأصناف
+  // دوال إدارة وتسعير المناطق
         // ==========================================
         
-        function switchRegionTab(tab) {
+       function switchRegionTab(tab) {
             document.getElementById('reg-tab-addMain').classList.add('hidden');
             document.getElementById('reg-tab-addSub').classList.add('hidden');
             document.getElementById('reg-tab-pricing').classList.add('hidden');
@@ -4899,9 +5693,19 @@ function closeSystemAlert() {
             document.getElementById(`reg-tab-${tab}`).classList.remove('hidden');
             
             if(tab === 'addMain') document.getElementById('btn-reg-main').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
-            if(tab === 'addSub') document.getElementById('btn-reg-sub').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
             if(tab === 'pricing') document.getElementById('btn-reg-price').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
             if(tab === 'viewAll') document.getElementById('btn-reg-view').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
+            
+            // التعديل الاحترافي: توليد كود المنطقة الفرعية تلقائياً بناءً على آخر رقم مسجل
+            if(tab === 'addSub') {
+                document.getElementById('btn-reg-sub').className = "flex-1 py-2 font-bold text-purple-600 border-b-2 border-purple-600";
+                let maxCode = 0;
+                Object.values(subRegions).forEach(sr => {
+                    let num = parseInt(sr.code);
+                    if(!isNaN(num) && num > maxCode) maxCode = num;
+                });
+                document.getElementById('subRegionCode').value = maxCode + 1; // وضع الرقم التالي تلقائياً
+            }
         }
 
         function loadRegionsUI() {
@@ -4986,8 +5790,33 @@ function closeSystemAlert() {
             } catch(e) { showToast("حدث خطأ", "error"); }
         }
 
-        function renderRegionsTree() {
-            const container = document.getElementById('regionsTreeContainer');
+      // إضافة دوال تعديل المناطق
+        async function editMainRegion(id, oldName) {
+            const newName = prompt("تعديل اسم المنطقة الرئيسية:", oldName);
+            if(!newName || newName.trim() === oldName) return;
+            try {
+                await fetch(`${DB_URL}regions/main/${id}.json`, { method: 'PATCH', body: JSON.stringify({ name: newName.trim() }) });
+                showToast("تم تعديل اسم المنطقة بنجاح");
+                mainRegions[id].name = newName.trim();
+                openRegionsTreeModal(); // تحديث الشجرة
+            } catch(e) { showToast("خطأ أثناء التعديل", "error"); }
+        }
+
+        async function editSubRegion(id, oldName) {
+            const newName = prompt("تعديل اسم المنطقة الفرعية:", oldName);
+            if(!newName || newName.trim() === oldName) return;
+            try {
+                await fetch(`${DB_URL}regions/sub/${id}.json`, { method: 'PATCH', body: JSON.stringify({ name: newName.trim() }) });
+                showToast("تم تعديل المنطقة الفرعية بنجاح");
+                subRegions[id].name = newName.trim();
+                openRegionsTreeModal(); // تحديث الشجرة
+            } catch(e) { showToast("خطأ أثناء التعديل", "error"); }
+        }
+
+        // دالة فتح الشجرة التفاعلية الكبيرة
+        function openRegionsTreeModal() {
+            const container = document.getElementById('regionsAccordionContainer');
+            if(!container) return;
             container.innerHTML = '';
             
             Object.keys(mainRegions).forEach(mId => {
@@ -4997,23 +5826,41 @@ function closeSystemAlert() {
                 Object.keys(subRegions).filter(sId => subRegions[sId].mainId === mId).forEach(sId => {
                     const s = subRegions[sId];
                     subHtml += `
-                        <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-100 ml-4 mb-1">
-                            <div class="text-sm font-bold text-gray-700"><span class="text-xs bg-gray-200 px-1 rounded mr-1">${s.code}</span> ${s.name}</div>
-                            <button onclick="editSubRegion('${sId}', '${s.name}', '${s.code}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
-                        </div>
-                    `;
+                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200 ml-6 mb-1 transition hover:bg-gray-100">
+                            <div class="text-sm font-bold text-gray-700"><span class="text-xs bg-gray-300 px-1.5 py-0.5 rounded mr-1 shadow-inner text-black font-mono">${s.code}</span> ${s.name}</div>
+                            <button onclick="editSubRegion('${sId}', '${s.name}')" class="text-blue-500 hover:text-blue-700 bg-white border border-blue-100 px-2 py-1 rounded shadow-sm text-xs"><i class="fa-solid fa-pen"></i></button>
+                        </div>`;
                 });
 
                 container.innerHTML += `
-                    <div class="mb-3">
-                        <div class="flex justify-between items-center bg-purple-100 p-3 rounded-lg border border-purple-200 mb-2">
-                            <div class="font-bold text-purple-800"><i class="fa-solid fa-location-dot mr-2"></i>${m.name}</div>
-                            <button onclick="editMainRegion('${mId}', '${m.name}')" class="text-purple-600 hover:text-purple-800"><i class="fa-solid fa-pen"></i></button>
+                    <div class="border border-purple-100 rounded-xl overflow-hidden mb-3 shadow-sm">
+                        <div class="bg-purple-50 p-4 flex justify-between items-center cursor-pointer hover:bg-purple-100 transition" onclick="document.getElementById('acc_${mId}').classList.toggle('hidden')">
+                            <div class="font-black text-purple-800 text-lg"><i class="fa-solid fa-layer-group mr-2 text-purple-400"></i> ${m.name}</div>
+                            <button onclick="event.stopPropagation(); editMainRegion('${mId}', '${m.name}')" class="text-purple-600 hover:text-purple-800 bg-white border border-purple-200 px-3 py-1.5 rounded shadow-sm text-xs font-bold"><i class="fa-solid fa-pen"></i> تعديل الاسم</button>
                         </div>
-                        ${subHtml}
-                    </div>
-                `;
+                        <div id="acc_${mId}" class="hidden p-3 bg-white border-t border-purple-50">
+                            ${subHtml || '<div class="text-xs text-gray-400 text-center py-2 font-bold">لا توجد مناطق فرعية مسجلة هنا</div>'}
+                        </div>
+                    </div>`;
             });
+            document.getElementById('regionsTreeModal').classList.add('active');
+        }
+
+        function closeRegionsTreeModal() {
+            document.getElementById('regionsTreeModal').classList.remove('active');
+            loadRegionsUI(); // تحديث القوائم خلف النافذة
+        }
+
+        function renderRegionsTree() {
+            // استبدال الشاشة الداخلية بزر يفتح النافذة الاحترافية الكبيرة
+            const container = document.getElementById('regionsTreeContainer');
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fa-solid fa-sitemap text-5xl text-purple-200 mb-4 block"></i>
+                    <p class="text-gray-500 font-bold mb-4">تم نقل إدارة المناطق إلى شاشة عرض تفاعلية متقدمة.</p>
+                    <button type="button" onclick="openRegionsTreeModal()" class="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-purple-700 transition transform hover:scale-105"><i class="fa-solid fa-expand mr-2"></i> فتح شجرة المناطق والتعديل</button>
+                </div>
+            `;
         }
     async function clearAllApplicationData() {
     console.warn("بدء عملية التطهير الشامل ومسح كافة بيانات النظام (مع الاحتفاظ بمعرفات الجهاز)...");
@@ -5088,41 +5935,34 @@ function closeSystemAlert() {
       
 
 function initRealTimeUpdateListener() {
-    // التأكد من وجود المتغير العام لرابط قاعدة البيانات DB_URL في ملفك
-    if (typeof DB_URL === 'undefined' || !DB_URL) {
-        console.error("لم يتم العثور على متغير DB_URL الخاص بقاعدة البيانات.");
-        return;
-    }
-    
-    // إنشاء مسار خاص داخل الفايربيز لبث التحديثات الفورية
+    if (typeof DB_URL === 'undefined' || !DB_URL) return;
     const streamUrl = `${DB_URL}system_control/update_signal.json`;
-    
     const eventSource = new EventSource(streamUrl);
     let isInitialLoad = true;
-    let currentSignalValue = null;
 
-    // Firebase يرسل الحدث 'put' عند أول اتصال وعند حدوث أي تغيير
     eventSource.addEventListener('put', (event) => {
         try {
             const resData = JSON.parse(event.data);
-            const remoteValue = resData.data;
+            const remoteData = resData.data; // الكائن الذي يحتوي على (version, notes, timestamp)
 
-            if (isInitialLoad) {
-                // عند فتح المتصفح لأول مرة: نقوم فقط بحفظ القيمة الحالية للإشارة لتجنب المسح التلقائي
-                currentSignalValue = remoteValue;
-                isInitialLoad = false;
-                console.log("تم تفعيل نظام الاستماع الحي بنجاح. الإشارة الحالية الفعالة:", currentSignalValue);
-             } else {
-                // إذا تغيرت القيمة في قاعدة البيانات أثناء عمل التطبيق لدى المستخدمين
-                if (remoteValue !== currentSignalValue && remoteValue !== null) {
-                    console.log("🚨 تم رصد تحديث للنظام من الإدارة! جاري إظهار إشعار التحديث للأجهزة...");
-                    // التعديل هنا: إظهار النافذة المنبثقة بدلاً من المسح الفوري
-                    const reloadModal = document.getElementById('forceReloadModal');
-                    if (reloadModal) {
-                        reloadModal.classList.add('active');
-                        // تشغيل صوت تنبيه إذا كانت الدالة متوفرة
-                        if (typeof playAlertSound === 'function') {
-                            try { playAlertSound('delay'); } catch(e) {}
+            if (remoteData && remoteData.version) {
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                    console.log("استماع التحديثات مفعل. الإصدار الحالي في القاعدة:", remoteData.version);
+                } else {
+                    // إذا كان الإصدار في القاعدة يختلف عن الإصدار الموجود في الكود الحالي
+                    if (remoteData.version !== CURRENT_APP_VERSION) {
+                        console.log("🚨 تم رصد إصدار جديد! إظهار نافذة التحديث...");
+                        const reloadModal = document.getElementById('forceReloadModal');
+                        if (reloadModal) {
+                            if (remoteData.notes) {
+                                document.getElementById('reloadNotesContent').textContent = remoteData.notes;
+                                document.getElementById('reloadNotesContainer').classList.remove('hidden');
+                            }
+                            reloadModal.classList.add('active');
+                            if (typeof playAlertSound === 'function') {
+                                try { playAlertSound('delay'); } catch(e) {}
+                            }
                         }
                     }
                 }
@@ -5133,9 +5973,10 @@ function initRealTimeUpdateListener() {
     });
 
     eventSource.onerror = (error) => {
-        console.warn("فقد الاتصال المؤقت بالبث الحي، متصفح Edge سيعيد الاتصال تلقائياً خلال ثوانٍ...", error);
+        console.warn("فقد الاتصال المؤقت بالبث الحي، سيتم إعادة الاتصال تلقائياً...");
     };
 }
+
 // ---------------------------------------------------------
 // دوال البحث اللحظي الذكي لمناطق التوصيل في نافذة الأوردر
 // ---------------------------------------------------------
@@ -5175,7 +6016,138 @@ function searchRegionsInstant(query) {
         dropdown.classList.remove('hidden');
     }
 }
+// ==========================================
+// الدوال المفقودة التي تسببت في تعطل الإشعارات
+// ==========================================
+// دالة لنسخ الكود إلى الحافظة
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast(`تم نسخ الكود: ${text}`, "success");
+    }).catch(err => {
+        showToast("فشل النسخ", "error");
+    });
+}
+// 1. دالة التنبيه اللحظي بالحركات الجديدة
+function triggerLiveMovementNotification(delName, brName, itmCode) {
+    if (typeof showToast === 'function') {
+        showToast(`🚚 إشعار تحويل: المندوب (${delName}) متوجه لفرع (${brName}) بصنف (${itmCode})`, "warning");
+    }
+    if (typeof playAlertSound === 'function') {
+        playAlertSound('alert');
+    }
+}
 
+// 1. دالة فتح نافذة تعديل الكمية
+function openEditQuantityModal(notificationId, currentQuantity) {
+    // تعبئة البيانات في الحقول المخفية
+    document.getElementById('editNotificationId').value = notificationId;
+    document.getElementById('editOriginalQuantity').value = currentQuantity;
+    
+    // وضع الكمية القديمة كقيمة افتراضية في حقل الإدخال لسهولة التعديل
+    document.getElementById('newQuantityInput').value = currentQuantity; 
+    
+    // إظهار النافذة
+    const modal = document.getElementById('editQuantityModal');
+    modal.classList.add('active');
+    
+    // التركيز على حقل الإدخال تلقائياً
+    setTimeout(() => document.getElementById('newQuantityInput').focus(), 100);
+}
+
+// 2. دالة إغلاق النافذة
+function closeEditQuantityModal() {
+    const modal = document.getElementById('editQuantityModal');
+    modal.classList.remove('active');
+    document.getElementById('editQuantityForm').reset();
+}
+
+// 3. دالة معالجة التعديل وإرساله لقاعدة البيانات
+async function submitEditedQuantity(event) {
+    event.preventDefault();
+    
+    const notificationId = document.getElementById('editNotificationId').value;
+    const originalQty = document.getElementById('editOriginalQuantity').value;
+    const newQty = document.getElementById('newQuantityInput').value;
+    
+    if (!notificationId) return;
+
+    try {
+        // تجهيز حزمة البيانات المحدثة
+        // سيظهر للفرع الآخر أن الكمية أصبحت (newQty) وأن هناك ملاحظة بالتعديل
+        const updateData = {
+            quantity: parseFloat(newQty), // تحديث الكمية للرقم الجديد
+            status: 'confirmed_with_edit', // تحديث الحالة (يمكنك تغييرها حسب المتفق عليه في نظامك)
+            isModified: true,
+            modificationNote: `تم تعديل الكمية من ${originalQty} إلى ${newQty} قبل الإرسال.`
+        };
+
+        // إرسال الطلب إلى Firebase (تأكد من توافق المسار '/notifications/' مع هيكلة قاعدة بياناتك)
+        const response = await fetch(`${DB_URL}notifications/${notificationId}.json`, {
+            method: 'PATCH',
+            body: JSON.stringify(updateData)
+        });
+
+        if (!response.ok) throw new Error('فشل تحديث الكمية');
+
+        // إظهار رسالة نجاح بنفس أسلوب التنبيهات لديك
+        if(typeof showToast === 'function') {
+            showToast("تم تعديل الكمية وتأكيد الحالة بنجاح!", "success");
+        }
+
+        closeEditQuantityModal();
+        
+        // تحديث واجهة الإشعارات فوراً لإظهار التغييرات الجديدة
+        if(typeof fetchFilteredNotifications === 'function') {
+            fetchFilteredNotifications();
+        }
+
+    } catch (error) {
+        console.error("Error updating quantity:", error);
+        if(typeof showToast === 'function') {
+            showToast("حدث خطأ أثناء الاتصال بالخادم، يرجى المحاولة لاحقاً.", "error");
+        }
+    }
+}
+// 2. دالة حساب الإشعارات غير المقروءة وإظهار الدائرة الحمراء (Badge)
+function checkIncomingNotifications(data) {
+    let unreadCount = 0;
+    const myTargetId = currentUser.role === 'branch' ? currentUser.id : ((currentUser.adminType === 'branch_manager' || currentUser.employeeType === 'موظف خدمة عملاء') ? currentUser.assignedBranch : null);
+    
+    Object.keys(data).forEach(k => {
+        const r = data[k];
+        let isTarget = false;
+        
+        if (currentUser.role === 'admin' && currentUser.adminType === 'admin') {
+            isTarget = true;
+        } else if (r.branchId === myTargetId && r.createdByUserId !== currentUser.id) {
+            isTarget = true;
+        }
+
+        // إذا كان الإشعار موجهاً لي ولم يتم تأكيد استلامه بعد
+        if (isTarget && !r.isAcceptedByReceiver) {
+            unreadCount++;
+        }
+    });
+
+    const badge = document.getElementById('notifUnreadBadge');
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.classList.remove('hidden');
+            badge.textContent = unreadCount;
+        } else {
+            badge.classList.add('hidden');
+            badge.textContent = '0';
+        }
+    }
+}
+
+// 3. دالة الصوت (حتى وإن لم تكن تستخدم ملفات صوتية، يجب تعريفها لمنع أخطاء النظام)
+function playAlertSound(type = 'alert') {
+    try {
+        // يمكنك لاحقاً وضع كود تشغيل ملفات MP3 هنا
+        console.log("تنبيه نظام من نوع: " + type);
+    } catch(e) {}
+}
 // تعيين القيمة المحددة في الحقل وإخفاء القائمة
 function selectRegion(value) {
     document.getElementById('orderRegionInput').value = value;
@@ -5202,7 +6174,67 @@ async function executeForceReload() {
     // استدعاء دالة المسح الشامل بعد ضغط المستخدم
     await clearAllApplicationData();
 }
+// 1. تعريف رقم الإصدار الحالي المحفوظ في الكود (يتم تغييره يدوياً في الكود عند كل تحديث)
+const CURRENT_APP_VERSION = "2.1"; 
+const versionBadge = document.getElementById('systemVersionBadge');
+if (versionBadge) versionBadge.textContent = `v${CURRENT_APP_VERSION}`;
+// 2. تحديث الشارة العلوية برقم الإصدار عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+    const versionBadge = document.getElementById('appVersionBadge');
+    if(versionBadge) {
+        versionBadge.innerText = `v${CURRENT_APP_VERSION}`;
+    }
+});
 
+// 3. تعديل دالة إرسال التحديث للإدارة
+function triggerSystemReload(event) {
+    event.preventDefault();
+    const newVersion = document.getElementById('systemUpdateVersion').value.trim();
+    const notes = document.getElementById('systemUpdateNotes').value.trim();
+    
+    if (!newVersion) {
+        alert("يرجى إدخال رقم الإصدار الجديد بشكل إلزامي!");
+        return;
+    }
+
+    /* 
+      هنا يجب أن تضع كود قاعدة البيانات الخاصة بك (مثل Supabase أو Firebase)
+      لرفع newVersion و notes إلى جدول الإعدادات العامة ليقرأها باقي المستخدمين.
+      
+      مثال وهمي:
+      db.collection('settings').doc('system').update({
+          latestVersion: newVersion,
+          updateNotes: notes,
+          forceUpdateTrigger: Date.now()
+      });
+    */
+    
+    alert(`تم إرسال أمر التحديث للإصدار ${newVersion} بنجاح لجميع الأجهزة.`);
+    document.getElementById('systemUpdateVersion').value = '';
+    document.getElementById('systemUpdateNotes').value = '';
+}
+
+// 4. دالة التحقق من الإصدار (يتم استدعاؤها في دالة تسجيل الدخول handleLogin)
+// تمرر لها رقم الإصدار القادم من قاعدة البيانات والملاحظات
+function verifySystemVersion(latestVersionFromDB, releaseNotes) {
+    if (latestVersionFromDB && latestVersionFromDB !== CURRENT_APP_VERSION) {
+        // إظهار نافذة التحديث الإجباري (الموجودة بالفعل في كودك)
+        const notesContainer = document.getElementById('reloadNotesContainer');
+        const notesContent = document.getElementById('reloadNotesContent');
+        
+        if (releaseNotes && releaseNotes.trim() !== '') {
+            notesContainer.classList.remove('hidden');
+            notesContent.innerText = releaseNotes;
+        } else {
+            notesContainer.classList.add('hidden');
+        }
+        
+        // إظهار المودال الخاص بالتحديث الإجباري ومنع أي إجراء آخر
+        document.getElementById('forceReloadModal').classList.add('active');
+        return false; // يعني أن الإصدار غير متطابق
+    }
+    return true; // يعني أن الإصدار متطابق ويمكنه إكمال الدخول
+}
 
     </script>
 </body>
