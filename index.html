@@ -716,10 +716,11 @@
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                                 <table class="w-full text-right border-collapse">
                                     <thead class="bg-gray-50 text-sm border-b"><tr>
-                                        <th class="p-3">تاريخ الطلب</th>
-                                        <th class="p-3">معلومات الجهاز (البصمة)</th>
-                                        <th class="p-3 text-center">الإجراء</th>
-                                    </tr></thead>
+    <th class="p-3">تاريخ الطلب</th>
+    <th class="p-3">معلومات الجهاز (البصمة)</th>
+    <th class="p-3 text-center">الإصدار الحالي</th>
+    <th class="p-3 text-center">الإجراء</th>
+</tr></thead>
                                     <tbody id="devicesTableBody"></tbody>
                                 </table>
                             </div>
@@ -1590,6 +1591,9 @@ if (sysData && sysData.version && sysData.version !== CURRENT_APP_VERSION) {
     } else {
         document.getElementById('reloadNotesContainer').classList.add('hidden');
     }
+    
+    // الحل: تمرير رقم الإصدار الجديد للمتغير العالمي لكي تحفظه دالة التحديث ولا تسأل عنه مجدداً
+    window.latestServerVersion = sysData.version;
     
     document.getElementById('forceReloadModal').classList.add('active');
     return; // إيقاف تسجيل الدخول فوراً
@@ -5297,51 +5301,7 @@ function printThermalReport() {
     window.print();
 }
 
-  async function triggerSystemReload(event) {
-    event.preventDefault();
-    const btn = event.target.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-    
-    const newVersion = document.getElementById('systemUpdateVersion').value.trim();
-    const updateNotes = document.getElementById('systemUpdateNotes').value.trim();
-    
-    if(!confirm(`⚠️ تحذير إداري: هل أنت متأكد من إجبار الأجهزة على التحديث للإصدار ${newVersion}؟`)) return;
-    
-    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري بث إشارة التحديث الجبري...';
-    btn.disabled = true;
-
-    // دمج الإصدار والملاحظات والوقت في كائن واحد
-    const updateData = {
-        timestamp: Date.now(),
-        version: newVersion,
-        notes: updateNotes
-    };
-    
-    try {
-        await fetch(`${DB_URL}system_control/update_signal.json`, {
-            method: 'PUT',
-            body: JSON.stringify(updateData)
-        });
-        
-        showToast(`تم بث أمر التحديث للإصدار ${newVersion} لجميع الأجهزة!`, "success");
-        
-        const notesField = document.getElementById('systemUpdateNotes');
-        const versionField = document.getElementById('systemUpdateVersion');
-        if(notesField) notesField.value = '';
-        if(versionField) versionField.value = '';
-        
-        if (typeof logActivity === 'function') {
-            logActivity('edit', `قام بإرسال تحديث إجباري برقم الإصدار ${newVersion}`);
-        }
-        
-    } catch (e) {
-        showToast("فشل إرسال إشارة البث، يرجى التحقق من اتصال الإنترنت.", "error");
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}       
-      
+  
 
 function showSystemAlertModal(text) {
     const modal = document.getElementById('systemAlertModal');
@@ -5951,20 +5911,25 @@ function initRealTimeUpdateListener() {
                     console.log("استماع التحديثات مفعل. الإصدار الحالي في القاعدة:", remoteData.version);
                 } else {
                     // إذا كان الإصدار في القاعدة يختلف عن الإصدار الموجود في الكود الحالي
-                    if (remoteData.version !== CURRENT_APP_VERSION) {
-                        console.log("🚨 تم رصد إصدار جديد! إظهار نافذة التحديث...");
-                        const reloadModal = document.getElementById('forceReloadModal');
-                        if (reloadModal) {
-                            if (remoteData.notes) {
-                                document.getElementById('reloadNotesContent').textContent = remoteData.notes;
-                                document.getElementById('reloadNotesContainer').classList.remove('hidden');
-                            }
-                            reloadModal.classList.add('active');
-                            if (typeof playAlertSound === 'function') {
-                                try { playAlertSound('delay'); } catch(e) {}
-                            }
-                        }
-                    }
+                  // إذا كان الإصدار في القاعدة يختلف عن الإصدار الموجود في الكود الحالي
+if (remoteData.version !== CURRENT_APP_VERSION) {
+    console.log("🚨 تم رصد إصدار جديد! إظهار نافذة التحديث...");
+    const reloadModal = document.getElementById('forceReloadModal');
+    if (reloadModal) {
+        if (remoteData.notes) {
+            document.getElementById('reloadNotesContent').textContent = remoteData.notes;
+            document.getElementById('reloadNotesContainer').classList.remove('hidden');
+        }
+        
+        // الحل: تمرير الإصدار الجديد لدالة التحديث
+        window.latestServerVersion = remoteData.version;
+        
+        reloadModal.classList.add('active');
+        if (typeof playAlertSound === 'function') {
+            try { playAlertSound('delay'); } catch(e) {}
+        }
+    }
+} 
                 }
             }
         } catch (error) {
@@ -6174,8 +6139,9 @@ async function executeForceReload() {
     // استدعاء دالة المسح الشامل بعد ضغط المستخدم
     await clearAllApplicationData();
 }
-// 1. تعريف رقم الإصدار الحالي المحفوظ في الكود (يتم تغييره يدوياً في الكود عند كل تحديث)
-const CURRENT_APP_VERSION = "2.1"; 
+// 1. تعريف رقم الإصدار الحالي المحفوظ بشكل ديناميكي (يعتمد على التخزين المحلي لمنع حلقة التحديث)
+const BASE_VERSION = "2.1"; 
+let CURRENT_APP_VERSION = localStorage.getItem('app_version') || BASE_VERSION; 
 const versionBadge = document.getElementById('systemVersionBadge');
 if (versionBadge) versionBadge.textContent = `v${CURRENT_APP_VERSION}`;
 // 2. تحديث الشارة العلوية برقم الإصدار عند تحميل الصفحة
@@ -6187,31 +6153,64 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 3. تعديل دالة إرسال التحديث للإدارة
-function triggerSystemReload(event) {
-    event.preventDefault();
-    const newVersion = document.getElementById('systemUpdateVersion').value.trim();
-    const notes = document.getElementById('systemUpdateNotes').value.trim();
+// الدالة الاحترافية الموحدة لإرسال التحديث الإجباري من الإدارة
+async function triggerSystemReload(event) {
+    event.preventDefault(); // منع الصفحة من إعادة التحميل التلقائي عند إرسال النموذج
+
+    // 1. جلب رقم الإصدار والملاحظات من الحقول المخصصة في واجهتك
+    const newVersionInput = document.getElementById('systemUpdateVersion');
+    const updateNotesInput = document.getElementById('systemUpdateNotes');
     
+    const newVersion = newVersionInput ? newVersionInput.value.trim() : '';
+    const notes = updateNotesInput ? updateNotesInput.value.trim() : '';
+
+    // 2. التحقق الإجباري الصارم من إدخال رقم الإصدار
     if (!newVersion) {
-        alert("يرجى إدخال رقم الإصدار الجديد بشكل إلزامي!");
+        if (typeof showToast === 'function') {
+            showToast("⚠️ خطأ: رقم الإصدار إجباري ولا يمكن تركه فارغاً!", "error");
+        } else {
+            alert("خطأ: رقم الإصدار إجباري ولا يمكن تركه فارغاً!");
+        }
+        if(newVersionInput) newVersionInput.focus();
         return;
     }
 
-    /* 
-      هنا يجب أن تضع كود قاعدة البيانات الخاصة بك (مثل Supabase أو Firebase)
-      لرفع newVersion و notes إلى جدول الإعدادات العامة ليقرأها باقي المستخدمين.
-      
-      مثال وهمي:
-      db.collection('settings').doc('system').update({
-          latestVersion: newVersion,
-          updateNotes: notes,
-          forceUpdateTrigger: Date.now()
-      });
-    */
-    
-    alert(`تم إرسال أمر التحديث للإصدار ${newVersion} بنجاح لجميع الأجهزة.`);
-    document.getElementById('systemUpdateVersion').value = '';
-    document.getElementById('systemUpdateNotes').value = '';
+    // 3. رفع الإصدار الجديد فوراً إلى قاعدة البيانات (Firebase) في مسار التحكم بالنظام
+    try {
+        const payload = {
+            version: newVersion,
+            notes: notes,
+            timestamp: Date.now()
+        };
+
+        const response = await fetch(`${DB_URL}system_control/update_signal.json`, {
+            method: 'PUT', // استخدام PUT لتحديث البيانات مباشرة أو استبدالها
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error("فشل الاتصال بالسيرفر أثناء رفع التحديث");
+
+        // 4. إشعار المسؤول بالنجاح وتصفير الحقول
+        if (typeof showToast === 'function') {
+            showToast(`🚀 تم إرسال أمر التحديث للإصدار ${newVersion} بنجاح لجميع الأجهزة النشطة!`, "success");
+        } else {
+            alert(`تم إرسال أمر التحديث للإصدار ${newVersion} بنجاح لجميع الأجهزة.`);
+        }
+
+        if(newVersionInput) newVersionInput.value = '';
+        if(updateNotesInput) updateNotesInput.value = '';
+
+        // تسجيل العملية في سجل النشاط (Log) إذا كان مدعوماً في نظامك
+        if (typeof logActivity === 'function') {
+            logActivity('edit', `قام بإطلاق تحديث نظام إجباري جديد برقم إصدار: (${newVersion})`);
+        }
+
+    } catch (error) {
+        console.error("خطأ أثناء إرسال التحديث:", error);
+        if (typeof showToast === 'function') {
+            showToast("❌ فشل إرسال التحديث، يرجى التحقق من اتصال الشبكة وسيرفر Firebase", "error");
+        }
+    }
 }
 
 // 4. دالة التحقق من الإصدار (يتم استدعاؤها في دالة تسجيل الدخول handleLogin)
@@ -6236,6 +6235,143 @@ function verifySystemVersion(latestVersionFromDB, releaseNotes) {
     return true; // يعني أن الإصدار متطابق ويمكنه إكمال الدخول
 }
 
+// الدالة الاحترافية المعدلة لمسح الكاش مع الحفاظ على الإصدار الجديد وبيانات الدخول
+async function hardClearCacheAndReload(nextVersion) {
+    // 1. الاحتفاظ بالبيانات الهامة مؤقتاً في الذاكرة قبل مسح الـ LocalStorage
+    const userToken = localStorage.getItem('userToken'); 
+    const deviceId = localStorage.getItem('deviceId');
+    const userRole = localStorage.getItem('userRole'); // إذا كان لديك أدوار مستخدمين
+
+    // 2. مسح الـ Service Workers لضمان جلب ملفات الـ HTML الجديدة
+    if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+            await registration.unregister();
+        }
+    }
+    
+    // 3. مسح كاش الملفات (Caches API)
+    if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (let cacheName of cacheNames) {
+            await caches.delete(cacheName);
+        }
+    }
+    
+    // 4. مسح ملفات تعريف الارتباط (Cookies)
+    document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // 5. مسح التخزين المحلي بالكامل لتنظيف النظام
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // 6. [الحل السحري] إعادة زرع البيانات الأساسية والإصدار الجديد في الـ LocalStorage بعد المسح
+    if (userToken) localStorage.setItem('userToken', userToken);
+    if (deviceId) localStorage.setItem('deviceId', deviceId);
+    if (userRole) localStorage.setItem('userRole', userRole);
+    if (nextVersion) localStorage.setItem('app_version', nextVersion); // تثبيت الإصدار الجديد لمنع تكرار النافذة
+
+    // 7. إعادة تحميل الصفحة بشكل إجباري ومباشر من السيرفر وبدون كاش
+    window.location.reload(true);
+}
+let latestServerVersion = ""; // متغير عالمي لحفظ رقم إصدار السيرفر المكتشف حالياً
+
+// دالة الفحص المستمر والتحقق عند الدخول وظهور النافذة
+function checkSystemVersion() {
+    // الاستماع لبيانات الإصدار من الفايربيز
+    database.ref('system_control/update_signal').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.version) {
+            latestServerVersion = data.version.trim(); // تخزين الإصدار القادم من السيرفر
+            
+            // جلب إصدار الجهاز الحالي (إذا كان فارغاً نعتبره 1.0)
+            const localVersion = (localStorage.getItem('app_version') || "1.0").trim();
+            
+            // تحديث الشارة الصغيرة في أعلى الشاشة لتعرض إصدار الجهاز الحالي للمستخدم
+            const versionBadge = document.getElementById('systemVersionBadge');
+            if (versionBadge) {
+                versionBadge.innerText = "V " + localVersion;
+            }
+
+            // المقارنة: إذا كان إصدار السيرفر يختلف عن إصدار الجهاز الحالي
+            if (latestServerVersion !== localVersion) {
+                // إظهار نافذة التحديث الإجباري ومنع إغلاقها
+                const modal = document.getElementById('forceReloadModal');
+                if (modal) {
+                    modal.classList.add('active');
+                }
+                
+                // تحديث نصوص الملاحظات داخل النافذة إن وجدت
+                const notesContent = document.getElementById('reloadNotesContent');
+                if (notesContent && data.notes) {
+                    notesContent.innerText = data.notes;
+                }
+            } else {
+                // إذا تساوت الإصدارات نقوم بإخفاء النافذة تلقائياً (في حال تم التحديث بنجاح)
+                const modal = document.getElementById('forceReloadModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+        }
+    });
+}
+
+// دالة تحديث رقم إصدار الجهاز في قاعدة البيانات (التي كانت ناقصة في كودك)
+function updateDeviceVersionInDB(version) {
+    // جلب رقم تعريف الجهاز المخزن في المتصفح أو إنشاء واحد مؤقت
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+        deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('deviceId', deviceId);
+    }
+    
+    // تأكد من تغيير رابط الفايربيز DB_URL ليتوافق مع الرابط المستخدم في ملفك
+    if (typeof DB_URL !== 'undefined') {
+        fetch(`${DB_URL}approved_devices/${deviceId}/current_version.json`, {
+            method: 'PUT',
+            body: JSON.stringify(version)
+        }).catch(err => console.error("خطأ أثناء تحديث إصدار الجهاز بالسيرفر:", err));
+    }
+}
+
+// الدالة المعدلة والآمنة التي يتم استدعاؤها عند الضغط على زر "تحديث الآن"
+async function executeForceReload() {
+    try {
+        // قراءة رقم إصدار السيرفر المخزن مؤقتاً أو الذي تظهره النافذة
+        // إذا كان المتغير latestServerVersion فارغاً، نقوم بجلبه من النص المكتوب في واجهة المودال
+        let nextVersion = typeof latestServerVersion !== 'undefined' && latestServerVersion 
+            ? latestServerVersion 
+            : "1.0";
+            
+        // محاولة جلب الإصدار من قاعدة البيانات مباشرة إذا لم يكن معرّفاً
+        if (nextVersion === "1.0" && typeof DB_URL !== 'undefined') {
+            const res = await fetch(`${DB_URL}system_control/update_signal/version.json`);
+            if (res.ok) {
+                const ver = await res.json();
+                if (ver) nextVersion = ver.trim();
+            }
+        }
+
+        // 1. تحديث حالة الجهاز في السيرفر (استدعاء الدالة بأمان)
+        updateDeviceVersionInDB(nextVersion);
+        
+        // 2. تنفيذ المسح الشامل للكاش والسيرفس ووركر وإعادة التشغيل بالإصدار الجديد
+        if (typeof hardClearCacheAndReload === 'function') {
+            await hardClearCacheAndReload(nextVersion);
+        } else {
+            // حل احتياطي في حال كانت دالة مسح الكاش غير مقروءة في هذا النطاق
+            localStorage.setItem('app_version', nextVersion);
+            window.location.reload(true);
+        }
+    } catch (error) {
+        console.error("حدث خطأ أثناء عملية التحديث الإجباري:", error);
+        // حتى لو حدث خطأ، قم بعمل تحديث سريع للصفحة لإنقاذ المستخدم
+        window.location.reload(true);
+    }
+}
     </script>
 </body>
 </html>
