@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistics system</title>
+    <title>Logistics system-2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -291,7 +291,7 @@
                             <button onclick="switchAdminTab('analyticsSubTab')" id="btn-analyticsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-chart-line ml-2 w-5 text-center"></i>الإحصائيات والرسوم</button>
                             <button onclick="switchAdminTab('adminsSubTab')" id="btn-adminsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-user-shield ml-2 w-5 text-center"></i>المسؤولين</button>
                             <button onclick="switchAdminTab('cashSubTab'); loadCashSettings();" id="btn-cashSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-money-bill-wave ml-2 w-5 text-center text-green-500"></i>إدارة النقدية</button>
-                            <button onclick="switchAdminTab('regionsSubTab'); loadRegionsUI();" id="btn-regionsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-map-location-dot ml-2 w-5 text-center text-purple-500"></i>تسعير المناطق</button>
+                            <button onclick="switchAdminTab('regionsSubTab'); loadRegionsUI();" id="btn-regionsSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors" style="display: none;"><i class="fa-solid fa-map-location-dot ml-2 w-5 text-center text-purple-500"></i>تسعير المناطق</button>
                             <button onclick="switchAdminTab('branchesSubTab')" id="btn-branchesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-store ml-2 w-5 text-center"></i>الفروع</button>
                             <button onclick="switchAdminTab('delegatesSubTab')" id="btn-delegatesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-users ml-2 w-5 text-center"></i>المناديب</button>
                             <button onclick="switchAdminTab('devicesSubTab'); loadDevices();" id="btn-devicesSubTab" class="admin-nav-btn w-full text-right px-6 py-4 font-bold border-b border-gray-100 text-gray-600 hover:bg-gray-50 transition-colors flex justify-between items-center"><span class="flex items-center"><i class="fa-solid fa-laptop-medical ml-2 w-5 text-center"></i>أجهزة الانضمام</span><span id="pendingDevicesBadge" class="hidden bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">!</span></button>
@@ -1971,6 +1971,17 @@ function startApp() {
             }
         } catch(e) {}
     }, 3000);
+}
+// حماية تبويب تسعير المناطق (يظهر للأدمن فقط)
+const regionsTabBtn = document.getElementById('btn-regionsSubTab');
+if (regionsTabBtn) {
+    if (currentUser && currentUser.role === 'admin') {
+        // إظهار الزر إذا كان المستخدم أدمن
+        regionsTabBtn.style.display = 'block'; 
+    } else {
+        // إخفاء الزر تماماً عن أي موظف أو مدير فرع
+        regionsTabBtn.style.display = 'none'; 
+    }
 }
   
 // ==========================================
@@ -6721,6 +6732,48 @@ async function executeForceReload() {
         window.location.reload(true);
     }
 }
+// ==========================================
+// إضافة اختصار F1 لفتح نافذة الأوردار بذكاء
+// ==========================================
+document.addEventListener('keydown', function(event) {
+    // التحقق من أن المفتاح المضغوط هو F1
+    if (event.key === 'F1') {
+        // الأهم: منع المتصفح من فتح صفحة المساعدة الافتراضية
+        event.preventDefault(); 
+        
+        // التأكد من أن المستخدم مسجل الدخول (لمنع فتح النافذة في شاشة اللوجين)
+        if (!currentUser) return; 
+
+        // البحث الديناميكي عن فرع "اوردار" لضمان جلب الـ ID الصحيح من قاعدة البيانات
+        let orderBranchId = 'order_shortcut'; 
+        let orderBranchName = 'اوردار';
+        
+        if (typeof branches !== 'undefined' && branches !== null) {
+            const foundBranchKey = Object.keys(branches).find(k => 
+                branches[k] && branches[k].name && (
+                    branches[k].name.includes('اوردار') || 
+                    branches[k].name.includes('أوردر') || 
+                    branches[k].name.includes('اوردر')
+                )
+            );
+            
+            if (foundBranchKey) {
+                orderBranchId = foundBranchKey;
+                orderBranchName = branches[foundBranchKey].name;
+            }
+        }
+        
+        // استدعاء دالتك الأصلية لفتح النافذة
+        if (typeof openOrderModal === 'function') {
+            openOrderModal(orderBranchId, orderBranchName);
+            
+            // إظهار إشعار سريع للمستخدم بنجاح العملية
+            if (typeof showToast === 'function') {
+                showToast("تم تشغيل اختصار F1 لفتح نافذة الأوردار", "success");
+            }
+        }
+    }
+});
     </script>
 </body>
 </html>
